@@ -116,7 +116,8 @@ class BenefitsForCreatorPageState extends State<BenefitsForCreatorPage> {
                                 ),
                                 child: GetBuilder<NewUserBenefitsController>(
                                   id: "updatePriceInfo",
-                                  builder: (NewUserBenefitsController controller) {
+                                  builder:
+                                      (NewUserBenefitsController controller) {
                                     return Text(
                                       "每天${controller.getVipHappy()?.dayMoney ?? ""}元，快人一步解锁高效创作世界~",
                                       style: TextStyle(
@@ -147,43 +148,40 @@ class BenefitsForCreatorPageState extends State<BenefitsForCreatorPage> {
                                     ),
                                     Positioned(
                                       top: 16.h,
-                                      child: GetBuilder<NewUserBenefitsController>(
+                                      child:
+                                          GetBuilder<NewUserBenefitsController>(
                                         id: "updatePriceInfo",
-                                        builder:
-                                            (
-                                              NewUserBenefitsController
-                                              controller,
-                                            ) {
-                                              return RichText(
-                                                text: TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: "¥",
-                                                      style: TextStyle(
-                                                        color: Color(
-                                                          0xFFFF5752,
-                                                        ),
-                                                        fontSize: 14.sp,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
+                                        builder: (
+                                          NewUserBenefitsController controller,
+                                        ) {
+                                          return RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: "¥",
+                                                  style: TextStyle(
+                                                    color: Color(
+                                                      0xFFFF5752,
                                                     ),
-                                                    TextSpan(
-                                                      text:
-                                                          "${(int.tryParse(controller.getVipHappy()?.crossedMoney ?? "0") ?? 0) - (int.tryParse(controller.getVipHappy()?.money ?? "0") ?? 0)}",
-                                                      style: TextStyle(
-                                                        color: Color(
-                                                          0xFFFF5752,
-                                                        ),
-                                                        fontSize: 32.sp,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ],
+                                                    fontSize: 14.sp,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
                                                 ),
-                                              );
-                                            },
+                                                TextSpan(
+                                                  text:
+                                                      "${(int.tryParse(controller.getVipHappy()?.crossedMoney ?? "0") ?? 0) - (int.tryParse(controller.getVipHappy()?.money ?? "0") ?? 0)}",
+                                                  style: TextStyle(
+                                                    color: Color(
+                                                      0xFFFF5752,
+                                                    ),
+                                                    fontSize: 32.sp,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
                                       ),
                                     ),
                                   ],
@@ -230,16 +228,14 @@ class BenefitsForCreatorPageState extends State<BenefitsForCreatorPage> {
                                               fit: BoxFit.fitWidth,
                                             ),
                                             GetBuilder<
-                                              NewUserBenefitsController
-                                            >(
+                                                NewUserBenefitsController>(
                                               id: "updatePriceInfo",
                                               builder: (controller) {
                                                 return RichText(
                                                   text: TextSpan(
                                                     children: [
                                                       TextSpan(
-                                                        text:
-                                                            controller
+                                                        text: controller
                                                                 .getVipHappy()
                                                                 ?.dayMoney ??
                                                             "",
@@ -350,10 +346,10 @@ class BenefitsForCreatorPageState extends State<BenefitsForCreatorPage> {
                                       .switchPayType();
                                   _purchaseProvider
                                       ?.changeSelectedPayMethodIndex(
-                                        Get.find<NewUserBenefitsController>()
-                                            .currentPay
-                                            .value,
-                                      );
+                                    Get.find<NewUserBenefitsController>()
+                                        .currentPay
+                                        .value,
+                                  );
                                 },
                               ),
                             ],
@@ -418,20 +414,14 @@ class BenefitsForCreatorPageState extends State<BenefitsForCreatorPage> {
                                 ),
                               ),
                               onTap: () {
-                                if (_purchaseProvider
-                                        ?.vipPageBean
-                                        ?.user
-                                        .protocolUrl
-                                        .isEmpty ==
-                                    true)
-                                  return;
+                                if (_purchaseProvider?.vipPageBean?.user
+                                        .protocolUrl.isEmpty ==
+                                    true) return;
                                 ByNavRouterUtils.jumpWebViewPage(
                                   context,
                                   "",
                                   _purchaseProvider!
-                                      .vipPageBean!
-                                      .user
-                                      .protocolUrl,
+                                      .vipPageBean!.user.protocolUrl,
                                 );
                               },
                             ),
@@ -456,19 +446,13 @@ class BenefitsForCreatorPageState extends State<BenefitsForCreatorPage> {
                                   debugPrint(
                                     "open Url:${_iosPurchaseProvider?.vipPageBean?.user.subScribeProtocolUrl}",
                                   );
-                                  if (_iosPurchaseProvider
-                                          ?.vipPageBean
-                                          ?.user
-                                          .subScribeProtocolUrl
-                                          .isEmpty ==
-                                      true)
-                                    return;
+                                  if (_iosPurchaseProvider?.vipPageBean?.user
+                                          .subScribeProtocolUrl.isEmpty ==
+                                      true) return;
                                   ByNavRouterUtils.jumpWebViewPage(
                                     context,
                                     "",
-                                    _iosPurchaseProvider
-                                            ?.vipPageBean
-                                            ?.user
+                                    _iosPurchaseProvider?.vipPageBean?.user
                                             .subScribeProtocolUrl ??
                                         "",
                                   );
@@ -494,31 +478,22 @@ class BenefitsForCreatorPageState extends State<BenefitsForCreatorPage> {
                                   debugPrint(
                                     "open Url:${_iosPurchaseProvider?.vipPageBean?.user.integralRule}",
                                   );
-                                  if (_iosPurchaseProvider
-                                          ?.vipPageBean!
-                                          .user
-                                          .integralRule
-                                          .isNotEmpty !=
-                                      true)
-                                    return;
+                                  if (_iosPurchaseProvider?.vipPageBean!.user
+                                          .integralRule.isNotEmpty !=
+                                      true) return;
                                   ByNavRouterUtils.jumpWebViewPage(
                                     context,
                                     "",
                                     _iosPurchaseProvider!
-                                            .vipPageBean
-                                            ?.user
-                                            .integralRule ??
+                                            .vipPageBean?.user.integralRule ??
                                         "",
                                   );
                                 } else {
                                   debugPrint(
                                     "open Url:${_purchaseProvider?.vipPageBean?.user.integralRule}",
                                   );
-                                  if (_purchaseProvider
-                                          ?.vipPageBean!
-                                          .user
-                                          .integralRule
-                                          .isNotEmpty !=
+                                  if (_purchaseProvider?.vipPageBean!.user
+                                          .integralRule.isNotEmpty !=
                                       true) {
                                     return;
                                   }
@@ -526,9 +501,7 @@ class BenefitsForCreatorPageState extends State<BenefitsForCreatorPage> {
                                     context,
                                     "",
                                     _purchaseProvider!
-                                            .vipPageBean
-                                            ?.user
-                                            .integralRule ??
+                                            .vipPageBean?.user.integralRule ??
                                         "",
                                   );
                                 }
@@ -685,10 +658,10 @@ class BenefitsForCreatorPageState extends State<BenefitsForCreatorPage> {
                   Get.find<UserController>()
                       .showBindPhoneDialog(needConfirm: true)
                       .then((value) {
-                        showSuccessDialog(
-                          title: value != null && value ? '绑定成功！' : null,
-                        );
-                      });
+                    showSuccessDialog(
+                      title: value != null && value ? '绑定成功！' : null,
+                    );
+                  });
                   return;
                 }
                 showSuccessDialog();
@@ -848,10 +821,10 @@ class BenefitsForCreatorPageState extends State<BenefitsForCreatorPage> {
           }
           Navigator.pop(context);
           context.read<LaunchProvider>().gotoPay(
-            context,
-            closePay: true,
-            replace: true,
-          );
+                context,
+                closePay: true,
+                replace: true,
+              );
         }
       },
     );

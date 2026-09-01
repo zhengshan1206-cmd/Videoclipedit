@@ -35,13 +35,16 @@ class _NewToolBoxPageState extends State<NewToolBoxPage> {
   @override
   void dispose() {
     _pageController.dispose();
+    _categoryScrollController.dispose();
 
     _controller.removeListener(_onControllerOffsetChanged);
     _controller.dispose();
     super.dispose();
   }
 
-  void _onPageChanged(int index, BuildContext context) {
+  /// 仅随 PageView 页面切换滚动顶部分类条（须在 ScrollController 已 attach 后调用）
+  void _syncCategoryTabScroll(int index) {
+    if (!_categoryScrollController.hasClients) return;
     double offset = 0;
     for (var i = 0; i < index; i++) {
       offset += _itemWidths[i] ?? 0;
@@ -64,37 +67,38 @@ class _NewToolBoxPageState extends State<NewToolBoxPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: NestedScrollView(
-        physics: const ClampingScrollPhysics(), // 限制 NestedScrollView 的滚动行为
-        controller: _controller,
-        headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-          return [
-            SliverTypeListView(
-              categoryScrollController: _categoryScrollController,
-              pageController: _pageController,
-              onSize: (Size size, int index) {
-                _itemWidths[index] = size.width;
-              },
-            ),
-          ];
-        },
-        body: NotificationListener<ScrollNotification>(
-          onNotification: (ScrollNotification notification) {
-            if (notification is ScrollEndNotification) {
-              final metrics = notification.metrics;
-              if (metrics is PageMetrics) {
-                int currentPage = metrics.page!.round();
-                context
-                    .read<NewToolBoxProvider>()
-                    .updateSelectedIndex(currentPage);
-              }
-            }
-            return false;
+      // 独立工具箱页：根节点垫底部安全区，避免 NestedScrollView + PageView 内 MediaQuery 拿不到手势条 inset 导致列表贴底
+      body: SafeArea(
+        bottom: true,
+        top: false,
+        left: false,
+        right: false,
+        child: NestedScrollView(
+          physics: const ClampingScrollPhysics(), // 限制 NestedScrollView 的滚动行为
+          controller: _controller,
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return [
+              SliverTypeListView(
+                categoryScrollController: _categoryScrollController,
+                pageController: _pageController,
+                onSize: (Size size, int index) {
+                  _itemWidths[index] = size.width;
+                },
+              ),
+            ];
           },
-          child: ToolBoxPageView(
+          body: ToolBoxPageView(
             pageController: _pageController,
             onPageChanged: (int index) {
-              _onPageChanged(index, context);
+              // 只用 PageView 的 onPageChanged 同步索引，避免 NestedScrollView 多次 ScrollEnd 与 postFrame 叠加导致进出页面奇偶次错乱
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!mounted) return;
+                final p = context.read<NewToolBoxProvider>();
+                if (p.selectedIndex != index) {
+                  p.updateSelectedIndex(index);
+                }
+                _syncCategoryTabScroll(index);
+              });
             },
           ),
         ),

@@ -11,6 +11,7 @@ import 'package:video_clip_edit/utils/comon/by_screen_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_widgets_util.dart';
 import 'package:video_clip_edit/utils/comon/by_permission_utils.dart';
 import 'package:video_clip_edit/modules/common/widget/common_dialog.dart';
+import 'package:video_clip_edit/widgets/common/works_management_bottom_bar_shell.dart';
 
 import '../../../utils/comon/by_nav_router_utils.dart';
 import '../../aiSquare/draw/widgets/ai_files_downoad_dialog.dart';
@@ -46,26 +47,30 @@ class _AiNovelManagementPageState extends State<AiNovelManagementPage> {
 
   @override
   Widget build(BuildContext context) {
+    final editing =
+        context.select<AiNovelManagementProvider, bool>((p) => p.videosEditing);
     return Scaffold(
       appBar: _buildAppBar(context),
       backgroundColor: ByColorUtil.CommonPageBgColor,
       body: Stack(
         children: [
-          EasyRefresh(
-            refreshOnStart: true,
-            onRefresh: () {
-              _loadNovels(reset: true);
-            },
-            onLoad: _loadNovels,
-            canRefreshAfterNoMore: true,
-            canLoadAfterNoMore: false,
-            child: NovelManagementView(tips: ""),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _buildBottmBar(context),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: EasyRefresh(
+                  refreshOnStart: true,
+                  onRefresh: () {
+                    _loadNovels(reset: true);
+                  },
+                  onLoad: _loadNovels,
+                  canRefreshAfterNoMore: true,
+                  canLoadAfterNoMore: false,
+                  child: NovelManagementView(tips: ""),
+                ),
+              ),
+              if (editing) _buildBottmBar(context),
+            ],
           ),
         ],
       ),
@@ -74,20 +79,16 @@ class _AiNovelManagementPageState extends State<AiNovelManagementPage> {
 
   _buildBottmBar(BuildContext context) {
     final provider = context.read<AiNovelManagementProvider>();
-    return Offstage(
-      offstage: !context
-          .select<AiNovelManagementProvider, bool>((p) => p.videosEditing),
-      child: PhysicalModel(
-        color: Colors.black,
-        elevation: 10,
-        child: Container(
-          height: 66.h,
-          width: double.infinity,
-          color: ByColorUtil.WhiteColor,
-          alignment: Alignment.center,
-          child: SizedBox(
-            height: 44.h,
-            child: Row(
+    final rowH = ByScreenUtils.managementBottomActionRowHeight(44.h);
+    final barH = ByScreenUtils.managementBottomBarSurfaceHeight(
+      scaledBarH: 66.h,
+      actionRowHeight: rowH,
+    );
+    return WorksManagementBottomBarShell(
+      barSurfaceHeight: barH,
+      actionRowHeight: rowH,
+      materialElevation: 10,
+      actionsRow: Row(
               children: [
                 SizedBox(
                   width: 12.w,
@@ -172,9 +173,6 @@ class _AiNovelManagementPageState extends State<AiNovelManagementPage> {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
     );
   }
 

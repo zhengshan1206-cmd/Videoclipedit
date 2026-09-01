@@ -5,11 +5,12 @@ import 'package:package_info_plus/package_info_plus.dart';
 class ByPackageUtils {
   static bool get isDesktop => !isWeb && (isWindows || isLinux || isMacOS);
 
-  static bool get isMobile => isAndroid || isIOS;
+  static bool get isMobile => isAndroid || isIOS || isOhos;
 
   static bool get isMobile2 =>
       defaultTargetPlatform == TargetPlatform.android ||
-      defaultTargetPlatform == TargetPlatform.iOS;
+      defaultTargetPlatform == TargetPlatform.iOS ||
+      defaultTargetPlatform == TargetPlatform.ohos;
 
   /// Platform不能在web端使用
   static bool get isWeb => kIsWeb;
@@ -25,6 +26,10 @@ class ByPackageUtils {
   static bool get isFuchsia => isWeb ? false : Platform.isFuchsia;
 
   static bool get isIOS => isWeb ? false : Platform.isIOS;
+
+  /// 鸿蒙/OpenHarmony 平台（Flutter for OpenHarmony 下 operatingSystem 为 "ohos"）
+  static bool get isOhos =>
+      isWeb ? false : (Platform.operatingSystem == 'ohos');
 
   static Future<PackageInfo> getPackageInfo() async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();

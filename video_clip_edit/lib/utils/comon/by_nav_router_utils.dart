@@ -5,10 +5,13 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:video_clip_edit/modules/login/wx_login_config.dart';
+import 'package:video_clip_edit/utils/channel/channel_operate.dart';
+import 'package:video_clip_edit/utils/comon/by_package_utils.dart';
 import 'package:video_clip_edit/utils/http/apis.dart';
 import 'package:video_clip_edit/utils/http/http_utils.dart';
 import 'package:video_clip_edit/widgets/base_web_view.dart';
-import 'package:video_clip_edit/v2/minorMode/minor_mode_navigation_guard.dart';
 
 class ByNavRouterUtils {
   static void fadeIn(BuildContext context, Widget scene, {String? name}) {
@@ -49,10 +52,6 @@ class ByNavRouterUtils {
   /// 修复 Flutter 新版本 MaterialPageRoute 默认缩放动画导致滑动返回卡顿和点击失效的问题
   /// 使用 PageRouteBuilder 自定义淡入淡出动画，不缩放，像旧版本一样自然
   static Future push(BuildContext context, Widget scene, {String? name}) {
-    if (MinorModeNavigationGuard.interceptIfNeeded()) {
-      return Future.value();
-    }
-
     FocusScope.of(context).requestFocus(FocusNode());
 
     // 如果没有传递 name，尝试从 GetX 获取当前路由作为备用
@@ -186,6 +185,43 @@ class ByNavRouterUtils {
     Navigator.pop(context, result);
   }
 
+  /// 拉起微信客服：鸿蒙走 OpenCustomerServiceChat（需配置 corpId），Android/iOS 为检测微信后打开客服链接 WebView
+  /// [kfUrl] 客服链接（如 https://work.weixin.qq.com/kfid/kfcxxxxx）
+  /// [corpId] 可选，企业 ID（鸿蒙必填才走 SDK 拉起；未填时鸿蒙 fallback 同现有逻辑）
+  static Future<void> launchWechatCustomerService(
+    BuildContext context,
+    String title,
+    String kfUrl, {
+    String? corpId,
+  }) async {
+    if (kfUrl.isEmpty) return;
+    if (ByPackageUtils.isOhos) {
+      final String effectiveCorpId =
+          corpId?.trim() ?? WxLoginConfig.kWechatKfCorpId;
+      if (effectiveCorpId.isNotEmpty) {
+        try {
+          await ChannelOperate.openWechatCustomerService(
+            corpId: effectiveCorpId,
+            url: kfUrl,
+            appId: WxLoginConfig.kWechatAppID,
+          );
+          return;
+        } catch (_) {
+          // SDK 失败（如未装微信）时 fallback 到 WebView/弹层
+        }
+      }
+      // 无 corpId 或调用失败：沿用现有逻辑（企业微信链接走 bindSheetService，否则 WebView）
+      jumpWebViewPage(context, title, kfUrl);
+      return;
+    }
+    const String wechatUrl = 'weixin://';
+    if (await canLaunchUrl(Uri.parse(wechatUrl))) {
+      jumpWebViewPage(context, title, kfUrl);
+    } else {
+      EasyLoading.showToast('由于您未安装微信，无法直接跳转客服。');
+    }
+  }
+
   /// 跳到WebView页
   /// 修复 Flutter 新版本 MaterialPageRoute 默认缩放动画导致的问题
   static jumpWebViewPage(
@@ -194,6 +230,12 @@ class ByNavRouterUtils {
     String url, {
     bool isRisk = true,
   }) {
+    if (ByPackageUtils.isOhos &&
+        (url == "https://t020.r.sn.cn/SjFwD3" ||
+            url.contains("https://work.weixin.qq.com/"))) {
+      ChannelOperate.bindSheetService();
+      return;
+    }
     if (url.isEmpty) return;
 
     // 创建自定义路由，使用淡入淡出动画

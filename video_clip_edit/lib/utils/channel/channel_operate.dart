@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'base_channel.dart';
 import 'package:video_clip_edit/utils/channel/channel_api.dart';
 import 'package:video_clip_edit/utils/comon/by_permission_utils.dart';
@@ -22,6 +20,42 @@ class ChannelOperate {
   static Future<dynamic> getAppDeviceInfo() async {
     return await BaseChannel.instance
         .callNativeMethod(ChannelApi.appDeviceInfo);
+  }
+
+  static void setHuaweiLoginCallback(Function(dynamic) callback) {
+    BaseChannel.instance.setHuaweiLoginCallback(callback);
+  }
+
+  static void removeHuaweiLoginCallback() {
+    BaseChannel.instance.removeHuaweiLoginCallback();
+  }
+
+  /// 跳转到华为登录页面（仅鸿蒙平台）
+  static Future<dynamic> navigateToHuaweiLogin({
+    String? appName,
+    String? userServiceTitle,
+    String? userServiceUrl,
+    String? privacyTitle,
+    String? privacyUrl,
+    String? childrenPrivacyTitle,
+    String? childrenPrivacyUrl,
+  }) async {
+    final params = <String, dynamic>{};
+    void addIfValid(String key, String? value) {
+      if (value != null && value.isNotEmpty) params[key] = value;
+    }
+
+    addIfValid('appName', appName);
+    addIfValid('userServiceTitle', userServiceTitle);
+    addIfValid('userServiceUrl', userServiceUrl);
+    addIfValid('privacyTitle', privacyTitle);
+    addIfValid('privacyUrl', privacyUrl);
+    addIfValid('childrenPrivacyTitle', childrenPrivacyTitle);
+    addIfValid('childrenPrivacyUrl', childrenPrivacyUrl);
+    return await BaseChannel.instance.callNativeMethod(
+      ChannelApi.navigateToHuaweiLogin,
+      params: params.isEmpty ? null : params,
+    );
   }
 
   /// 视频编辑
@@ -157,6 +191,91 @@ class ChannelOperate {
   //退出应用
   static Future<dynamic> exitApp() async {
     return await BaseChannel.instance.callNativeMethod(ChannelApi.exitApp);
+  }
+
+  static Future<dynamic> getVideoPathFromAlbum(int maxCount) async {
+    return await BaseChannel.instance.callNativeMethod(
+        ChannelApi.getVideoPathFromAlbum,
+        params: {"count": maxCount});
+  }
+
+  static Future<dynamic> getPhotoPathFromAlbum(int maxCount) async {
+    return await BaseChannel.instance.callNativeMethod(
+        ChannelApi.getPhotoPathFromAlbum,
+        params: {"count": maxCount});
+  }
+
+  static Future<dynamic> getAudioPath(int maxCount) async {
+    return await BaseChannel.instance.callNativeMethod(ChannelApi.getAudioPath,
+        params: {"count": maxCount});
+  }
+
+  static Future<dynamic> getVideoPathFromCamera() async {
+    return await BaseChannel.instance
+        .callNativeMethod(ChannelApi.getVideoPathFromCamera);
+  }
+
+  static Future<dynamic> getPhotoPathFromCamera() async {
+    return await BaseChannel.instance
+        .callNativeMethod(ChannelApi.getPhotoPathFromCamera);
+  }
+
+  static Future<dynamic> getAudioDuration(String path) async {
+    return await BaseChannel.instance.callNativeMethod(
+        ChannelApi.getAudioDuration,
+        params: {"path": path});
+  }
+
+  /// 保存文件到相册（鸿蒙/Android 等原生实现，type: 'image' | 'video'）
+  static Future<dynamic> saveToAlbum(String path, String type) async {
+    return await BaseChannel.instance.callNativeMethod(
+        ChannelApi.saveToAlbum,
+        params: {"path": path, "type": type});
+  }
+
+  static Future<dynamic> getPermission(String permission) async {
+    return await BaseChannel.instance.callNativeMethod(ChannelApi.getPermission,
+        params: {"permission": permission});
+  }
+
+  static Future<dynamic> recorderInit() async {
+    return await BaseChannel.instance.callNativeMethod(ChannelApi.recorderInit);
+  }
+
+  static Future<dynamic> recorderStart() async {
+    return await BaseChannel.instance
+        .callNativeMethod(ChannelApi.recorderStart);
+  }
+
+  static Future<dynamic> recorderEnd() async {
+    return await BaseChannel.instance.callNativeMethod(ChannelApi.recorderEnd);
+  }
+
+  static Future<dynamic> recorderRelease() async {
+    return await BaseChannel.instance
+        .callNativeMethod(ChannelApi.recorderRelease);
+  }
+
+  static Future<dynamic> bindSheetService() async {
+    return await BaseChannel.instance
+        .callNativeMethod(ChannelApi.bindSheetService);
+  }
+
+  /// 鸿蒙：拉起微信客服会话（需已集成微信 OpenSDK 且 corpId/url 已在客服官网绑定）
+  /// [corpId] 企业 ID，[url] 客服链接（如 https://work.weixin.qq.com/kfid/kfcxxxxx），[appId] 可选，默认使用登录配置
+  static Future<dynamic> openWechatCustomerService({
+    required String corpId,
+    required String url,
+    String? appId,
+  }) async {
+    return await BaseChannel.instance.callNativeMethod(
+      ChannelApi.openWechatCustomerService,
+      params: {
+        'corpId': corpId,
+        'url': url,
+        if (appId != null && appId.isNotEmpty) 'appId': appId,
+      },
+    );
   }
 
   //获取音频文件的时长

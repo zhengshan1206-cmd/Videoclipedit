@@ -55,12 +55,6 @@ abstract class Routes {
 
   ///短剧创作引导
   static const String shortDramaPage = _Paths.shortDramaPage;
-
-  ///未成年人页面
-  static const String minorPage = _Paths.minorPage;
-
-  ///未成年创建页面
-  static const String minorCreatePage = _Paths.minorCreatePage;
 }
 
 abstract class _Paths {
@@ -120,10 +114,4 @@ abstract class _Paths {
 
   ///短剧创作引导
   static const String shortDramaPage = "/short_drama_page";
-
-  ///未成年人页面
-  static const String minorPage = "/minor_page";
-
-  ///未成年创建页面
-  static const String minorCreatePage = "/minor_create_page";
 }

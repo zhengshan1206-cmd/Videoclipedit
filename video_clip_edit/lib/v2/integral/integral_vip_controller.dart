@@ -1,5 +1,6 @@
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:get/get.dart';
 import 'package:video_clip_edit/modules/profile/beans/user_info_bean.dart';
 import 'package:video_clip_edit/v2/aiSquare/song/beans/rights_by_type.dart';
@@ -169,20 +170,30 @@ class IntegralVipController extends GetxController {
     // }
     // print("00000000000000000000000");
 
-    _requiredPoints.value = requiredPoints;
-    _type.value = type;
-    if (videoDuration != null) {
-      _videoDuration = videoDuration;
-    }
-    if (generateMode != null) {
-      _generateMode = generateMode;
-    }
-    _loadRights();
+    void apply() {
+      _requiredPoints.value = requiredPoints;
+      _type.value = type;
+      if (videoDuration != null) {
+        _videoDuration = videoDuration;
+      }
+      if (generateMode != null) {
+        _generateMode = generateMode;
+      }
+      _loadRights();
 
-    IntegralController.getOrPut();
-    // 更新用户信息以刷新积分
-    if (Get.isRegistered<UserController>()) {
-      Get.find<UserController>().reloadUserInfo();
+      IntegralController.getOrPut();
+      // 更新用户信息以刷新积分
+      if (Get.isRegistered<UserController>()) {
+        Get.find<UserController>().reloadUserInfo();
+      }
+    }
+
+    // 在 State.initState / 首次 build 过程中同步改 Rx 会通知 Obx → setState，
+    // 触发 “setState/markNeedsBuild during build”。仅在帧空闲时同步执行，否则推到帧末。
+    if (SchedulerBinding.instance.schedulerPhase == SchedulerPhase.idle) {
+      apply();
+    } else {
+      SchedulerBinding.instance.addPostFrameCallback((_) => apply());
     }
   }
 

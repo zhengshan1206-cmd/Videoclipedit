@@ -4,22 +4,28 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:async';
 import 'dart:convert';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_clip_edit/routes/route_utils.dart';
+import 'package:video_clip_edit/v2/aiSquare/draw/ai_draw_management_page.dart';
+import 'package:video_clip_edit/v2/aiSquare/draw/ai_draw_picker.dart';
+import 'package:video_clip_edit/v2/aiSquare/draw/providers/ai_draw_work_management_provider.dart';
 import 'package:video_clip_edit/v2/aiVideo/widgets/assets_picker_for_video_dialog.dart';
 import 'package:video_clip_edit/v2/aiVideo/widgets/my_picture_dialog.dart';
 import 'package:video_clip_edit/widgets/by_progress_hud.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
+import 'package:video_clip_edit/utils/channel/channel_operate.dart';
 import 'package:video_clip_edit/utils/comon/by_nav_router_utils.dart';
+import 'package:video_clip_edit/utils/comon/by_package_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_permission_utils.dart';
 import 'package:video_clip_edit/modules/home/widgets/sub_funcs_view.dart';
-import 'package:video_clip_edit/v2/minorMode/minor_mode_navigation_guard.dart';
 import 'package:video_clip_edit/modules/home/widgets/assets_picker_dailog.dart';
 import 'package:video_clip_edit/modules/home/clipped/video_clip_hyber_preview.dart';
 import 'package:video_clip_edit/widgets/permissions_usage_dialog.dart';
@@ -33,7 +39,8 @@ class ByCommonUtils {
   static pickAssetsWithAudio(
     BuildContext context, {
     int? maxCount,
-    void Function(List<AssetEntity> asstes)? onSelectedCallback,
+    FutureOr<void> Function(List<AssetEntity> asstes, {List<String>? urls})?
+        onSelectedCallback,
   }) async {
     final status = await ByPermissionUtils.audios();
     if (!status) return;
@@ -81,7 +88,7 @@ class ByCommonUtils {
     /// 时长限制，单位：秒
     int? durationLimit,
     int? durationLimitMin,
-    void Function(List<AssetEntity> asstes)? onSelectedCallback,
+    FutureOr<void> Function(List<AssetEntity> asstes)? onSelectedCallback,
     void Function()? onCancelCallback,
   }) async {
     // 先显示权限说明弹窗
@@ -129,8 +136,7 @@ class ByCommonUtils {
 
               if (!await _ensurePhotoManagerPermission()) return;
 
-              final List<AssetEntity> result =
-                  await AssetPicker.pickAssets(
+              final List<AssetEntity> result = await AssetPicker.pickAssets(
                     context,
                     pickerConfig: AssetPickerConfig(
                       maxAssets: maxCount ?? 9,
@@ -184,7 +190,7 @@ class ByCommonUtils {
   static pickAssetsOnType(
     BuildContext context, {
     int? maxCount,
-    void Function(List<AssetEntity> asstes)? onSelectedCallback,
+    FutureOr<void> Function(List<AssetEntity> asstes)? onSelectedCallback,
   }) {
     showDialog(
       context: context,
@@ -198,14 +204,12 @@ class ByCommonUtils {
               final status = await ByPermissionUtils.photos();
               if (!status) return;
               if (!await _ensurePhotoManagerPermission()) return;
-              final List<AssetEntity> result =
-                  await AssetPicker.pickAssets(
+              final List<AssetEntity> result = await AssetPicker.pickAssets(
                     context,
                     pickerConfig: AssetPickerConfig(
                       maxAssets: maxCount ?? 9,
-                      requestType: idx == 0
-                          ? RequestType.image
-                          : RequestType.video,
+                      requestType:
+                          idx == 0 ? RequestType.image : RequestType.video,
                     ),
                   ) ??
                   [];
@@ -232,7 +236,7 @@ class ByCommonUtils {
   static pickAssetsOnTypeVideo(
     BuildContext context, {
     int? maxCount,
-    void Function(List<AssetEntity> asstes)? onSelectedCallback,
+    FutureOr<void> Function(List<AssetEntity> asstes)? onSelectedCallback,
   }) {
     showDialog(
       context: context,
@@ -246,8 +250,7 @@ class ByCommonUtils {
               final status = await ByPermissionUtils.videos();
               if (!status) return;
               if (!await _ensurePhotoManagerPermission()) return;
-              final List<AssetEntity> result =
-                  await AssetPicker.pickAssets(
+              final List<AssetEntity> result = await AssetPicker.pickAssets(
                     context,
                     pickerConfig: AssetPickerConfig(
                       maxAssets: maxCount ?? 9,
@@ -278,7 +281,7 @@ class ByCommonUtils {
   static pickAssetsOnTypeCommon(
     BuildContext context, {
     int? maxCount,
-    void Function(List<AssetEntity> asstes)? onSelectedCallback,
+    FutureOr<void> Function(List<AssetEntity> asstes)? onSelectedCallback,
   }) {
     showDialog(
       context: context,
@@ -291,14 +294,12 @@ class ByCommonUtils {
             if (idx == 0) {
               final status = await ByPermissionUtils.photos();
               if (!status) return;
-              final List<AssetEntity> result =
-                  await AssetPicker.pickAssets(
+              final List<AssetEntity> result = await AssetPicker.pickAssets(
                     context,
                     pickerConfig: AssetPickerConfig(
                       maxAssets: maxCount ?? 9,
-                      requestType: idx == 0
-                          ? RequestType.common
-                          : RequestType.video,
+                      requestType:
+                          idx == 0 ? RequestType.common : RequestType.video,
                     ),
                   ) ??
                   [];
@@ -325,7 +326,8 @@ class ByCommonUtils {
     BuildContext context, {
     int? maxCount,
     required RequestType type,
-    void Function(List<AssetEntity> asstes)? onSelectedCallback,
+    FutureOr<void> Function(List<AssetEntity> asstes, {List<String>? urls})?
+        onSelectedCallback,
     bool needMicroPhone = false,
   }) {
     showDialog(
@@ -360,18 +362,34 @@ class ByCommonUtils {
                   break;
               }
 
+              if (ByPackageUtils.isOhos) {
+                List<dynamic> result;
+                if (type == RequestType.video) {
+                  result =
+                      await ChannelOperate.getVideoPathFromAlbum(maxCount ?? 9);
+                } else if (type == RequestType.image) {
+                  result =
+                      await ChannelOperate.getPhotoPathFromAlbum(maxCount ?? 9);
+                } else if (type == RequestType.audio) {
+                  result = await ChannelOperate.getAudioPath(maxCount ?? 9);
+                } else {
+                  return;
+                }
+                onSelectedCallback?.call([], urls: result.cast<String>());
+                return;
+              }
+
               if (!await _ensurePhotoManagerPermission()) return;
 
               /// 你也可以将类似的逻辑应用在其他常见的相册上。
-              final List<AssetEntity> result =
-                  await AssetPicker.pickAssets(
+              final List<AssetEntity> result = await AssetPicker.pickAssets(
                     context,
                     pickerConfig: AssetPickerConfig(
                       maxAssets: maxCount ?? 9,
                       requestType: type,
                       pathNameBuilder: (AssetPathEntity entity) {
                         // 获取原始路径名，如果为空则使用默认的"未知文件"
-                        final String originalPath = entity.name;
+                        final String originalPath = entity.name ?? '未知文件';
                         // 定义一个映射表，将英文相册名映射为中文
                         final Map<String, String> pathMapping = {
                           'Camera Roll': '相机胶卷',
@@ -411,6 +429,17 @@ class ByCommonUtils {
                 needMicroPhone: needMicroPhone2,
               );
               if (!status) return;
+              if (ByPackageUtils.isOhos) {
+                String? result;
+                if (type == RequestType.video) {
+                  result = await ChannelOperate.getVideoPathFromCamera();
+                } else if (type == RequestType.image) {
+                  result = await ChannelOperate.getPhotoPathFromCamera();
+                }
+                if (result == null) return;
+                onSelectedCallback?.call([], urls: [result]);
+                return;
+              }
               final AssetEntity? result = await pickFromCamera(
                 context,
                 enableRecording: [
@@ -435,8 +464,8 @@ class ByCommonUtils {
     BuildContext context, {
     int? maxCount,
     required RequestType type,
-    void Function(List<AssetEntity> asstes, {List<String>? urls})?
-    onSelectedCallback,
+    FutureOr<void> Function(List<AssetEntity> asstes, {List<String>? urls})?
+        onSelectedCallback,
     bool needMicroPhone = false,
   }) {
     showDialog(
@@ -471,18 +500,34 @@ class ByCommonUtils {
                   break;
               }
 
+              if (ByPackageUtils.isOhos) {
+                List<dynamic> result;
+                if (type == RequestType.video) {
+                  result =
+                      await ChannelOperate.getVideoPathFromAlbum(maxCount ?? 9);
+                } else if (type == RequestType.image) {
+                  result =
+                      await ChannelOperate.getPhotoPathFromAlbum(maxCount ?? 9);
+                } else if (type == RequestType.audio) {
+                  result = await ChannelOperate.getAudioPath(maxCount ?? 9);
+                } else {
+                  return;
+                }
+                onSelectedCallback?.call([], urls: result.cast<String>());
+                return;
+              }
+
               if (!await _ensurePhotoManagerPermission()) return;
 
               /// 你也可以将类似的逻辑应用在其他常见的相册上。
-              final List<AssetEntity> result =
-                  await AssetPicker.pickAssets(
+              final List<AssetEntity> result = await AssetPicker.pickAssets(
                     context,
                     pickerConfig: AssetPickerConfig(
                       maxAssets: maxCount ?? 9,
                       requestType: type,
                       pathNameBuilder: (AssetPathEntity entity) {
                         // 获取原始路径名，如果为空则使用默认的"未知文件"
-                        final String originalPath = entity.name;
+                        final String originalPath = entity.name ?? '未知文件';
                         // 定义一个映射表，将英文相册名映射为中文
                         final Map<String, String> pathMapping = {
                           'Camera Roll': '相机胶卷',
@@ -522,6 +567,17 @@ class ByCommonUtils {
                 needMicroPhone: needMicroPhone2,
               );
               if (!status) return;
+              if (ByPackageUtils.isOhos) {
+                String? result;
+                if (type == RequestType.video) {
+                  result = await ChannelOperate.getVideoPathFromCamera();
+                } else if (type == RequestType.image) {
+                  result = await ChannelOperate.getPhotoPathFromCamera();
+                }
+                if (result == null) return;
+                onSelectedCallback?.call([], urls: [result]);
+                return;
+              }
               final AssetEntity? result = await pickFromCamera(
                 context,
                 enableRecording: [
@@ -558,8 +614,7 @@ class ByCommonUtils {
     // final status = await ByPermissionUtils.iosAudios(message: '暂无音频权限，请前往设置开启权限',);
     if (!status) return [];
     if (!await _ensurePhotoManagerPermission()) return [];
-    final List<AssetEntity> result =
-        await AssetPicker.pickAssets(
+    final List<AssetEntity> result = await AssetPicker.pickAssets(
           context,
           pickerConfig: AssetPickerConfig(
             maxAssets: maxCount ?? 9,
@@ -589,8 +644,7 @@ class ByCommonUtils {
     final status = await ByPermissionUtils.videos();
     if (!status) return [];
     if (!await _ensurePhotoManagerPermission()) return [];
-    final List<AssetEntity> result =
-        await AssetPicker.pickAssets(
+    final List<AssetEntity> result = await AssetPicker.pickAssets(
           context,
           pickerConfig: AssetPickerConfig(
             maxAssets: maxCount ?? 9,
@@ -692,6 +746,13 @@ class ByCommonUtils {
     double minVal = inclusiveMin ? min : min + 0.0000000001;
     double maxVal = inclusiveMax ? max : max - 0.0000000001;
     return minVal + Random.secure().nextDouble() * (maxVal - minVal);
+  }
+
+  /// 是否为网络地址（http/https），用于提交前校验，避免把本地路径当图片地址提交
+  static bool isNetworkUrl(String? url) {
+    if (url == null || url.isEmpty) return false;
+    final u = url.trim().toLowerCase();
+    return u.startsWith('http://') || u.startsWith('https://');
   }
 
   /// 打开链接
@@ -853,8 +914,6 @@ class ByCommonUtils {
     bool fromChat = false,
     Map<String, dynamic>? extraData,
   }) async {
-    if (MinorModeNavigationGuard.interceptIfNeeded()) return;
-
     final url = data.jumpUrl;
     debugPrint(
       "subFunctionCase>>>>>>>>>>>>>  id:${data.id} title:${data.title} url:${data.jumpUrl} params:${data.jumpParam} type:${data.type} ",

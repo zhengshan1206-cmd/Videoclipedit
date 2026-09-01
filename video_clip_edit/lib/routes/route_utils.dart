@@ -47,7 +47,6 @@ import 'package:video_clip_edit/modules/tool_box/videoExtraction/video_extractio
 import 'package:video_clip_edit/modules/tool_box/videoSplit/video_split_page.dart';
 import 'package:video_clip_edit/v2/AiNovel/providers/ai_novel_provider.dart';
 import 'package:video_clip_edit/utils/comon/by_common_utils.dart';
-import 'package:video_clip_edit/v2/minorMode/minor_mode_navigation_guard.dart';
 import 'package:video_clip_edit/utils/http/apis.dart';
 import 'package:video_clip_edit/utils/http/http_utils.dart';
 import 'package:video_clip_edit/v2/aiClip/ai_clip_page.dart';
@@ -136,59 +135,59 @@ class RouteUtils {
     "/mine": (context) => const MainPage(),
     // 文案创作
     "/storyCreation": (BuildContext context) => ChangeNotifierProvider(
-      create: (context) => StroyCreateProvider(),
-      child: const StoryCreateHomePage(select: 0),
-    ),
+          create: (context) => StroyCreateProvider(),
+          child: const StoryCreateHomePage(select: 0),
+        ),
     // 文案创作/助手
     "/storyAssistant": (BuildContext context) => ChangeNotifierProvider(
-      create: (context) => StroyCreateProvider(),
-      child: const StoryCreateHomePage(select: 1),
-    ),
+          create: (context) => StroyCreateProvider(),
+          child: const StoryCreateHomePage(select: 1),
+        ),
     // 使用攻略
     "/guide": (BuildContext context) => ChangeNotifierProvider(
-      create: (context) => VideoExtractionProvider(),
-      child: const GuidePage(),
-    ),
+          create: (context) => VideoExtractionProvider(),
+          child: const GuidePage(),
+        ),
     // 去水印
     "/removeWatermark": (BuildContext context) => ChangeNotifierProvider(
-      create: (context) => VideoEraseProvider(),
-      child: const VideoErasePage(),
-    ),
+          create: (context) => VideoEraseProvider(),
+          child: const VideoErasePage(),
+        ),
     // 去除字幕
     "/removeSubtitles": (BuildContext context) => ChangeNotifierProvider(
-      create: (context) => VideoEraseProvider(),
-      child: const VideoErasePage(),
-    ),
+          create: (context) => VideoEraseProvider(),
+          child: const VideoErasePage(),
+        ),
     // 违禁词
     "/wordDetection": (BuildContext context) => ChangeNotifierProvider(
-      create: (BuildContext context) => ForbiddenWordsProvider(),
-      child: const ForbiddenWordsDetectPage(),
-    ),
+          create: (BuildContext context) => ForbiddenWordsProvider(),
+          child: const ForbiddenWordsDetectPage(),
+        ),
     // 视频擦除
     "/videoErase": (BuildContext context) => ChangeNotifierProvider(
-      create: (context) => VideoEraseProvider(),
-      child: const VideoErasePage(),
-    ),
+          create: (context) => VideoEraseProvider(),
+          child: const VideoErasePage(),
+        ),
     // 文案提取
     "/copywritingExtraction": (BuildContext context) => ChangeNotifierProvider(
-      create: (context) => WordsExtractProvider(),
-      child: const WordsExtractionPage(),
-    ),
+          create: (context) => WordsExtractProvider(),
+          child: const WordsExtractionPage(),
+        ),
     // 智能去重
     "/videoDeduplication": (BuildContext context) => ChangeNotifierProvider(
-      create: (BuildContext context) => VideoDeduplicationProvider(),
-      child: const VideoDedupliactionPage(),
-    ),
+          create: (BuildContext context) => VideoDeduplicationProvider(),
+          child: const VideoDedupliactionPage(),
+        ),
     // 视频提取
     "/videoExtraction": (BuildContext context) => ChangeNotifierProvider(
-      create: (ctx) => VideoExtractionProvider(),
-      child: const VideoExtractionPage(),
-    ),
+          create: (ctx) => VideoExtractionProvider(),
+          child: const VideoExtractionPage(),
+        ),
     // 视频拆分/视频分割
     "/videoSplit": (BuildContext context) => ChangeNotifierProvider(
-      create: (ctx) => VideoExtractionProvider(),
-      child: const VideoSplitPage(),
-    ),
+          create: (ctx) => VideoExtractionProvider(),
+          child: const VideoSplitPage(),
+        ),
     // 视频混剪
     "/videoMix": (BuildContext context) =>
         ChangeNotifierProvider<ClippedProvider>(
@@ -278,7 +277,9 @@ class RouteUtils {
     "/ai_tweets": (BuildContext context) {
       return ChangeNotifierProvider(
         create: (context) => AiCartoonProvider(),
-        child: const AiCartoonPage(pagePath: "/ai_tweets"),
+        child: const AiCartoonPage(
+          pagePath: "/ai_tweets",
+        ),
       );
     },
     "/ai_draw": (BuildContext context) {
@@ -327,11 +328,14 @@ class RouteUtils {
     "/ai_oral_videos": (BuildContext context) {
       return MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (context) => AiOralVideosProvider()),
-          ChangeNotifierProvider.value(
-            value: ByAudioPlayer.sharedInstance.statusProvider,
+          ChangeNotifierProvider(
+            create: (context) => AiOralVideosProvider(),
           ),
-          ChangeNotifierProvider(create: (context) => AiOralDubbingProvider()),
+          ChangeNotifierProvider.value(
+              value: ByAudioPlayer.sharedInstance.statusProvider),
+          ChangeNotifierProvider(
+            create: (context) => AiOralDubbingProvider(),
+          ),
           ChangeNotifierProvider(
             create: (context) => AiOralDubbingAnchorProvider(),
           ),
@@ -390,7 +394,9 @@ class RouteUtils {
     "/tool_box_new": (BuildContext context) {
       return MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (context) => NewToolBoxProvider()),
+          ChangeNotifierProvider(
+            create: (context) => NewToolBoxProvider(),
+          ),
         ],
         child: const NewToolBoxPage(),
       );
@@ -410,8 +416,6 @@ class RouteUtils {
   };
 
   static gotoPage(BuildContext context, String name, {dynamic params}) {
-    if (MinorModeNavigationGuard.interceptIfNeeded()) return;
-
     LaunchProvider provider = context.read<LaunchProvider>();
     final bool showClipGuid = provider.shouldShowClipGuid();
     final bool showCreateGuid = provider.shouldShowCreateGuid();
@@ -429,26 +433,24 @@ class RouteUtils {
       ///爆文视频记录
       case '/explosive_video_works':
         ByNavRouterUtils.push(
-          context,
-          MultiProvider(
-            providers: [
-              ChangeNotifierProvider(
-                create: (context) => AiCartoonVideoManagementProvider(),
+            context,
+            MultiProvider(
+              providers: [
+                ChangeNotifierProvider(
+                    create: (context) => AiCartoonVideoManagementProvider()),
+              ],
+              child: AiCartoonVideoManagementPage(
+                type: name == '/novel_tweets_video_works'
+                    ? AiCartoonVideoManagementPageType.normal
+                    : AiCartoonVideoManagementPageType.clip,
+                source: name == '/explosive_video_works'
+                    ? EntranceSource.explosive
+                    : name == '/short_drama_video_works'
+                        ? EntranceSource.shortPlay
+                        : EntranceSource.normal,
               ),
-            ],
-            child: AiCartoonVideoManagementPage(
-              type: name == '/novel_tweets_video_works'
-                  ? AiCartoonVideoManagementPageType.normal
-                  : AiCartoonVideoManagementPageType.clip,
-              source: name == '/explosive_video_works'
-                  ? EntranceSource.explosive
-                  : name == '/short_drama_video_works'
-                  ? EntranceSource.shortPlay
-                  : EntranceSource.normal,
             ),
-          ),
-          name: name,
-        );
+            name: name);
         break;
 
       ///漫剧  ----3.10.35版本
@@ -541,24 +543,23 @@ class RouteUtils {
 
       ///数字人记录
       case '/digital_human_works':
-        final recordType =
-            name == '/anime_works' ||
+        final recordType = name == '/anime_works' ||
                 params == ManagementRecord.aiAnime ||
                 params == "anime_works"
             ? ManagementRecord.aiAnime
             : ManagementRecord.aiOral;
         ByNavRouterUtils.push(
-          context,
-          MultiProvider(
-            providers: [
-              ChangeNotifierProvider(
-                create: (context) => AiOralVideoManagementProvider(),
-              ),
-            ],
-            child: AiOralVideoManagementPage(recordType: recordType),
-          ),
-          name: name,
-        );
+            context,
+            MultiProvider(
+                providers: [
+                  ChangeNotifierProvider(
+                    create: (context) => AiOralVideoManagementProvider(),
+                  ),
+                ],
+                child: AiOralVideoManagementPage(
+                  recordType: recordType,
+                )),
+            name: name);
         break;
 
       ///智能绘图记录
@@ -576,29 +577,26 @@ class RouteUtils {
       ///动态视频记录
       case '/motion_video_works':
         ByNavRouterUtils.push(
-          context,
-          MultiProvider(
-            providers: [
-              ChangeNotifierProvider(
-                create: (context) => AiVideoManagementProvider(),
-              ),
-            ],
-            child: const AiVideoManagementPage(),
-          ),
-          name: name,
-        );
+            context,
+            MultiProvider(
+              providers: [
+                ChangeNotifierProvider(
+                    create: (context) => AiVideoManagementProvider()),
+              ],
+              child: const AiVideoManagementPage(),
+            ),
+            name: name);
         break;
 
       ///ai写歌记录
       case '/ai_music_works':
         ByNavRouterUtils.push(
-          context,
-          ChangeNotifierProvider(
-            create: (context) => AiSongTasksProvider(),
-            child: const AiSongTasksPage(),
-          ),
-          name: name,
-        );
+            context,
+            ChangeNotifierProvider(
+              create: (context) => AiSongTasksProvider(),
+              child: const AiSongTasksPage(),
+            ),
+            name: name);
         break;
 
       ///配音记录
@@ -611,8 +609,7 @@ class RouteUtils {
                 create: (context) => AiOralVideosProvider(),
               ),
               ChangeNotifierProvider.value(
-                value: ByAudioPlayer.sharedInstance.statusProvider,
-              ),
+                  value: ByAudioPlayer.sharedInstance.statusProvider),
             ],
             child: const AiOralMyDubbingListPage(showSelect: false),
           ),
@@ -639,42 +636,39 @@ class RouteUtils {
       ///一键提取视频记录
       case '/video_extraction_works':
         ByNavRouterUtils.push(
-          context,
-          ChangeNotifierProvider(
-            create: (ctx) => VideoExtractionProvider(),
-            child: const ExtractionRecentTasksPage(),
-          ),
-          name: name,
-        );
+            context,
+            ChangeNotifierProvider(
+              create: (ctx) => VideoExtractionProvider(),
+              child: const ExtractionRecentTasksPage(),
+            ),
+            name: name);
         break;
 
       ///文案提取记录
       case '/txt_extraction_works':
         ByNavRouterUtils.push(
-          context,
-          MultiProvider(
-            providers: [
-              ChangeNotifierProvider(
-                create: (context) => MineWordsManagementProvider(),
-              ),
-              ChangeNotifierProvider(create: (context) => AiWritingProvider()),
-              ChangeNotifierProvider(
-                create: (context) => WordsExtractProvider(),
-              ),
-            ],
-            child: const MineWordsManagementPage(),
-          ),
-          name: name,
-        );
+            context,
+            MultiProvider(
+              providers: [
+                ChangeNotifierProvider(
+                    create: (context) => MineWordsManagementProvider()),
+                ChangeNotifierProvider(
+                    create: (context) => AiWritingProvider()),
+                ChangeNotifierProvider(
+                    create: (context) => WordsExtractProvider()),
+              ],
+              child: const MineWordsManagementPage(),
+            ),
+            name: name);
         break;
 
       /// 充值
       case "/topup":
         context.read<LaunchProvider>().gotoPay(
-          context,
-          closePay: true,
-          replace: false,
-        );
+              context,
+              closePay: true,
+              replace: false,
+            );
         break;
 
       /// 爆款复刻
@@ -683,7 +677,9 @@ class RouteUtils {
           context,
           MultiProvider(
             providers: [
-              ChangeNotifierProvider(create: (context) => AiClipProvider()),
+              ChangeNotifierProvider(
+                create: (context) => AiClipProvider(),
+              ),
               ChangeNotifierProvider(
                 create: (BuildContext context) => AiMaterialProvider(),
               ),
@@ -745,14 +741,13 @@ class RouteUtils {
               byDebugPrint(data);
               final bean = AiVideoSquareModel.fromJson(data["data"]);
               ByNavRouterUtils.push(
-                context,
-                AiVideosSameCasePage(
-                  caseBean: bean,
-                  preview: false,
-                  prePagePath: "/ai_text_to_video",
-                ),
-                name: "/ai_text_to_video",
-              );
+                  context,
+                  AiVideosSameCasePage(
+                    caseBean: bean,
+                    preview: false,
+                    prePagePath: "/ai_text_to_video",
+                  ),
+                  name: "/ai_text_to_video");
             },
             fail: (code, msg) {
               // BotToast.showText(text: msg);
@@ -776,14 +771,13 @@ class RouteUtils {
               byDebugPrint(data);
               final bean = AiVideoSquareModel.fromJson(data["data"]);
               ByNavRouterUtils.push(
-                context,
-                AiVideosSameCasePage(
-                  caseBean: bean,
-                  preview: false,
-                  prePagePath: "/ai_image_to_video",
-                ),
-                name: "/ai_image_to_video",
-              );
+                  context,
+                  AiVideosSameCasePage(
+                    caseBean: bean,
+                    preview: false,
+                    prePagePath: "/ai_image_to_video",
+                  ),
+                  name: "/ai_image_to_video");
             },
             fail: (code, msg) {
               // BotToast.showText(text: msg);
@@ -805,14 +799,13 @@ class RouteUtils {
               byDebugPrint(data);
               final bean = AiVideoSquareModel.fromJson(data["data"]);
               ByNavRouterUtils.push(
-                context,
-                AiVideosSameCasePage(
-                  caseBean: bean,
-                  preview: false,
-                  prePagePath: "/ai_text_to_video_v2",
-                ),
-                name: "/ai_text_to_video_v2",
-              );
+                  context,
+                  AiVideosSameCasePage(
+                    caseBean: bean,
+                    preview: false,
+                    prePagePath: "/ai_text_to_video_v2",
+                  ),
+                  name: "/ai_text_to_video_v2");
             },
             fail: (code, msg) {
               // BotToast.showText(text: msg);
@@ -835,14 +828,13 @@ class RouteUtils {
               byDebugPrint(data);
               final bean = AiVideoSquareModel.fromJson(data["data"]);
               ByNavRouterUtils.push(
-                context,
-                AiVideosSameCasePage(
-                  caseBean: bean,
-                  preview: false,
-                  prePagePath: "/ai_image_to_video_v2",
-                ),
-                name: "/ai_image_to_video_v2",
-              );
+                  context,
+                  AiVideosSameCasePage(
+                    caseBean: bean,
+                    preview: false,
+                    prePagePath: "/ai_image_to_video_v2",
+                  ),
+                  name: "/ai_image_to_video_v2");
             },
             fail: (code, msg) {
               // BotToast.showText(text: msg);
@@ -865,14 +857,13 @@ class RouteUtils {
               byDebugPrint(data);
               final bean = AiVideoSquareModel.fromJson(data["data"]);
               ByNavRouterUtils.push(
-                context,
-                AiVideosSameCasePage(
-                  caseBean: bean,
-                  preview: false,
-                  prePagePath: "/ai_embrace_video",
-                ),
-                name: "/ai_embrace_video",
-              );
+                  context,
+                  AiVideosSameCasePage(
+                    caseBean: bean,
+                    preview: false,
+                    prePagePath: "/ai_embrace_video",
+                  ),
+                  name: "/ai_embrace_video");
             },
             fail: (code, msg) {
               // BotToast.showText(text: msg);
@@ -899,39 +890,38 @@ class RouteUtils {
               byDebugPrint(data);
               late AiVideoSquareModel bean;
               bean = AiVideoSquareModel(
-                userId: json["active_user_id"],
-                type: $enumDecode(_$AiVideoGenerationTypeEnumMap, json['type']),
-                userName: json["active_user_name"],
-                prompt: json["prompt"],
-                negativePrompt: "",
-                useTime: json["use_time"].toString(),
-                withdrawMoney: json["withdraw_money"],
-                categoryIds: "",
-                labels: [],
-                multiImage: [],
-                cfgScale: json["cfgScale"] ?? 0,
-                mode: json["mode"] ?? "",
-                aspectRatio: json["aspectRatio"] ?? "",
-                videoUrl: json["video_url"] ?? "",
-                coverUrl: json["cover_url"] ?? "",
-                shareVideoUrl: json["share_url"] ?? "",
-                shareCoverUrl: json["share_cover_url"] ?? "",
-                withdrawMoneyTip: json["withdraw_money_tip"] ?? "",
-                activeUserName: json["active_user_name"] ?? "",
-                activeUserAvatar: json["active_user_avatar"] ?? "",
-                activeUserCreateDays: json["active_user_create_days"] ?? 0,
-              );
+                  userId: json["active_user_id"],
+                  type:
+                      $enumDecode(_$AiVideoGenerationTypeEnumMap, json['type']),
+                  userName: json["active_user_name"],
+                  prompt: json["prompt"],
+                  negativePrompt: "",
+                  useTime: json["use_time"].toString(),
+                  withdrawMoney: json["withdraw_money"],
+                  categoryIds: "",
+                  labels: [],
+                  multiImage: [],
+                  cfgScale: json["cfgScale"] ?? 0,
+                  mode: json["mode"] ?? "",
+                  aspectRatio: json["aspectRatio"] ?? "",
+                  videoUrl: json["video_url"] ?? "",
+                  coverUrl: json["cover_url"] ?? "",
+                  shareVideoUrl: json["share_url"] ?? "",
+                  shareCoverUrl: json["share_cover_url"] ?? "",
+                  withdrawMoneyTip: json["withdraw_money_tip"] ?? "",
+                  activeUserName: json["active_user_name"] ?? "",
+                  activeUserAvatar: json["active_user_avatar"] ?? "",
+                  activeUserCreateDays: json["active_user_create_days"] ?? 0);
               log("获取到的数据2=====> $data");
               ByNavRouterUtils.push(
-                context,
-                AiVideosSameCasePage(
-                  caseBean: bean,
-                  preview: false,
-                  type: "ai_tweets",
-                  prePagePath: "/ai_tweets",
-                ),
-                name: "/ai_tweets",
-              );
+                  context,
+                  AiVideosSameCasePage(
+                    caseBean: bean,
+                    preview: false,
+                    type: "ai_tweets",
+                    prePagePath: "/ai_tweets",
+                  ),
+                  name: "/ai_tweets");
             },
             fail: (code, msg) {
               // BotToast.showText(text: msg);
@@ -943,7 +933,9 @@ class RouteUtils {
             context,
             ChangeNotifierProvider(
               create: (context) => provider,
-              child: const AiCartoonPage(pagePath: "/ai_tweets"),
+              child: const AiCartoonPage(
+                pagePath: "/ai_tweets",
+              ),
             ),
             name: "/ai_tweets",
           );
@@ -966,18 +958,18 @@ class RouteUtils {
         final provider = AiDrawProvider();
         if (params != null && params != "") {
           ByNavRouterUtils.push(
-            context,
-            MultiProvider(
-              providers: [
-                ChangeNotifierProvider(create: (context) => AiDrawProvider()),
-              ],
-              child: AiDrawWorkDetailsPage(
-                workId: int.parse(params),
-                type: "ai_draw",
-              ),
-            ),
-            name: "/ai_draw",
-          );
+              context,
+              MultiProvider(
+                  providers: [
+                    ChangeNotifierProvider(
+                      create: (context) => AiDrawProvider(),
+                    )
+                  ],
+                  child: AiDrawWorkDetailsPage(
+                    workId: int.parse(params),
+                    type: "ai_draw",
+                  )),
+              name: "/ai_draw");
 
           // ByNavRouterUtils.push(
           //   context,
@@ -1031,13 +1023,14 @@ class RouteUtils {
       /// AI音乐写歌的页面
       case RoutePageConst.aiSongPageName:
         ByNavRouterUtils.push(
-          context,
-          ChangeNotifierProvider(
-            create: (context) => AiSongProvider(),
-            child: AiSongPage(aiSongTaskDetailBean: params),
-          ),
-          name: RoutePageConst.aiSongPageName,
-        );
+            context,
+            ChangeNotifierProvider(
+              create: (context) => AiSongProvider(),
+              child: AiSongPage(
+                aiSongTaskDetailBean: params,
+              ),
+            ),
+            name: RoutePageConst.aiSongPageName);
         break;
       case "/toolBox":
         Get.find<MainController>().backToMain();
@@ -1068,33 +1061,26 @@ class RouteUtils {
         if (params != null && params.isNotEmpty) {
           HomePageProvider provider = context.read<HomePageProvider>();
 
-          provider.loadCreators(
-            call: () {
-              var data = provider.assistantItemBeans.where(
-                (e) => e.id == params,
+          provider.loadCreators(call: () {
+            var data = provider.assistantItemBeans.where((e) => e.id == params);
+            if (data.isNotEmpty) {
+              CreatorBean bean = data.first;
+              ByNavRouterUtils.push(
+                context,
+                ChangeNotifierProvider(
+                  create: (context) => StroyCreateProvider(),
+                  child: AssistantInfoPage(bean: bean),
+                ),
               );
-              if (data.isNotEmpty) {
-                CreatorBean bean = data.first;
-                ByNavRouterUtils.push(
-                  context,
-                  ChangeNotifierProvider(
-                    create: (context) => StroyCreateProvider(),
-                    child: AssistantInfoPage(bean: bean),
-                  ),
-                );
-              }
-            },
-          );
+            }
+          });
           return;
         }
 
-        ByNavRouterUtils.pushNamed(
-          context,
-          name,
-          arguments: params != null && params.isNotEmpty
-              ? StoryArgumentBean(typeId: params)
-              : null,
-        );
+        ByNavRouterUtils.pushNamed(context, name,
+            arguments: params != null && params.isNotEmpty
+                ? StoryArgumentBean(typeId: params)
+                : null);
         break;
 
       /// 去除字幕
@@ -1136,11 +1122,8 @@ class RouteUtils {
       case "/videoMix":
         showClipGuid == false
             ? ByNavRouterUtils.pushNamed(context, name)
-            : ByNavRouterUtils.push(
-                context,
-                const CloudMaterialsGuidPage(),
-                name: name,
-              );
+            : ByNavRouterUtils.push(context, const CloudMaterialsGuidPage(),
+                name: name);
         if (showClipGuid) {
           provider.checkClipGuid();
         }
@@ -1193,13 +1176,12 @@ class RouteUtils {
       /// 视频提取
       case "/video_extraction":
         ByNavRouterUtils.push(
-          context,
-          ChangeNotifierProvider(
-            create: (ctx) => VideoExtractionProvider(),
-            child: const VideoExtractionPage(),
-          ),
-          name: name,
-        );
+            context,
+            ChangeNotifierProvider(
+              create: (ctx) => VideoExtractionProvider(),
+              child: const VideoExtractionPage(),
+            ),
+            name: name);
         break;
 
       /// 违禁词检测
@@ -1232,13 +1214,11 @@ class RouteUtils {
       /// 文案提取
       case "/txt_extraction":
         ByNavRouterUtils.push(
-          context,
-          ChangeNotifierProvider(
-            create: (context) => WordsExtractProvider(),
-            child: const WordsExtractionPage(),
-          ),
-          name: name,
-        );
+            context,
+            ChangeNotifierProvider(
+                create: (context) => WordsExtractProvider(),
+                child: const WordsExtractionPage()),
+            name: name);
         break;
 
       /// 短剧二创
@@ -1284,13 +1264,12 @@ class RouteUtils {
       /// 一键提取
       case "/one-clickExtraction":
         ByNavRouterUtils.push(
-          context,
-          ChangeNotifierProvider(
-            create: (ctx) => VideoExtractionProvider(),
-            child: const VideoExtractionPage(),
-          ),
-          name: name,
-        );
+            context,
+            ChangeNotifierProvider(
+              create: (ctx) => VideoExtractionProvider(),
+              child: const VideoExtractionPage(),
+            ),
+            name: name);
         break;
 
       /// AI智能混剪
@@ -1309,39 +1288,38 @@ class RouteUtils {
               byDebugPrint(data);
               late AiVideoSquareModel bean;
               bean = AiVideoSquareModel(
-                userId: json["active_user_id"],
-                type: $enumDecode(_$AiVideoGenerationTypeEnumMap, json['type']),
-                userName: json["active_user_name"],
-                prompt: json["prompt"],
-                negativePrompt: "",
-                useTime: json["use_time"].toString(),
-                withdrawMoney: json["withdraw_money"],
-                categoryIds: "",
-                labels: [],
-                multiImage: [],
-                cfgScale: json["cfgScale"] ?? 0,
-                mode: json["mode"] ?? "",
-                aspectRatio: json["aspectRatio"] ?? "",
-                videoUrl: json["video_url"] ?? "",
-                coverUrl: json["cover_url"] ?? "",
-                shareVideoUrl: json["share_url"] ?? "",
-                shareCoverUrl: json["share_cover_url"] ?? "",
-                withdrawMoneyTip: json["withdraw_money_tip"] ?? "",
-                activeUserName: json["active_user_name"] ?? "",
-                activeUserAvatar: json["active_user_avatar"] ?? "",
-                activeUserCreateDays: json["active_user_create_days"] ?? 0,
-              );
+                  userId: json["active_user_id"],
+                  type:
+                      $enumDecode(_$AiVideoGenerationTypeEnumMap, json['type']),
+                  userName: json["active_user_name"],
+                  prompt: json["prompt"],
+                  negativePrompt: "",
+                  useTime: json["use_time"].toString(),
+                  withdrawMoney: json["withdraw_money"],
+                  categoryIds: "",
+                  labels: [],
+                  multiImage: [],
+                  cfgScale: json["cfgScale"] ?? 0,
+                  mode: json["mode"] ?? "",
+                  aspectRatio: json["aspectRatio"] ?? "",
+                  videoUrl: json["video_url"] ?? "",
+                  coverUrl: json["cover_url"] ?? "",
+                  shareVideoUrl: json["share_url"] ?? "",
+                  shareCoverUrl: json["share_cover_url"] ?? "",
+                  withdrawMoneyTip: json["withdraw_money_tip"] ?? "",
+                  activeUserName: json["active_user_name"] ?? "",
+                  activeUserAvatar: json["active_user_avatar"] ?? "",
+                  activeUserCreateDays: json["active_user_create_days"] ?? 0);
               log("获取到的数据2=====> $data");
               ByNavRouterUtils.push(
-                context,
-                AiVideosSameCasePage(
-                  caseBean: bean,
-                  preview: false,
-                  type: "ai_clip",
-                  prePagePath: "/ai_clip",
-                ),
-                name: "/ai_clip",
-              );
+                  context,
+                  AiVideosSameCasePage(
+                    caseBean: bean,
+                    preview: false,
+                    type: "ai_clip",
+                    prePagePath: "/ai_clip",
+                  ),
+                  name: "/ai_clip");
             },
             fail: (code, msg) {
               // BotToast.showText(text: msg);
@@ -1354,21 +1332,22 @@ class RouteUtils {
             ChangeNotifierProvider(
               create: (context) => StroyCreateProvider(),
               child: MultiProvider(
-                providers: [
-                  ChangeNotifierProvider(create: (context) => providerClip),
-                  ChangeNotifierProvider(
-                    create: (BuildContext context) => AiMaterialProvider(),
-                  ),
-                  ChangeNotifierProvider(
-                    create: (BuildContext context) => AiClipOpeningProvider(),
-                  ),
-                  ChangeNotifierProvider(
-                    create: (BuildContext context) =>
-                        AiClipMineMaterialsProvider(),
-                  ),
-                ],
-                child: const AiClipPage(pagePath: "/ai_clip"),
-              ),
+                  providers: [
+                    ChangeNotifierProvider(create: (context) => providerClip),
+                    ChangeNotifierProvider(
+                      create: (BuildContext context) => AiMaterialProvider(),
+                    ),
+                    ChangeNotifierProvider(
+                      create: (BuildContext context) => AiClipOpeningProvider(),
+                    ),
+                    ChangeNotifierProvider(
+                      create: (BuildContext context) =>
+                          AiClipMineMaterialsProvider(),
+                    ),
+                  ],
+                  child: const AiClipPage(
+                    pagePath: "/ai_clip",
+                  )),
             ),
             name: name,
           );
@@ -1400,13 +1379,10 @@ class RouteUtils {
           );
           return;
         }
-        ByNavRouterUtils.pushNamed(
-          context,
-          "/storyAssistant",
-          arguments: params != null && params.isNotEmpty
-              ? StoryArgumentBean(typeId: params)
-              : null,
-        );
+        ByNavRouterUtils.pushNamed(context, "/storyAssistant",
+            arguments: params != null && params.isNotEmpty
+                ? StoryArgumentBean(typeId: params)
+                : null);
         break;
 
       /// 同款广场
@@ -1522,10 +1498,8 @@ class RouteUtils {
       case "/create_fold_story":
         if (params != null && params != "") {
           final themeId = params;
-          Get.toNamed(
-            Routes.createFolkStoryPage,
-            arguments: {'theme_id': themeId},
-          );
+          Get.toNamed(Routes.createFolkStoryPage,
+              arguments: {'theme_id': themeId});
         }
         break;
 
@@ -1562,24 +1536,20 @@ class RouteUtils {
       case '/storyCreationDetail':
         if (params != null && params.isNotEmpty) {
           HomePageProvider provider = HomePageProvider();
-          provider.loadCreators(
-            call: () {
-              var data = provider.assistantItemBeans.where(
-                (e) => e.id == params,
+          provider.loadCreators(call: () {
+            var data = provider.assistantItemBeans.where((e) => e.id == params);
+            if (data.isNotEmpty) {
+              CreatorBean bean = data.first;
+              ByNavRouterUtils.push(
+                context,
+                ChangeNotifierProvider(
+                  create: (context) => StroyCreateProvider(),
+                  child: AssistantInfoPage(bean: bean),
+                ),
+                name: "/storyCreationDetail",
               );
-              if (data.isNotEmpty) {
-                CreatorBean bean = data.first;
-                ByNavRouterUtils.push(
-                  context,
-                  ChangeNotifierProvider(
-                    create: (context) => StroyCreateProvider(),
-                    child: AssistantInfoPage(bean: bean),
-                  ),
-                  name: "/storyCreationDetail",
-                );
-              }
-            },
-          );
+            }
+          });
           return;
         } else {
           final provider = NovelCreateProvider();
@@ -1616,61 +1586,62 @@ class RouteUtils {
               byDebugPrint(data);
               late AiVideoSquareModel bean;
               bean = AiVideoSquareModel(
-                userId: json["active_user_id"],
-                type: $enumDecode(_$AiVideoGenerationTypeEnumMap, json['type']),
-                userName: json["active_user_name"],
-                prompt: json["prompt"],
-                negativePrompt: "",
-                useTime: json["use_time"].toString(),
-                withdrawMoney: json["withdraw_money"],
-                categoryIds: "",
-                labels: [],
-                multiImage: [],
-                cfgScale: json["cfgScale"] ?? 0,
-                mode: json["mode"] ?? "",
-                aspectRatio: json["aspectRatio"] ?? "",
-                videoUrl: json["video_url"] ?? "",
-                coverUrl: json["cover_url"] ?? "",
-                shareVideoUrl: json["share_url"] ?? "",
-                shareCoverUrl: json["share_cover_url"] ?? "",
-                withdrawMoneyTip: json["withdraw_money_tip"] ?? "",
-                activeUserName: json["active_user_name"] ?? "",
-                activeUserAvatar: json["active_user_avatar"] ?? "",
-                activeUserCreateDays: json["active_user_create_days"] ?? 0,
-              );
+                  userId: json["active_user_id"],
+                  type:
+                      $enumDecode(_$AiVideoGenerationTypeEnumMap, json['type']),
+                  userName: json["active_user_name"],
+                  prompt: json["prompt"],
+                  negativePrompt: "",
+                  useTime: json["use_time"].toString(),
+                  withdrawMoney: json["withdraw_money"],
+                  categoryIds: "",
+                  labels: [],
+                  multiImage: [],
+                  cfgScale: json["cfgScale"] ?? 0,
+                  mode: json["mode"] ?? "",
+                  aspectRatio: json["aspectRatio"] ?? "",
+                  videoUrl: json["video_url"] ?? "",
+                  coverUrl: json["cover_url"] ?? "",
+                  shareVideoUrl: json["share_url"] ?? "",
+                  shareCoverUrl: json["share_cover_url"] ?? "",
+                  withdrawMoneyTip: json["withdraw_money_tip"] ?? "",
+                  activeUserName: json["active_user_name"] ?? "",
+                  activeUserAvatar: json["active_user_avatar"] ?? "",
+                  activeUserCreateDays: json["active_user_create_days"] ?? 0);
               log("获取到的数据2=====> $data");
 
               if (jumpParam != "") {
                 ByNavRouterUtils.push(
-                  context,
-                  AiVideosSameCasePage(
-                    caseBean: bean,
-                    preview: false,
-                    type: "short_play_create_detail",
-                    jumpParam: jumpParam,
-                    prePagePath: "/short_play_create_detail",
-                  ),
-                  name: "/short_play_create_detail",
-                );
+                    context,
+                    AiVideosSameCasePage(
+                      caseBean: bean,
+                      preview: false,
+                      type: "short_play_create_detail",
+                      jumpParam: jumpParam,
+                      prePagePath: "/short_play_create_detail",
+                    ),
+                    name: "/short_play_create_detail");
               } else {
                 HttpUtils.get(
                   APIs.getMaterialInfo,
-                  {"id": int.parse(params), "detailNum": 1},
+                  {
+                    "id": int.parse(params),
+                    "detailNum": 1,
+                  },
                   success: (data) {
                     final CloudVideoListBean shortPlayBean =
                         CloudVideoListBean.fromJson(data["data"]);
                     ByNavRouterUtils.push(
-                      context,
-                      ChangeNotifierProvider(
-                        create: (BuildContext context) =>
-                            ShortShowDetailsProvider(),
-                        child: ShortPlayListPage(
-                          videoListBean: shortPlayBean,
-                          fromPrompt: true,
+                        context,
+                        ChangeNotifierProvider(
+                          create: (BuildContext context) =>
+                              ShortShowDetailsProvider(),
+                          child: ShortPlayListPage(
+                            videoListBean: shortPlayBean,
+                            fromPrompt: true,
+                          ),
                         ),
-                      ),
-                      name: "/short_play_create_detail",
-                    );
+                        name: "/short_play_create_detail");
                   },
                   fail: (code, msg) {
                     // BotToast.showText(text: msg);
@@ -1686,21 +1657,24 @@ class RouteUtils {
         } else {
           HttpUtils.get(
             APIs.getMaterialInfo,
-            {"id": int.parse(params), "detailNum": 1},
+            {
+              "id": int.parse(params),
+              "detailNum": 1,
+            },
             success: (data) {
               final CloudVideoListBean shortPlayBean =
                   CloudVideoListBean.fromJson(data["data"]);
               ByNavRouterUtils.push(
-                context,
-                ChangeNotifierProvider(
-                  create: (BuildContext context) => ShortShowDetailsProvider(),
-                  child: ShortPlayListPage(
-                    videoListBean: shortPlayBean,
-                    fromPrompt: true,
+                  context,
+                  ChangeNotifierProvider(
+                    create: (BuildContext context) =>
+                        ShortShowDetailsProvider(),
+                    child: ShortPlayListPage(
+                      videoListBean: shortPlayBean,
+                      fromPrompt: true,
+                    ),
                   ),
-                ),
-                name: "/short_play_create_detail",
-              );
+                  name: "/short_play_create_detail");
             },
             fail: (code, msg) {
               BotToast.showText(text: msg);
@@ -1713,16 +1687,6 @@ class RouteUtils {
       case "/short_drama_guide":
         Get.toNamed(Routes.shortDramaPage);
         break;
-
-      ///未成年人页面
-      case "/minor_page":
-        Get.toNamed(Routes.minorPage);
-        break;
-
-      ///未成年创建页面
-      case "/minor_create_page":
-        Get.toNamed(Routes.minorCreatePage);
-        break;
     }
   }
 
@@ -1730,7 +1694,10 @@ class RouteUtils {
     try {
       ByNavRouterUtils.push(
         context,
-        VideoClipHyberPrevicew(path, title: "完成去重"),
+        VideoClipHyberPrevicew(
+          path,
+          title: "完成去重",
+        ),
         name: "/video_export_preview",
       );
     } catch (e) {

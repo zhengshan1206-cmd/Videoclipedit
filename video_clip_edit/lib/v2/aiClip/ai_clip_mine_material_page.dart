@@ -1,5 +1,6 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:provider/provider.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:easy_refresh/easy_refresh.dart';
@@ -229,26 +230,31 @@ class _AiClipMineMaterialPageState extends State<AiClipMineMaterialPage>
       context,
       type: RequestType.video,
       maxCount: 1,
-      onSelectedCallback: (asstes) async {
+      onSelectedCallback: (asstes, {List<String>? urls}) async {
         final provider = context.read<AiMaterialProvider>();
-        if (asstes.isEmpty) return;
-        AssetEntity asset = asstes.first;
-        byDebugPrint(asstes.length);
-        final file = await asset.file;
-
+        File? file;
+        AssetEntity? asset;
+        if (urls != null && urls.isNotEmpty) {
+          file = File(urls.first);
+          if (!file.existsSync()) {
+            BotToast.showText(text: "选择文件时出错，请重新选择");
+            return;
+          }
+        } else if (asstes.isNotEmpty) {
+          asset = asstes.first;
+          file = await asset.file;
+        }
         if (file == null) {
-          // 选择的文件出错，请重新选择
           BotToast.showText(text: "选择文件时出错，请重新选择");
           return;
         }
         if (mounted) {
           provider.uploadMaterial(
-              asset: asstes.first, file: file, controller: _controller);
+              asset: asset, file: file, controller: _controller);
         }
       },
     );
     },);
-    
   }
 
   void _loadMaterials(

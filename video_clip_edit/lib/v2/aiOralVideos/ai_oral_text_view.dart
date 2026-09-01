@@ -106,21 +106,17 @@ class _AiCommonInputViewInnerState<T extends AiInputMixin>
     }
   }
 
-  /// 更新字数
+  /// 更新字数，并同步到 provider（避免键盘未收起时点击生成视频读到的是旧值）
   _textChanged() {
     final wordsCount = controller.text.length;
     if (wordsCount > widget.maxWords) {
       controller.text = controller.text.substring(0, widget.maxWords);
     }
+    context.read<T>().updateInputValue(controller.text);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<WordsCounter>().changeWordsCount(controller.text.length);
     });
-
-    // if(mounted){
-    //   setState(() {
-    //   });
-    // }
   }
 
   @override
@@ -167,7 +163,10 @@ class _AiCommonInputViewInnerState<T extends AiInputMixin>
   Positioned buildTextArea(BuildContext context) {
     final desc = context.select<T, String>((p) => p.inputValue);
     byDebugPrint("---", tag: "buildTextArea:");
-    controller.text = desc;
+    // 仅当 provider 与 controller 不一致时同步（如清空、粘贴、AI 写入），避免每次 rebuild 覆盖导致光标跳到末尾
+    if (controller.text != desc) {
+      controller.text = desc;
+    }
     return Positioned.fill(
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 0.h),

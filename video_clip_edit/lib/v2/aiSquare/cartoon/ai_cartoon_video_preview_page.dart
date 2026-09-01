@@ -580,9 +580,9 @@ class _AiCartoonVideoPreviewPageState extends State<AiCartoonVideoPreviewPage>
                             if (materialPlatformId == 2) {
                               ///抖音
                               String url = widget.videoBean.promotionUrl;
-                              try {
-                                await launchUrl(Uri.parse(url));
-                              } catch (e) {
+                              if (await canLaunchUrl(Uri.parse(url))) {
+                                launchUrl(Uri.parse(url));
+                              } else {
                                 showDialog(
                                   barrierDismissible: true,
                                   context: context,
@@ -603,11 +603,11 @@ class _AiCartoonVideoPreviewPageState extends State<AiCartoonVideoPreviewPage>
                               }
                             } else if (materialPlatformId == 3) {
                               ///快手
-                              String url = widget.videoBean.promotionUrl;
+                              String url = '${widget.videoBean.promotionUrl}';
                               // String url = "snssdk1128://";
-                              try {
-                                await launchUrl(Uri.parse(url));
-                              } catch (e) {
+                              if (await canLaunchUrl(Uri.parse(url))) {
+                                launchUrl(Uri.parse(url));
+                              } else {
                                 showDialog(
                                   barrierDismissible: true,
                                   context: context,

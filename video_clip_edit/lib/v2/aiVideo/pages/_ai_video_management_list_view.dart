@@ -15,10 +15,48 @@ import 'package:video_clip_edit/utils/comon/by_navigator_util.dart';
 import 'package:video_clip_edit/v2/aiVideo/pages/new_ai_video_page.dart';
 import 'package:bot_toast/bot_toast.dart';
 
+import 'dart:io';
+
 import '../models/ai_video_generation_model.dart';
 import '../provider/ai_video_management_provider.dart';
 import '../provider/ai_video_provider.dart';
 import 'ai_video_preview_page.dart';
+
+/// 列表封面：服务端 cover_url 可能为空，优先 cover_url，否则用 image
+String? _coverDisplayUrl(AiVideoGenerationTaskModel bean) {
+  if (bean.coverUrl != null && bean.coverUrl!.trim().isNotEmpty) {
+    return bean.coverUrl;
+  }
+  if (bean.image != null && bean.image!.trim().isNotEmpty) {
+    return bean.image;
+  }
+  return null;
+}
+
+bool _isNetworkUrl(String url) {
+  final u = url.trim().toLowerCase();
+  return u.startsWith('http://') || u.startsWith('https://');
+}
+
+Widget _buildCoverWidget(AiVideoGenerationTaskModel bean) {
+  final url = _coverDisplayUrl(bean);
+  if (url == null || url.isEmpty) {
+    return Image.asset("assets/ai/ai_cartoon_video_bg.png", fit: BoxFit.cover);
+  }
+  if (_isNetworkUrl(url)) {
+    return CachedNetworkImage(
+      imageUrl: url,
+      fit: BoxFit.cover,
+      errorWidget: (_, __, ___) =>
+          Image.asset("assets/ai/ai_cartoon_video_bg.png", fit: BoxFit.cover),
+    );
+  }
+  final file = File(url);
+  if (file.existsSync()) {
+    return Image.file(file, fit: BoxFit.cover);
+  }
+  return Image.asset("assets/ai/ai_cartoon_video_bg.png", fit: BoxFit.cover);
+}
 
 class AiVideoManagementSliverListView extends StatefulWidget {
   const AiVideoManagementSliverListView({
@@ -171,12 +209,9 @@ class AiVideoManagementListViewCell extends StatelessWidget {
                 "assets/ai/ai_cartoon_video_bg_faild.png",
                 fit: BoxFit.cover,
               )),
-            if (status == AiVideoStatus.done && bean.image != null)
+            if (status == AiVideoStatus.done)
               Positioned.fill(
-                  child: CachedNetworkImage(
-                imageUrl: bean.coverUrl!,
-                fit: BoxFit.cover,
-              )),
+                  child: _buildCoverWidget(bean)),
             if (status == AiVideoStatus.generating ||
                 status == AiVideoStatus.taskCreated ||
                 status == AiVideoStatus.taskSubmitted)

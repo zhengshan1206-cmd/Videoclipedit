@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_refresh/easy_refresh.dart';
-import 'package:video_clip_edit/v2/minorMode/controllers/minor_mode_controller.dart';
 import 'package:video_clip_edit/v2/toolBox/widgets/tool_box_page_view.dart';
 import 'package:video_clip_edit/v2/toolBox/widgets/tool_box_gride_view.dart';
 import 'package:video_clip_edit/v2/aiVideo/provider/ai_square_provider.dart';
@@ -26,31 +24,24 @@ class HomePageView extends StatelessWidget {
       (val) => val.categoryBeans,
     );
 
-    return Obx(() {
-      final isMinorMode = MinorModeController.to.isMinorModeEnabled;
-      final itemCount = isMinorMode ? 1 : categoryBeans.length;
-
-      return PageView.builder(
-        controller: pageController,
-        onPageChanged: isMinorMode ? null : onPageChanged,
-        itemCount: itemCount,
-        scrollDirection: Axis.horizontal,
-        physics: isMinorMode
-            ? const NeverScrollableScrollPhysics()
-            : const PageScrollPhysics(),
-        itemBuilder: (context, index) {
-          final bean = categoryBeans[index];
-          return ChangeNotifierProvider(
-            create: (BuildContext context) => HomeGrideViewProvider(),
-            child: HomePageSingleGrideView(
-              bean: bean,
-              index: index,
-              type: ToolBoxPageViewType.fromRawValue(bean.style),
-            ),
-          );
-        },
-      );
-    });
+    return PageView.builder(
+      controller: pageController,
+      onPageChanged: onPageChanged,
+      itemCount: categoryBeans.length,
+      scrollDirection: Axis.horizontal,
+      physics: const PageScrollPhysics(),
+      itemBuilder: (context, index) {
+        final bean = categoryBeans[index];
+        return ChangeNotifierProvider(
+          create: (BuildContext context) => HomeGrideViewProvider(),
+          child: HomePageSingleGrideView(
+            bean: bean,
+            index: index,
+            type: ToolBoxPageViewType.fromRawValue(bean.style),
+          ),
+        );
+      },
+    );
   }
 }
 

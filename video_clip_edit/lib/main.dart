@@ -32,7 +32,7 @@ void main() async {
       BuildConfig.instantiate(
         envType: Environment.PRODUCTION,
         envConfig: EnvironmentConfig(),
-        channelType: ChannelType.vivo,
+        channelType: ChannelType.harmony,
       );
 
       WidgetsFlutterBinding.ensureInitialized();

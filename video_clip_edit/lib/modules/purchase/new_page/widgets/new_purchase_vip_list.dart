@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -19,10 +21,14 @@ class NewVipListViewNew extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.read<PurchaseProvider>();
-    final itemH = 120.h;
+    final shortest = MediaQuery.sizeOf(context).shortestSide;
+    // 阔折屏仍保留略高下限，避免底栏「≈x元/天」被裁切；不再用过大 cellH + 中部 Spacer 撑开留白
+    final itemH = math.max(112.h, shortest * 0.28);
+    final minCellH = 142.h;
+    final cellH = math.max(itemH * 1.1, minCellH);
     final marginHor = 12.w;
     const itemCount = 3;
-    final contentW = context.byScreenWidth - marginHor * (itemCount - 1);
+    final contentW = context.byScreenWidth - marginHor * 2;
     final itemW = (contentW - marginHor * (itemCount - 1)) / itemCount;
     return Column(
       children: [
@@ -44,7 +50,7 @@ class NewVipListViewNew extends StatelessWidget {
                             crossAxisCount: 3,
                             mainAxisSpacing: marginHor,
                             crossAxisSpacing: marginHor,
-                            childAspectRatio: itemW / (itemH * 1.08),
+                            childAspectRatio: itemW / cellH,
                           ),
                           itemBuilder: (context, index) {
                             return _VipTypeViewNew(
@@ -151,15 +157,23 @@ class _VipTypeViewNew extends StatelessWidget {
                     : (selected ? contentColor : const Color(0xff191c22)),
               ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SizedBox(height: 13.h),
-                  ByWidgetsUtil.commonText(
-                      fontSize: 14.sp,
-                      text: vipTypeBean.title,
-                      fontWeight: FontWeight.bold,
-                      textColor: ByColorUtil.WhiteColor),
-                  SizedBox(height: 8.h),
-                  isBlue
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(height: 13.h),
+                          ByWidgetsUtil.commonText(
+                              fontSize: 14.sp,
+                              text: vipTypeBean.title,
+                              fontWeight: FontWeight.bold,
+                              textColor: ByColorUtil.WhiteColor),
+                          SizedBox(height: 8.h),
+                          isBlue
                       ? ShaderMask(
                           blendMode: BlendMode.srcIn,
                           shaderCallback: (bounds) => const LinearGradient(
@@ -318,7 +332,11 @@ class _VipTypeViewNew extends StatelessWidget {
                     textColor: ByColorUtil.WhiteColor.withOpacity(0.3),
                     decorationColor: ByColorUtil.WhiteColor.withOpacity(0.3),
                   ),
-                  const Spacer(),
+                  SizedBox(height: 8.h),
+                        ],
+                      ),
+                    ),
+                  ),
                   ClipRRect(
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(16.w),

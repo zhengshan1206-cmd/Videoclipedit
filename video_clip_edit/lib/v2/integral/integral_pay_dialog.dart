@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/gestures.dart';
@@ -19,6 +20,7 @@ import 'package:video_clip_edit/providers/launch_provider.dart';
 import 'package:video_clip_edit/utils/comon/by_colors.dart';
 import 'package:video_clip_edit/utils/comon/by_common_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_nav_router_utils.dart';
+import 'package:video_clip_edit/utils/comon/by_package_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_widgets_util.dart';
 import 'package:video_clip_edit/providers/integral_pay_provider.dart';
 import 'package:video_clip_edit/utils/pay/ios_buy_engine.dart';
@@ -182,6 +184,11 @@ class _IntegralPayDialogState extends State<IntegralPayDialog>
             ),
           );
         }
+        final sw = MediaQuery.sizeOf(context).width;
+        final cardW = (sw - 24.w - 24.w) / 3;
+        final cardH = math
+            .max(138.h, MediaQuery.sizeOf(context).shortestSide * 0.19)
+            .clamp(138.h, 220.h);
         return Wrap(
           spacing: 12.w,
           runSpacing: 12.h,
@@ -190,8 +197,8 @@ class _IntegralPayDialogState extends State<IntegralPayDialog>
                 provider.selectedIndex ==
                 provider.integralRecords.indexOf(item);
             return Container(
-              width: (MediaQuery.of(context).size.width - 24.w - 24.w) / 3,
-              height: 120.h,
+              width: cardW,
+              height: cardH,
               child: GestureDetector(
                 onTap: () {
                   provider.integralItemClick(item);
@@ -219,11 +226,11 @@ class _IntegralPayDialogState extends State<IntegralPayDialog>
                     // 内容层
                     Positioned.fill(
                       child: Padding(
-                        padding: EdgeInsets.only(top: 20.h, bottom: 16.h),
+                        padding: EdgeInsets.only(top: 16.h, bottom: 12.h),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            //integral
                             Text(
                               "${item.integral}",
                               style: TextStyle(
@@ -234,24 +241,24 @@ class _IntegralPayDialogState extends State<IntegralPayDialog>
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            Expanded(
-                              child: Center(
-                                //money
-                                child: Text(
-                                  "¥${item.money}",
-                                  style: TextStyle(
-                                    color: isSelected
-                                        ? const Color(0xFFFF387A)
-                                        : const Color(0xFF0B1843),
-                                    fontSize: 14.sp,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
+                            SizedBox(height: 8.h),
+                            Text(
+                              "¥${item.money}",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: isSelected
+                                    ? const Color(0xFFFF387A)
+                                    : const Color(0xFF0B1843),
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w400,
                               ),
                             ),
-                            //crossed_money
+                            SizedBox(height: 6.h),
                             Text(
                               "原价¥${item.crossedMoney}",
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: isSelected
                                     ? const Color(0xFFFF387A).withOpacity(0.5)
@@ -330,7 +337,7 @@ class _IntegralPayDialogState extends State<IntegralPayDialog>
 
   //支付方式
   Widget _buildPaymentMethod(BuildContext context) {
-    return Platform.isAndroid
+    return (Platform.isAndroid || ByPackageUtils.isOhos)
         ? Consumer<IntegralPayProvider>(
             builder: (context, provider, child) {
               return GestureDetector(

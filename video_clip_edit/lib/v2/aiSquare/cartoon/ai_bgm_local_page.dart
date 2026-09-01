@@ -13,7 +13,11 @@ import 'package:video_clip_edit/v2/aiSquare/mixin/ai_bgm_mixin.dart';
 import 'package:video_clip_edit/v2/aiSquare/mixin/ai_settings_mixin.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:io';
+
+import 'package:video_clip_edit/utils/channel/channel_operate.dart';
 import 'package:video_clip_edit/utils/comon/by_common_utils.dart';
+import 'package:video_clip_edit/utils/comon/by_package_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_widgets_util.dart';
 
 import '../../hotCreate/providers/new_short_play_list_controller.dart';
@@ -182,17 +186,23 @@ class _AiBgmLocalPageState<T extends AiSettingsMixin, S extends AiBgmMixin>
   }
 
   void _selectMusic(BuildContext context) async {
-    final List<AssetEntity> result = await ByCommonUtils.pickAudio(
-      context,
-      maxCount: 1,
-    );
-    if (result.isEmpty) return;
-    AssetEntity asset = result.first;
-
-    final file = await asset.file;
+    AssetEntity? asset;
+    File? file;
+    if (ByPackageUtils.isOhos) {
+      final List<dynamic> result = await ChannelOperate.getAudioPath(1);
+      if (result.isEmpty) return;
+      file = File(result.first.toString());
+    } else {
+      final List<AssetEntity> result = await ByCommonUtils.pickAudio(
+        context,
+        maxCount: 1,
+      );
+      if (result.isEmpty) return;
+      asset = result.first;
+      file = await asset.file;
+    }
 
     if (file == null) {
-      // 选择的文件出错，请重新选择
       BotToast.showText(text: "选择文件时出错，请重新选择");
       return;
     }

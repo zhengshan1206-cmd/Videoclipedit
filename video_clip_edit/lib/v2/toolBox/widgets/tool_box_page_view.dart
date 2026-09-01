@@ -173,6 +173,7 @@ class _ToolBoxSingleGrideViewState extends State<ToolBoxSingleGrideView>
       child: ToolBoxGrideView(
         isLarge: isLarge,
         index: widget.index,
+        includeBottomSafeInset: false,
       ),
     );
   }

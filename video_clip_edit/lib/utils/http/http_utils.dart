@@ -27,6 +27,17 @@ const bool isOpenLog = true;
 const bool isOpenAllLog = true;
 
 class HttpUtils {
+  /// 调用业务 success；解析异常仅打日志，不触发 fail / Toast。
+  static void _safeInvokeSuccess(Success? success, dynamic result) {
+    if (success == null) return;
+    try {
+      success(result);
+    } catch (e, st) {
+      byDebugPrint('接口数据解析异常: $e\n$st', tag: '[HTTP] ');
+      LogUtils.e('接口数据解析异常: $e\n$st', tag: '[HTTP] ');
+    }
+  }
+
   /// dio基础初始化（不包含HTTPDNS，避免在用户同意隐私政策前进行网络请求）
   static void initDioBasic() {
     final List<Interceptor> interceptors = <Interceptor>[];
@@ -78,7 +89,10 @@ class HttpUtils {
   }
 
   /// 初始化HTTPDNS（独立功能模块）
+  /// 鸿蒙版本不使用阿里云 HTTPDNS，直接走系统 DNS
   static Future<void> _initHttpDns() async {
+    if (ByPackageUtils.isOhos) return;
+
     try {
       // HTTPDNS配置
       const config = HttpDnsConfig(
@@ -389,7 +403,6 @@ class HttpUtils {
         //   byDebugPrint('---------- HttpUtils response ----------$url');
         //   byDebugPrint(result);
         // }
-        // byDebugPrint(result, tag: 'result:===>');
         response?.call(result);
         if (result is Map && result.containsKey('byuniplugin')) {
           final byunipluginValue = result['byuniplugin'];
@@ -424,21 +437,19 @@ class HttpUtils {
         // 确保result是Map类型，避免类型错误
         if (result is! Map) {
           byDebugPrint('接收到非JSON响应: $result', tag: '[HTTPDNS] ');
-          fail?.call(ExceptionHandle.parse_error, '服务器返回了非JSON响应');
+          LogUtils.e('接收到非JSON响应: $result', tag: '[HTTP] ');
           return;
         }
 
-        if (ExceptionHandle.isSuccessStatus(result['status'])) {
-          success?.call(result);
-        } else if (ExceptionHandle.parseStatusCode(result['status']) ==
-            ResponseCode.loginRequired) {
+        if (result['status'] == ExceptionHandle.success) {
+          _safeInvokeSuccess(success, result);
+        } else if (result['status'] == ResponseCode.loginRequired) {
           final context = navigatorKey.currentContext;
 
           ///显示登录页面
           // LoginManager.showLoginPage(isScrollControlled: false);
           fail?.call(result['status'] ?? result["code"], result['message']);
-        } else if (ExceptionHandle.parseStatusCode(result['status']) ==
-            ResponseCode.vipPromote) {
+        } else if (result['status'] == ResponseCode.vipPromote) {
           ///vip特价弹窗
           // final context = navigatorKey.currentContext;
           // context!.read<PurchaseProvider>().loadVIPItems(
@@ -452,8 +463,7 @@ class HttpUtils {
           //   },
           // );
           fail?.call(result['status'] ?? result["code"], result['message']);
-        } else if (ExceptionHandle.parseStatusCode(result['status']) ==
-            ResponseCode.pointsNotEnough) {
+        } else if (result['status'] == ResponseCode.pointsNotEnough) {
           ///积分不足
           // final context = navigatorKey.currentContext;
           // context!.read<PurchaseProvider>().loadVIPItems(
@@ -468,7 +478,7 @@ class HttpUtils {
           // );
           fail?.call(result['status'] ?? result["code"], result['message']);
         } else if (forceData) {
-          success?.call(result);
+          _safeInvokeSuccess(success, result);
         } else {
           // 其他状态，弹出错误提示信息
           if (showMsgWhenFailed) {
@@ -483,6 +493,10 @@ class HttpUtils {
           EasyLoading.dismiss();
         }
 
+        if (code == ExceptionHandle.parse_error && msg == kNetSilentParseMsg) {
+          return;
+        }
+
         if (code == 1002) {
           ToastUtil().showToast(msg);
           // fail?.call(code, msg);
@@ -491,7 +505,11 @@ class HttpUtils {
         }
 
         // ByProgressHUD.showError(msg);
-        fail?.call(code, msg);
+        final displayMsg =
+            (code == ExceptionHandle.unknown_error && msg == '未知异常')
+                ? '请求失败，请稍后重试'
+                : msg;
+        fail?.call(code, displayMsg);
       },
     );
   }

@@ -23,7 +23,6 @@ import 'package:video_clip_edit/v2/aiSquare/beans/ai_tweets_square_bean.dart';
 import 'package:video_clip_edit/v2/aiSquare/cartoon/ai_cartoon_page.dart';
 import 'package:video_clip_edit/v2/aiSquare/cartoon/provider/ai_cartoon_provider.dart';
 import 'package:video_clip_edit/v2/aiSquare/draw/widgets/ai_videos_downoad_dialog.dart';
-import 'package:video_clip_edit/v2/minorMode/minor_mode_ui.dart';
 import 'package:video_clip_edit/v2/aiSquare/widgets/ai_video_player.dart';
 
 class AiTweetsSameCasePage extends StatelessWidget {
@@ -86,63 +85,61 @@ class AiTweetsSameCasePage extends StatelessWidget {
                   ),
                   SizedBox(
                     height: 32.h,
-                    child: MinorModeUi.hideWhenRestricted(
-                      GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () async {
-                          final isVip =
-                              Get.find<UserController>().user.value?.isVip == 1;
-                          if (!isVip) {
-                            LaunchProvider provider = context
-                                .read<LaunchProvider>();
-                            provider.gotoPay(
-                              context,
-                              closePay: true,
-                              replace: false,
-                            );
-                            return;
-                          }
-
-                          if (await ByPermissionUtils.storage() == false) return;
-                          showDialog(
-                            context: context,
-                            builder: (c) {
-                              return AiVideosDownoadDialog(
-                                contents: "",
-                                maxLine: 10,
-                                cancelBtnTitle: "取消",
-                                confirmBtnTitle: "确定",
-                                toast: "保存完成",
-                                confirmCallback: () {},
-                                videoUrls: [caseBean.videoUrl],
-                              );
-                            },
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () async {
+                        final isVip =
+                            Get.find<UserController>().user.value?.isVip == 1;
+                        if (!isVip) {
+                          LaunchProvider provider =
+                              context.read<LaunchProvider>();
+                          provider.gotoPay(
+                            context,
+                            closePay: true,
+                            replace: false,
                           );
-                        },
-                        child: ByWidgetsUtil.commonContainer(
-                          padding: EdgeInsets.symmetric(horizontal: 12.w),
-                          bgColor: const Color(0xFFEBEEFD),
-                          borerRadius: 9.w,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SizedBox(
-                                width: 13,
-                                height: 12,
-                                child: Image.asset(
-                                  "assets/ai/ai_same_case_download.png",
-                                  fit: BoxFit.contain,
-                                ),
+                          return;
+                        }
+
+                        if (await ByPermissionUtils.storage() == false) return;
+                        showDialog(
+                          context: context,
+                          builder: (c) {
+                            return AiVideosDownoadDialog(
+                              contents: "",
+                              maxLine: 10,
+                              cancelBtnTitle: "取消",
+                              confirmBtnTitle: "确定",
+                              toast: "保存完成",
+                              confirmCallback: () {},
+                              videoUrls: [caseBean.videoUrl],
+                            );
+                          },
+                        );
+                      },
+                      child: ByWidgetsUtil.commonContainer(
+                        padding: EdgeInsets.symmetric(horizontal: 12.w),
+                        bgColor: const Color(0xFFEBEEFD),
+                        borerRadius: 9.w,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              width: 13,
+                              height: 12,
+                              child: Image.asset(
+                                "assets/ai/ai_same_case_download.png",
+                                fit: BoxFit.contain,
                               ),
-                              SizedBox(width: 5.w),
-                              ByWidgetsUtil.commonText(
-                                text: "保存",
-                                textColor: const Color(0xFF584CEE),
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ],
-                          ),
+                            ),
+                            SizedBox(width: 5.w),
+                            ByWidgetsUtil.commonText(
+                              text: "保存",
+                              textColor: const Color(0xFF584CEE),
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -294,101 +291,99 @@ class AiTweetsSameCasePage extends StatelessWidget {
               ),
             ],
           ),
-          MinorModeUi.hideWhenRestricted(
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: PhysicalModel(
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: PhysicalModel(
+              color: Colors.white,
+              child: Container(
+                height: 66.h,
                 color: Colors.white,
-                child: Container(
-                  height: 66.h,
-                  color: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 12.w),
-                  child: Row(
-                    children: [
-                      Offstage(
-                        offstage: isPreview,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () {},
-                          child: Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              SizedBox(
-                                height: 50.h,
-                                child: ByWidgetsUtil.commonContainer(
-                                  alignment: Alignment.center,
-                                  bgColor: const Color(0xFFF3F5F9),
-                                  borerRadius: 50.h,
-                                  padding: EdgeInsets.symmetric(horizontal: 19.w),
-                                  child: ByWidgetsUtil.commonText(
-                                    text: caseBean.withdrawMoney,
-                                    fontSize: 14.sp,
-                                    fontWeight: FontWeight.w600,
-                                    textColor: ByColorUtil.CommonTextColor,
-                                  ),
+                padding: EdgeInsets.symmetric(horizontal: 12.w),
+                child: Row(
+                  children: [
+                    Offstage(
+                      offstage: isPreview,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {},
+                        child: Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            SizedBox(
+                              height: 50.h,
+                              child: ByWidgetsUtil.commonContainer(
+                                alignment: Alignment.center,
+                                bgColor: const Color(0xFFF3F5F9),
+                                borerRadius: 50.h,
+                                padding: EdgeInsets.symmetric(horizontal: 19.w),
+                                child: ByWidgetsUtil.commonText(
+                                  text: caseBean.withdrawMoney,
+                                  fontSize: 14.sp,
+                                  fontWeight: FontWeight.w600,
+                                  textColor: ByColorUtil.CommonTextColor,
                                 ),
                               ),
-                              Positioned(
-                                right: 0,
-                                top: -9.h,
-                                child: ByWidgetsUtil.commonContainer(
-                                  bgColor: const Color(0xFFF49A2F),
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: 2.h,
-                                    horizontal: 4.w,
-                                  ),
-                                  child: ByWidgetsUtil.commonText(
-                                    text: caseBean.withdrawMoneyTip,
-                                    fontSize: 10.sp,
-                                    fontWeight: FontWeight.normal,
-                                    textColor: const Color(0xFFFFFFFF),
-                                  ),
+                            ),
+                            Positioned(
+                              right: 0,
+                              top: -9.h,
+                              child: ByWidgetsUtil.commonContainer(
+                                bgColor: const Color(0xFFF49A2F),
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 2.h,
+                                  horizontal: 4.w,
+                                ),
+                                child: ByWidgetsUtil.commonText(
+                                  text: caseBean.withdrawMoneyTip,
+                                  fontSize: 10.sp,
+                                  fontWeight: FontWeight.normal,
+                                  textColor: const Color(0xFFFFFFFF),
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
-                      SizedBox(width: 5.w),
-                      Expanded(
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () {
-                            doSameCase(context: context);
-                          },
-                          child: SizedBox(
-                            height: 50.h,
-                            child: ByWidgetsUtil.commonContainer(
-                              alignment: Alignment.center,
-                              bgColor: ByColorUtil.LoginBtnBgColor,
-                              borerRadius: 50.h,
-                              child: ByWidgetsUtil.commonRichText(
-                                texts: isPreview
-                                    ? [const TextSpan(text: "做同款")]
-                                    : [
-                                        const TextSpan(text: "做同款"),
-                                        TextSpan(
-                                          text: "  ${caseBean.useTime}",
-                                          style: TextStyle(
-                                            fontSize: 12.sp,
-                                            fontWeight: FontWeight.normal,
-                                            color: ByColorUtil
-                                                .WhiteColor.withOpacity(0.8),
-                                          ),
+                    ),
+                    SizedBox(width: 5.w),
+                    Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          doSameCase(context: context);
+                        },
+                        child: SizedBox(
+                          height: 50.h,
+                          child: ByWidgetsUtil.commonContainer(
+                            alignment: Alignment.center,
+                            bgColor: ByColorUtil.LoginBtnBgColor,
+                            borerRadius: 50.h,
+                            child: ByWidgetsUtil.commonRichText(
+                              texts: isPreview
+                                  ? [const TextSpan(text: "做同款")]
+                                  : [
+                                      const TextSpan(text: "做同款"),
+                                      TextSpan(
+                                        text: "  ${caseBean.useTime}",
+                                        style: TextStyle(
+                                          fontSize: 12.sp,
+                                          fontWeight: FontWeight.normal,
+                                          color: ByColorUtil.WhiteColor
+                                              .withOpacity(0.8),
                                         ),
-                                      ],
-                                fontSize: 18.sp,
-                                fontWeight: FontWeight.w600,
-                                textColor: ByColorUtil.WhiteColor,
-                              ),
+                                      ),
+                                    ],
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w600,
+                              textColor: ByColorUtil.WhiteColor,
                             ),
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),

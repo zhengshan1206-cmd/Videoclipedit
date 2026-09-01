@@ -66,47 +66,65 @@ class _FolkStoyVideoManagementPageState
                       controller.loadFolkStoryList(isRefresh: false);
                     },
                     child: Obx(() => MultiStatusView(
-                      backgroundColor: Colors.transparent,
-                      currentStatus: controller.multiStatus.value,
-                      emptyActionType: EmptyActionType.text,
-                      hasAppBar: false,
-                      child: CustomScrollView(
-                        slivers: [
-                          SliverPadding(
-                            padding: EdgeInsets.symmetric(
-                              vertical: 8.h,
-                              horizontal: 12.w,
-                            ),
-                            sliver: SliverToBoxAdapter(
-                              child: ByWidgetsUtil.commonTipsBar2(
-                                  title: "温馨提示", tips: tips),
-                            ),
+                          backgroundColor: Colors.transparent,
+                          currentStatus: controller.multiStatus.value,
+                          emptyActionType: EmptyActionType.text,
+                          hasAppBar: false,
+                          child: CustomScrollView(
+                            slivers: [
+                              SliverPadding(
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 8.h,
+                                  horizontal: 12.w,
+                                ),
+                                sliver: SliverToBoxAdapter(
+                                  child: ByWidgetsUtil.commonTipsBar2(
+                                      title: "温馨提示", tips: tips),
+                                ),
+                              ),
+                              SliverPadding(
+                                padding: EdgeInsets.only(
+                                    left: 12.w, right: 12.w, bottom: 10.h),
+                                sliver: Obx(() => SliverGrid.builder(
+                                      itemCount:
+                                          controller.videoRecordBeans.length,
+                                      gridDelegate:
+                                          SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        mainAxisSpacing: 10.h,
+                                        crossAxisSpacing: 10.w,
+                                        childAspectRatio: 17 / 24,
+                                      ),
+                                      itemBuilder: (context, index) =>
+                                          FolkStoryVideoManagementListViewCell(
+                                        bean:
+                                            controller.videoRecordBeans[index],
+                                      ),
+                                    )),
+                              ),
+                              SliverToBoxAdapter(
+                                child: Obx(
+                                  () {
+                                    final editing =
+                                        controller.videosEditing.value;
+                                    final h = editing
+                                        ? VideosManagementBar.totalBarHeight(
+                                            context)
+                                        : ByScreenUtils
+                                            .bottomInsetForScrollable(context);
+                                    // 编辑态底栏为白底，列表尾部留白用同色填充，避免「镂空」透出页面灰底。
+                                    return ColoredBox(
+                                      color: editing
+                                          ? ByColorUtil.WhiteColor
+                                          : Colors.transparent,
+                                      child: SizedBox(height: h),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
-                          SliverPadding(
-                            padding: EdgeInsets.only(
-                                left: 12.w, right: 12.w, bottom: 10.h),
-                            sliver: Obx(() => SliverGrid.builder(
-                                  itemCount: controller.videoRecordBeans.length,
-                                  gridDelegate:
-                                      SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    mainAxisSpacing: 10.h,
-                                    crossAxisSpacing: 10.w,
-                                    childAspectRatio: 17 / 24,
-                                  ),
-                                  itemBuilder: (context, index) =>
-                                      FolkStoryVideoManagementListViewCell(
-                                    bean: controller.videoRecordBeans[index],
-                                  ),
-                                )),
-                          ),
-                          SliverToBoxAdapter(
-                            child: SizedBox(
-                                height: ByScreenUtils.bottomSafeHeight),
-                          ),
-                        ],
-                      ),
-                    )),
+                        )),
                   );
                 },
               )),
@@ -502,49 +520,50 @@ class FolkStoryVideoManagementListViewCell extends StatelessWidget {
     }
     return canEdit
         ? Stack(
-          children: [
-            Positioned.fill(
-                    child: Image.asset(
-                  "assets/v2/folk/folk_video_cell_bg.png",
-                  fit: BoxFit.cover,
-                )),
-            Positioned.fill(
-              child: Column(
-              children: [
-                SizedBox(height: 65.h),
-                // ByWidgetsUtil.fadedSpin(),
-                Image.asset(
-                  "assets/v2/folk/status_draw_finshed.png",
-                  width: 30.w,
-                  height: 30.w,
+            children: [
+              Positioned.fill(
+                  child: Image.asset(
+                "assets/v2/folk/folk_video_cell_bg.png",
+                fit: BoxFit.cover,
+              )),
+              Positioned.fill(
+                child: Column(
+                  children: [
+                    SizedBox(height: 65.h),
+                    // ByWidgetsUtil.fadedSpin(),
+                    Image.asset(
+                      "assets/v2/folk/status_draw_finshed.png",
+                      width: 30.w,
+                      height: 30.w,
+                    ),
+                    SizedBox(height: 15.h),
+                    ByWidgetsUtil.commonText(
+                      text: statusString,
+                      textColor: Colors.white,
+                      fontSize: 14.sp,
+                    ),
+                    SizedBox(height: 23.h),
+                    SizedBox(
+                      height: 28.h,
+                      width: 100.w,
+                      child: ByWidgetsUtil.commonBtn(
+                        title: "继续编辑",
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                        padding: EdgeInsets.zero,
+                        borderRadius: 100,
+                        bgColor: ByColorUtil.WhiteColor,
+                        textColor: ByColorUtil.CommonTextColor,
+                        onClick: () {
+                          _gotoVideoEditPage();
+                        },
+                      ),
+                    )
+                  ],
                 ),
-                SizedBox(height: 15.h),
-                ByWidgetsUtil.commonText(
-                  text: statusString,
-                  textColor: Colors.white,
-                  fontSize: 14.sp,
-                ),
-                SizedBox(height: 23.h),
-                SizedBox(
-                  height: 28.h,
-                  width: 100.w,
-                  child: ByWidgetsUtil.commonBtn(
-                    title: "继续编辑",
-                    fontSize: 14.sp,
-                    fontWeight: FontWeight.w500,
-                    padding: EdgeInsets.zero,
-                    borderRadius: 100,
-                    bgColor: ByColorUtil.WhiteColor,
-                    textColor: ByColorUtil.CommonTextColor,
-                    onClick: () {
-                      _gotoVideoEditPage();
-                    },
-                  ),
-                )
-              ],
-            ),)
-          ],
-        )
+              )
+            ],
+          )
         : Column(
             children: [
               SizedBox(height: 30.h),

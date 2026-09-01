@@ -10,7 +10,6 @@ import 'package:video_clip_edit/modules/login/controller/login_manager.dart';
 import 'package:video_clip_edit/routes/app_pages.dart';
 import 'package:video_clip_edit/utils/comon/by_color_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_colors.dart';
-import 'package:video_clip_edit/utils/comon/by_common_utils.dart';
 import 'package:video_clip_edit/utils/consts/const.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:video_clip_edit/modules/main/main_page.dart';
@@ -133,7 +132,6 @@ class _LaunchPageState extends State<LaunchPage> {
           provider.launch(
             context,
             onSuccess: (LaunchInfoBean bean) {
-              byDebugPrint(bean.toJson(), tag: "bean: 启动信息");
               final controller = Get.find<UserController>();
               ByNavigatorUtil.reportDataPoint(
                 pageTag: "tourist",
@@ -143,9 +141,9 @@ class _LaunchPageState extends State<LaunchPage> {
               );
               updateProgress(55);
               // 启动时更新妙笔配置
-              controller.checkMiaoBiConfig();
+              (controller as dynamic).checkMiaoBiConfig();
               updateProgress(60);
-              controller.reloadUserInfo(
+              (controller as dynamic).reloadUserInfo(
                 successAction: (userInfo) {
                   final launchPage = bean.verConfig.launchPage;
                   updateProgress(65);
@@ -178,7 +176,7 @@ class _LaunchPageState extends State<LaunchPage> {
                     }
                   }
                 },
-                onFailed: (code, msg) {
+                onFailed: (int code, String msg) {
                   Get.offNamed(Routes.launchFaild);
                   FlutterBugly.uploadException(
                     message: "启动用户信息获取失败2: $code: $msg",
@@ -220,7 +218,7 @@ class _LaunchPageState extends State<LaunchPage> {
                   );
                   updateProgress(40);
                   // 启动时更新妙笔配置
-                  controller.checkMiaoBiConfig();
+                  (controller as dynamic).checkMiaoBiConfig();
                   updateProgress(45);
                   // 等待用户信息更新完成后再跳转，避免异步回调在 guidePage 显示后才执行
                   // controller.reloadUserInfo(

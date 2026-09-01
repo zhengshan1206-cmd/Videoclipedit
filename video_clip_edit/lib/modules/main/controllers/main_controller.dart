@@ -30,7 +30,6 @@ import 'package:video_clip_edit/modules/purchase/widgets/dailog_bonus_new.dart';
 import 'package:video_clip_edit/v2/promote/controllers/home_promote_controller.dart';
 
 import '../../../v2/integral/integral_vip_controller.dart';
-import '../../../v2/minorMode/controllers/minor_mode_controller.dart';
 
 class MainController extends GetxController {
   var _currentIndex = 0;
@@ -86,15 +85,6 @@ class MainController extends GetxController {
     _newUserBenefitsController = Get.put<NewUserBenefitsController>(
       NewUserBenefitsController(),
     );
-
-    MinorModeController.to.fetchMinorModeInfo();
-  }
-
-  void enforceMinorModeHome() {
-    if (_currentIndex != 0) {
-      _currentIndex = 0;
-      update();
-    }
   }
 
   //推送回调以及通知权限
@@ -213,9 +203,6 @@ class MainController extends GetxController {
   }
 
   void tabChanged(int index) {
-    if (MinorModeController.to.isMinorModeEnabled && index != 0) {
-      return;
-    }
     if (_currentIndex != index) {
       ///我的模块点击 做前置登录校验
       if (index == 4) {

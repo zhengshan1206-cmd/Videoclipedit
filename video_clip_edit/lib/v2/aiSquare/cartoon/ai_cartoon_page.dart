@@ -294,7 +294,7 @@ class _AiCartoonPageState extends State<AiCartoonPage> {
               ..._buildStyleSection(),
               ..._buildConfigSections(configBeans),
               SliverToBoxAdapter(
-                child: SizedBox(height: ByScreenUtils.bottomSafeHeight + 120.h),
+                child: SizedBox(height: ByScreenUtils.bottomInsetForOverlayBar + 120.h),
               ),
             ],
           ),
@@ -598,7 +598,7 @@ class _AiCartoonPageState extends State<AiCartoonPage> {
               left: 12.w,
               right: 12.w,
               top: 12.w,
-              bottom: ByScreenUtils.bottomSafeHeight + 12.w,
+              bottom: ByScreenUtils.bottomInsetForOverlayBar + 12.w,
             ),
             decoration: const BoxDecoration(color: Colors.white),
             child: Column(

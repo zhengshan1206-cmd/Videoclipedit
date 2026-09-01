@@ -334,70 +334,60 @@ class _WordsExtractionPageState extends State<WordsExtractionPage> {
       ByCommonUtils.pickAssetsWithAudio(
         context,
         maxCount: 1,
-        onSelectedCallback: (asstes) async {
-          if (asstes.isEmpty) return;
-          File? file = await asstes.first.file;
-          if (file == null) return;
+        onSelectedCallback: (asstes, {List<String>? urls}) async {
+          String? path;
+          if (urls != null && urls.isNotEmpty) {
+            final f = File(urls.first);
+            if (f.existsSync()) path = f.path;
+          } else if (asstes.isNotEmpty) {
+            final file = await asstes.first.file;
+            path = file?.path;
+          }
+          if (path == null) return;
           final provider = context.read<WordsExtractProvider>();
-
-          /// 获取上传图片参数
-          _uploadFile(
-            provider,
-            mediaType,
-            file.path,
-            context,
-          );
+          _uploadFile(provider, mediaType, path, context);
         },
       );
       return;
     }
-    AuthManager.materialAuth(onSuccess: () {
-      ByCommonUtils.pickAssetsByType(
-      context,
-      maxCount: 1,
-      type: mediaType.uploadFileType,
-      onSelectedCallback: (asstes) async {
-        if (asstes.isEmpty) return;
-        File? file = await asstes.first.file;
-        if (file == null) return;
-
-        final provider = context.read<WordsExtractProvider>();
-        if (mediaType == MediaType.video) {
-          EasyLoading.show(status: "音频分离中");
-          await ByFfmpegUtil.splitAudioFileFromVideo(
-            file,
-            onSuccess: (content) async {
-              EasyLoading.dismiss();
-              final audioPath = content.item2;
-              byDebugPrint(audioPath, tag: "File:");
-              if (audioPath.isEmpty) {
-                BotToast.showText(text: "分离音频文件失败");
-                return;
-              }
-
-              /// 获取上传图片参数
-              _uploadFile(
-                provider,
-                MediaType.audio,
-                audioPath,
-                context,
-              );
-            },
-          );
-          return;
-        }
-
-        /// 获取上传图片参数
-        _uploadFile(
-          provider,
-          mediaType,
-          file.path,
+    AuthManager.materialAuth(
+      onSuccess: () {
+        ByCommonUtils.pickAssetsByType(
           context,
+          maxCount: 1,
+          type: mediaType.uploadFileType,
+          onSelectedCallback: (asstes, {List<String>? urls}) async {
+            File? file;
+            if (urls != null && urls.isNotEmpty) {
+              file = File(urls.first);
+              if (!file.existsSync()) return;
+            } else if (asstes.isNotEmpty) {
+              file = await asstes.first.file;
+            }
+            if (file == null) return;
+            final provider = context.read<WordsExtractProvider>();
+            if (mediaType == MediaType.video) {
+              EasyLoading.show(status: "音频分离中");
+              await ByFfmpegUtil.splitAudioFileFromVideo(
+                file,
+                onSuccess: (content) async {
+                  EasyLoading.dismiss();
+                  final audioPath = content.item2;
+                  byDebugPrint(audioPath, tag: "File:");
+                  if (audioPath.isEmpty) {
+                    BotToast.showText(text: "分离音频文件失败");
+                    return;
+                  }
+                  _uploadFile(provider, MediaType.audio, audioPath, context);
+                },
+              );
+              return;
+            }
+            _uploadFile(provider, mediaType, file.path, context);
+          },
         );
       },
     );
-    },);
-    
   }
 
   void _uploadFile(

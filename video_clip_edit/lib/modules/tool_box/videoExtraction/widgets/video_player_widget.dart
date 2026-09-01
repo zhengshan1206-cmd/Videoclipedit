@@ -8,7 +8,6 @@ import 'package:video_player/video_player.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:video_clip_edit/utils/comon/by_common_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_download_util.dart';
-import 'package:cached_video_player_plus/cached_video_player_plus.dart';
 import '../../../../utils/comon/by_common_events.dart';
 import '../../../home/providers/by_audio_player.dart';
 
@@ -36,22 +35,20 @@ class VideoPlayerWidget extends StatefulWidget {
 }
 
 class VideoPlayerWidgetState extends State<VideoPlayerWidget> {
-  CachedVideoPlayerPlus? _serverPlayer;
+  VideoPlayerController? _serverPlayer;
   VideoPlayerController? _localController;
   late bool isPlaying = widget.autoPlay;
 
   changeMuteStatus(bool status) {
-    // 确保 player 已初始化才能访问 controller
-    if (_serverPlayer != null && _serverPlayer!.isInitialized) {
-      _serverPlayer!.controller.setVolume(status ? 0.0 : 1.0);
+    if (_serverPlayer != null && _serverPlayer!.value.isInitialized) {
+      _serverPlayer!.setVolume(status ? 0.0 : 1.0);
     }
   }
 
   stopPlay() {
     _localController?.pause();
-    // 确保 player 已初始化才能访问 controller
-    if (_serverPlayer != null && _serverPlayer!.isInitialized) {
-      _serverPlayer!.controller.pause();
+    if (_serverPlayer != null && _serverPlayer!.value.isInitialized) {
+      _serverPlayer!.pause();
     }
     setState(() {
       isPlaying = !isPlaying;
@@ -60,9 +57,8 @@ class VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
   resumePlay() {
     _localController?.play();
-    // 确保 player 已初始化才能访问 controller
-    if (_serverPlayer != null && _serverPlayer!.isInitialized) {
-      _serverPlayer!.controller.play();
+    if (_serverPlayer != null && _serverPlayer!.value.isInitialized) {
+      _serverPlayer!.play();
     }
     setState(() {
       isPlaying = !isPlaying;
@@ -76,34 +72,28 @@ class VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     super.initState();
     byDebugPrint("--------VideoPlayerWidgetState initState", tag: "播放的url:");
 
-    /// 初始化远程视频控制器
     if (widget.url.startsWith("http")) {
-      _serverPlayer = CachedVideoPlayerPlus.networkUrl(
-        Uri.parse(widget.url),
-      );
+      _serverPlayer = VideoPlayerController.networkUrl(Uri.parse(widget.url));
       _serverPlayer!.initialize().then(
         (_) async {
-          // 确保初始化成功后再访问 controller
-          if (!_serverPlayer!.isInitialized) {
+          if (!_serverPlayer!.value.isInitialized) {
             byDebugPrint("播放器初始化失败", tag: "VideoPlayerWidget");
             return;
           }
 
-          _serverPlayer!.controller.setVolume(widget.mute ? 0.0 : 1);
+          _serverPlayer!.setVolume(widget.mute ? 0.0 : 1.0);
 
-          await _serverPlayer!.controller
-              .seekTo(Duration(seconds: widget.offset ?? 0));
-          byDebugPrint("${_serverPlayer!.controller.value.isInitialized}",
+          await _serverPlayer!.seekTo(Duration(seconds: widget.offset ?? 0));
+          byDebugPrint("${_serverPlayer!.value.isInitialized}",
               tag: "播放器初始化状态 in initState seekTo");
-          _serverPlayer!.controller.setLooping(true).then((_) {
-            byDebugPrint("${_serverPlayer!.controller.value.isInitialized}",
+          _serverPlayer!.setLooping(true).then((_) {
+            byDebugPrint("${_serverPlayer!.value.isInitialized}",
                 tag: "播放器初始化状态 in initState setLooping");
             if (mounted) {
               setState(() {});
-              // 自动播放
               widget.autoPlay
-                  ? _serverPlayer!.controller.play()
-                  : _serverPlayer!.controller.pause();
+                  ? _serverPlayer!.play()
+                  : _serverPlayer!.pause();
             }
           });
         },
@@ -114,20 +104,16 @@ class VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         }
       });
     } else {
-      // 初始化视频控制器
       _localController = VideoPlayerController.file(File(widget.url))
         ..initialize().then(
           (_) {
             _localController!
-                // ..seekTo(Duration(seconds: widget.offset ?? 0))
                 .setLooping(true)
                 .then((_) async {
               if (mounted) {
                 setState(() {});
                 await _localController!
                     .seekTo(Duration(seconds: widget.offset ?? 0));
-                // 自动播放
-                // _localController?.pause();
                 widget.autoPlay
                     ? _localController?.play()
                     : _localController?.pause();
@@ -138,9 +124,8 @@ class VideoPlayerWidgetState extends State<VideoPlayerWidget> {
     }
 
     streamSubscription = eventBus.on<PauseVideoEvent>().listen((event) {
-      // 确保 player 已初始化才能访问 controller
-      if (_serverPlayer != null && _serverPlayer!.isInitialized) {
-        _serverPlayer!.controller.pause();
+      if (_serverPlayer != null && _serverPlayer!.value.isInitialized) {
+        _serverPlayer!.pause();
       }
 
       if (_localController != null) {
@@ -158,9 +143,8 @@ class VideoPlayerWidgetState extends State<VideoPlayerWidget> {
   @override
   void dispose() {
     byDebugPrint("--------VideoPlayerWidgetState dispose", tag: "播放的url:");
-    // 确保 player 已初始化才能访问 controller
-    if (_serverPlayer != null && _serverPlayer!.isInitialized) {
-      _serverPlayer!.controller.dispose();
+    if (_serverPlayer != null && _serverPlayer!.value.isInitialized) {
+      _serverPlayer!.dispose();
     }
     _localController?.dispose();
     streamSubscription.cancel();
@@ -169,18 +153,8 @@ class VideoPlayerWidgetState extends State<VideoPlayerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // 安全地检查初始化状态，避免访问未初始化的 controller
-    final isPlayerInitialized = _serverPlayer?.isInitialized ?? false;
-    bool isControllerInitialized = false;
-    if (isPlayerInitialized) {
-      try {
-        isControllerInitialized = _serverPlayer!.controller.value.isInitialized;
-      } catch (e) {
-        // 如果访问 controller 失败，说明未完全初始化
-        isControllerInitialized = false;
-      }
-    }
-    byDebugPrint("$isPlayerInitialized - $isControllerInitialized",
+    final isPlayerInitialized = _serverPlayer?.value.isInitialized ?? false;
+    byDebugPrint("$isPlayerInitialized",
         tag: "播放器初始化状态 in build：");
     if (widget.url.startsWith("http")) {
       return GestureDetector(
@@ -192,12 +166,11 @@ class VideoPlayerWidgetState extends State<VideoPlayerWidget> {
             ByAudioPlayer.sharedInstance.pause();
           }
 
-          // 确保 player 已初始化才能访问 controller
-          if (_serverPlayer != null && _serverPlayer!.isInitialized) {
+          if (_serverPlayer != null && _serverPlayer!.value.isInitialized) {
             if (isPlaying) {
-              _serverPlayer!.controller.pause();
+              _serverPlayer!.pause();
             } else {
-              _serverPlayer!.controller.play();
+              _serverPlayer!.play();
             }
           }
           setState(() {
@@ -207,14 +180,11 @@ class VideoPlayerWidgetState extends State<VideoPlayerWidget> {
         child: Stack(
           children: [
             Container(
-              child: (isPlayerInitialized && isControllerInitialized)
+              child: isPlayerInitialized
                   ? AspectRatio(
                       aspectRatio: widget.aspectRatio ??
-                          _serverPlayer!.controller.value.aspectRatio,
-                      // aspectRatio: 3/4,
-                      child: VideoPlayer(
-                        _serverPlayer!.controller,
-                      ),
+                          _serverPlayer!.value.aspectRatio,
+                      child: VideoPlayer(_serverPlayer!),
                     )
                   : widget.coverUrl != null
                       ? CachedNetworkImage(imageUrl: widget.coverUrl!)

@@ -5,16 +5,39 @@ import 'channel_api.dart';
 
 class BaseChannel {
   late var channel;
+  Function(dynamic)? _huaweiLoginCallback;
 
   factory BaseChannel() => _singleton;
 
   BaseChannel._() {
     channel = const MethodChannel(ChannelApi.channelIdentifier);
+    _setupMethodCallHandler();
   }
 
   static final BaseChannel _singleton = BaseChannel._();
 
   static BaseChannel get instance => BaseChannel();
+
+  void setHuaweiLoginCallback(Function(dynamic) callback) {
+    _huaweiLoginCallback = callback;
+  }
+
+  void removeHuaweiLoginCallback() {
+    _huaweiLoginCallback = null;
+  }
+
+  void _setupMethodCallHandler() {
+    channel.setMethodCallHandler((call) async {
+      byDebugPrint(
+        "Received method call: ${call.method} with arguments: ${call.arguments}",
+        tag: "<><><><><><><>BaseChannel<><><><><><><>",
+      );
+      if (call.method == ChannelApi.onHuaweiLoginCode &&
+          _huaweiLoginCallback != null) {
+        _huaweiLoginCallback!(call.arguments);
+      }
+    });
+  }
 
   Future<dynamic> callNativeMethod(String method, {dynamic params}) async {
     try {

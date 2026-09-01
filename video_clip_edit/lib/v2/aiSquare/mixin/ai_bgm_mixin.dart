@@ -25,7 +25,7 @@ abstract class AiBgmMixin extends BaseProvider {
 
   /// 上传 bgm
   uploadMusic({
-    required AssetEntity asset,
+    required AssetEntity? asset,
     required File file,
   });
 

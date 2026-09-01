@@ -269,6 +269,7 @@ class _TwoDirectionalSliderState extends State<TwoDirectionalSlider> {
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
+      case TargetPlatform.ohos:
         // Matches Android implementation of material slider.
         return 0.05;
     }

@@ -172,18 +172,16 @@ class _AiClipPageState extends State<AiClipPage> {
   }
 
   ///爆文创作 功能点击上报
-  actionClickReport(){
+  actionClickReport() {
     if (widget.source == EntranceSource.explosive) {
       HttpUtils.post(APIs.apiPost, {
         "event": Consts.EVENT_PAID_PAGE,
-        "event_function":
-        Consts.FUNCTION_EXPLOSIVE_WRITING,
-        "event_action":
-        Consts.ACTION_FUNCTION_CLICK_REPORT,
+        "event_function": Consts.FUNCTION_EXPLOSIVE_WRITING,
+        "event_action": Consts.ACTION_FUNCTION_CLICK_REPORT,
         "page_path": widget.pagePath,
         "pre_page_path": "/novel_create",
-        "payment_page_tag":"",
-        "middle_page_tag":"",
+        "payment_page_tag": "",
+        "middle_page_tag": "",
       });
     }
   }
@@ -295,7 +293,7 @@ class _AiClipPageState extends State<AiClipPage> {
               // _buildClipMaterialsOpening(),
               ..._buildConfigSections(configBeans),
               SliverToBoxAdapter(
-                child: SizedBox(height: ByScreenUtils.bottomSafeHeight + 120.h),
+                child: SizedBox(height: 120.h),
               ),
             ],
           ),
@@ -579,9 +577,6 @@ class _AiClipPageState extends State<AiClipPage> {
       bottom: 0,
       child: Container(
         color: Colors.white,
-        padding: EdgeInsets.only(
-          bottom: ByScreenUtils.bottomSafeHeight,
-        ),
         child: KeyboardDismissOnTap(
           dismissOnCapturedTaps: true,
           child: Container(
@@ -657,7 +652,9 @@ class _AiClipPageState extends State<AiClipPage> {
                                 integralVipController.isTest <= 0) {
                               final provider = context.read<AiSquareProvider>();
                               String mark = 'ai_clip';
-                              final launchProvider = Provider.of<LaunchProvider>(context, listen: false);
+                              final launchProvider =
+                                  Provider.of<LaunchProvider>(context,
+                                      listen: false);
 
                               if (widget.source == EntranceSource.explosive) {
                                 HttpUtils.post(APIs.apiPost, {
@@ -668,8 +665,9 @@ class _AiClipPageState extends State<AiClipPage> {
                                       Consts.ACTION_OPEN_PAY_PAGE_REPORT,
                                   "page_path": widget.pagePath,
                                   "pre_page_path": "/novel_create",
-                                  "payment_page_tag":launchProvider.launchInfo?.verConfig.halfScreenPage,
-                                  "middle_page_tag":"",
+                                  "payment_page_tag": launchProvider
+                                      .launchInfo?.verConfig.halfScreenPage,
+                                  "middle_page_tag": "",
                                 });
                               }
 
@@ -679,7 +677,7 @@ class _AiClipPageState extends State<AiClipPage> {
                                 eventFunction:
                                     Consts.FUNCTION_EXPLOSIVE_WRITING,
                                 prePagePath: "/novel_create",
-                                pagePath:  widget.pagePath,
+                                pagePath: widget.pagePath,
                               );
                               return;
                             }

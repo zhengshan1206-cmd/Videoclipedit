@@ -10,7 +10,6 @@ import 'package:video_clip_edit/utils/http/intercept.dart';
 import "package:http/http.dart" as http;
 
 class AiCreateProvider extends BaseProvider {
-
   Future<Stream<String>> getStream({
     required String url,
     Map<String, dynamic>? body,
@@ -32,7 +31,8 @@ class AiCreateProvider extends BaseProvider {
         }
         controller.close();
       } else {
-        controller.addError(APIError(response.reasonPhrase ?? '', response.statusCode));
+        controller.addError(
+            APIError(response.reasonPhrase ?? '', response.statusCode));
       }
     });
 
@@ -45,14 +45,14 @@ class AiCreateProvider extends BaseProvider {
     request.headers[ConstKeys.kClientType] = "strong";
     request.headers[ConstKeys.kTimeStamp] = timestamp.toString();
     request.headers[ConstKeys.kAppFramework] = 'flutter';
-    request.headers[ConstKeys.kAppVersion] = ByStorageUtils.getString(ConstKeys.kAppVersion) ?? "5.0.0";
+    request.headers[ConstKeys.kAppVersion] =
+        ByStorageUtils.getString(ConstKeys.kAppVersion) ?? "5.0.0";
     request.headers[ConstKeys.kSign] = _getSign(timestamp);
   }
 
   String _getSign(int timestamp) {
-    final token = ByAESStorageUtils.getString(ConstKeys.kToken) ?? "";
+    final token = getToken();
     final sign = ByEncryptUtils.md5String("$timestamp$token");
     return sign;
   }
-
 }

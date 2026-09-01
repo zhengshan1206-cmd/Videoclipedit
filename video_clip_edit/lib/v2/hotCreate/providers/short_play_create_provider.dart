@@ -44,10 +44,9 @@ class ShortPlayCreateProvider extends BaseProvider {
       APIs.homeBroadcast,
       {},
       success: (data) {
-        final List bannerData = data["data"] is Map ? [] : data["data"] ?? [];
-        List<HomeBroadcastBean> beans = bannerData
-            .map((e) => HomeBroadcastBean.fromJson(e))
-            .toList();
+        final List bannerData = data["data"] ?? [];
+        List<HomeBroadcastBean> beans =
+            bannerData.map((e) => HomeBroadcastBean.fromJson(e)).toList();
         updateBroadcastBeans(beans);
         notifyListeners();
       },
@@ -94,9 +93,8 @@ class ShortPlayCreateProvider extends BaseProvider {
       success: (data) {
         byDebugPrint(data["data"], tag: "云端素材：");
         List listData = data["data"]["data"] ?? [];
-        List<CloudVideoListBean> beans = listData
-            .map((e) => CloudVideoListBean.fromJson(e))
-            .toList();
+        List<CloudVideoListBean> beans =
+            listData.map((e) => CloudVideoListBean.fromJson(e)).toList();
 
         // 关键：isRefresh 且返回空，直接清空并return
         if (isRefresh && beans.isEmpty) {

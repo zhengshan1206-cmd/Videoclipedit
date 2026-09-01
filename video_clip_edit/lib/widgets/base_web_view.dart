@@ -11,8 +11,10 @@ import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:video_clip_edit/utils/channel/channel_operate.dart';
 import 'package:video_clip_edit/utils/comon/by_colors.dart';
 import 'package:video_clip_edit/utils/comon/by_nav_router_utils.dart';
+import 'package:video_clip_edit/utils/comon/by_package_utils.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
@@ -59,11 +61,23 @@ class _BaseWebViewState extends State<BaseWebView> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onNavigationRequest: (NavigationRequest request) {
+            if (ByPackageUtils.isOhos &&
+                request.url.contains('https://work.weixin.qq.com/')) {
+              ChannelOperate.bindSheetService();
+              return NavigationDecision.prevent;
+            }
             if (request.url.startsWith('https://') ||
-                request.url.startsWith('https://')) {
+                request.url.startsWith('http://')) {
               return NavigationDecision.navigate;
             }
-            launchUrl(Uri.parse(request.url));
+            launchUrl(
+              Uri.parse(request.url),
+              webViewConfiguration: const WebViewConfiguration(
+                headers: {
+                  'harmony_browser_page': 'pages/LaunchInAppPage',
+                },
+              ),
+            );
             _controller.goBack();
             return NavigationDecision.prevent;
           },
@@ -102,15 +116,13 @@ class _BaseWebViewState extends State<BaseWebView> {
         ByCommonUtils.pickAssets(context, type: type, maxCount: maxCount,
             onSelectedCallback: (assets) async {
           List<String> list = [];
-
-          /// 未选择则不处理
           if (assets.isNotEmpty) {
             for (int i = 0; i < assets.length; i++) {
               AssetEntity asset = assets[i];
               if (await asset.exists) {
                 var file = await asset.file;
                 var path = file?.uri.toString();
-                list.add(path!);
+                if (path != null) list.add(path);
               }
             }
           }

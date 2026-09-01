@@ -104,7 +104,7 @@ class VipTypeViewDark extends StatelessWidget {
                       decoration: TextDecoration.lineThrough,
                       textColor: ByColorUtil.WhiteColor.withOpacity(0.5),
                     ),
-                    const Spacer(),
+                    SizedBox(height: 10.h),
                     ClipRRect(
                       borderRadius: BorderRadius.only(
                         bottomLeft: Radius.circular(16.w),
@@ -116,7 +116,7 @@ class VipTypeViewDark extends StatelessWidget {
                         padding: EdgeInsets.zero,
                         child: Container(
                           width: double.infinity,
-                          height: 30.h,
+                          height: 34.h,
                           alignment: Alignment.center,
                           child: ByWidgetsUtil.commonText(
                               fontSize: 12.sp,

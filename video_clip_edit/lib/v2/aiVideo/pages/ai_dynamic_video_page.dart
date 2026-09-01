@@ -112,22 +112,21 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                   Get.to(
                     () => NewAiVideoListViewPageEx(
                       currentIndex: index,
-                      type:
-                          Get.find<AiDynamicVideoController>(
+                      type: Get.find<AiDynamicVideoController>(
                                 tag: _uniqueKey,
                               ).type ==
                               0
                           ? Get.find<AiDynamicVideoController>(
-                                      tag: _uniqueKey,
-                                    ).currentMode.value ==
-                                    2
-                                ? AiVideoGenerationType.multipleImages
-                                : Get.find<AiDynamicVideoController>(
+                                    tag: _uniqueKey,
+                                  ).currentMode.value ==
+                                  2
+                              ? AiVideoGenerationType.multipleImages
+                              : Get.find<AiDynamicVideoController>(
                                         tag: _uniqueKey,
                                       ).currentMode.value ==
                                       1
-                                ? AiVideoGenerationType.firstAndEndFrame
-                                : AiVideoGenerationType.imageToVideo
+                                  ? AiVideoGenerationType.firstAndEndFrame
+                                  : AiVideoGenerationType.imageToVideo
                           : AiVideoGenerationType.textToVideo,
                     ),
                   )?.then((value) {
@@ -176,65 +175,65 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                   children: [
                     ...(index == 0
                             ? controller.currentMode.value == 2
-                                  ? controller.hotVideosForMultiple
-                                  : controller.currentMode.value == 1
-                                  ? controller.hotVideosForTwo
-                                  : controller.hotVideosForOne
+                                ? controller.hotVideosForMultiple
+                                : controller.currentMode.value == 1
+                                    ? controller.hotVideosForTwo
+                                    : controller.hotVideosForOne
                             : controller.hotVideos2)
                         .map(
-                          (e) => GestureDetector(
-                            onTap: () {
-                              // _checkLogin(() {
-                              showModalBottomSheet(
-                                isScrollControlled: true,
-                                context: context,
-                                builder: (context) {
-                                  return NewAiVideoDialogEx(
-                                    model: e,
-                                    type: index,
-                                  );
-                                },
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(
-                                    top: Radius.circular(20),
-                                  ),
-                                ),
-                              ).then((value) {
-                                if (value != null) {
-                                  controller.useSame(models: value);
-                                  controller.initIntegralVipController();
-                                }
-                              });
-                              // });
+                      (e) => GestureDetector(
+                        onTap: () {
+                          // _checkLogin(() {
+                          showModalBottomSheet(
+                            isScrollControlled: true,
+                            context: context,
+                            builder: (context) {
+                              return NewAiVideoDialogEx(
+                                model: e,
+                                type: index,
+                              );
                             },
-                            child: Stack(
-                              alignment: Alignment.center,
-                              children: [
-                                Container(
-                                  width: 90.w,
-                                  height: 110.h,
-                                  margin: EdgeInsets.only(right: 10.w),
-                                  decoration: BoxDecoration(
-                                    // color: Colors.blue,
-                                    borderRadius: BorderRadius.circular(10.w),
-                                    image: DecorationImage(
-                                      image: NetworkImage(e.coverUrl),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                                Align(
-                                  alignment: Alignment.center,
-                                  child: Image.asset(
-                                    "assets/ai/aiVideo/new_ai_video_play_icon.png",
-                                    width: 23.w,
-                                    height: 23.w,
-                                  ),
-                                ),
-                              ],
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(20),
+                              ),
                             ),
-                          ),
+                          ).then((value) {
+                            if (value != null) {
+                              controller.useSame(models: value);
+                              controller.initIntegralVipController();
+                            }
+                          });
+                          // });
+                        },
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Container(
+                              width: 90.w,
+                              height: 110.h,
+                              margin: EdgeInsets.only(right: 10.w),
+                              decoration: BoxDecoration(
+                                // color: Colors.blue,
+                                borderRadius: BorderRadius.circular(10.w),
+                                image: DecorationImage(
+                                  image: NetworkImage(e.coverUrl),
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                            Align(
+                              alignment: Alignment.center,
+                              child: Image.asset(
+                                "assets/ai/aiVideo/new_ai_video_play_icon.png",
+                                width: 23.w,
+                                height: 23.w,
+                              ),
+                            ),
+                          ],
                         ),
+                      ),
+                    ),
                   ],
                 );
               },
@@ -582,8 +581,7 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                             Get.find<AiDynamicVideoController>(
                               tag: _uniqueKey,
                             ).updateImageUrl(
-                              index:
-                                  Get.find<AiDynamicVideoController>(
+                              index: Get.find<AiDynamicVideoController>(
                                         tag: _uniqueKey,
                                       ).validIndex().length ==
                                       2
@@ -680,25 +678,24 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(12.w),
-                    child:
-                        (path.startsWith("http") == true
-                                ? CachedNetworkImage(
-                                    height: 100.h,
-                                    width: width ?? double.infinity,
-                                    imageUrl: path,
-                                    fit: BoxFit.cover,
-                                  )
-                                : Image.file(
-                                    File(path),
-                                    width: width ?? double.infinity,
-                                    height: 100.h,
-                                    fit: BoxFit.cover,
-                                  ))
-                            .blurred(
-                              blurColor: Colors.white.withOpacity(0),
-                              colorOpacity: 0,
-                              blur: 5,
-                            ),
+                    child: (path.startsWith("http") == true
+                            ? CachedNetworkImage(
+                                height: 100.h,
+                                width: width ?? double.infinity,
+                                imageUrl: path,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.file(
+                                File(path),
+                                width: width ?? double.infinity,
+                                height: 100.h,
+                                fit: BoxFit.cover,
+                              ))
+                        .blurred(
+                      blurColor: Colors.white.withOpacity(0),
+                      colorOpacity: 0,
+                      blur: 5,
+                    ),
                   ),
                   if (path.startsWith("http") == true)
                     CachedNetworkImage(
@@ -808,67 +805,67 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
         onTap: () {
           ///开启图片预览
           void openDialog(BuildContext context) => showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return Dialog(
-                backgroundColor: Colors.transparent,
-                shadowColor: Colors.transparent,
-                child: GestureDetector(
-                  child: Container(
-                    color: Colors.transparent,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // PhotoView(
-                        //   tightMode: true,
-                        //   backgroundDecoration: const BoxDecoration(
-                        //       color: Colors.transparent, boxShadow: []),
-                        //   onTapUp: (
-                        //     BuildContext context,
-                        //     TapUpDetails details,
-                        //     PhotoViewControllerValue controllerValue,
-                        //   ) {
-                        //     Navigator.pop(context);
-                        //   },
-                        //   imageProvider: path.startsWith("http") == true
-                        //       ? CachedNetworkImageProvider(path)
-                        //       : FileImage(File(path)),
-                        //   heroAttributes:
-                        //       const PhotoViewHeroAttributes(tag: "someTag"),
-                        // ),
-                        GestureDetector(
-                          onTap: () {
-                            Navigator.pop(context);
-                          },
-                          child: (path.startsWith("http") == true)
-                              ? CachedNetworkImage(
-                                  imageUrl: path,
-                                  width: double.infinity,
-                                  fit: BoxFit.contain,
-                                )
-                              : Image.file(
-                                  File(path),
-                                  width: double.infinity,
-                                  fit: BoxFit.contain,
-                                ),
+                context: context,
+                builder: (BuildContext context) {
+                  return Dialog(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    child: GestureDetector(
+                      child: Container(
+                        color: Colors.transparent,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // PhotoView(
+                            //   tightMode: true,
+                            //   backgroundDecoration: const BoxDecoration(
+                            //       color: Colors.transparent, boxShadow: []),
+                            //   onTapUp: (
+                            //     BuildContext context,
+                            //     TapUpDetails details,
+                            //     PhotoViewControllerValue controllerValue,
+                            //   ) {
+                            //     Navigator.pop(context);
+                            //   },
+                            //   imageProvider: path.startsWith("http") == true
+                            //       ? CachedNetworkImageProvider(path)
+                            //       : FileImage(File(path)),
+                            //   heroAttributes:
+                            //       const PhotoViewHeroAttributes(tag: "someTag"),
+                            // ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.pop(context);
+                              },
+                              child: (path.startsWith("http") == true)
+                                  ? CachedNetworkImage(
+                                      imageUrl: path,
+                                      width: double.infinity,
+                                      fit: BoxFit.contain,
+                                    )
+                                  : Image.file(
+                                      File(path),
+                                      width: double.infinity,
+                                      fit: BoxFit.contain,
+                                    ),
+                            ),
+                            SizedBox(height: 16.h),
+                            Image.asset(
+                              "assets/ai/ai_cartoon_picture_preview_close.png",
+                              width: 32.w,
+                              height: 32.w,
+                            ),
+                          ],
                         ),
-                        SizedBox(height: 16.h),
-                        Image.asset(
-                          "assets/ai/ai_cartoon_picture_preview_close.png",
-                          width: 32.w,
-                          height: 32.w,
-                        ),
-                      ],
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
                     ),
-                  ),
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                ),
+                  );
+                },
               );
-            },
-          );
 
           openDialog(context);
         },
@@ -1112,11 +1109,11 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                           Obx(() {
                             int generateMode =
                                 Get.find<AiDynamicVideoController>(
-                                  tag: _uniqueKey,
-                                ).generateMode;
+                              tag: _uniqueKey,
+                            ).generateMode;
                             VideoQuality videoQuality =
                                 VideoQuality.fromString(generateMode) ??
-                                VideoQuality.standard;
+                                    VideoQuality.standard;
                             return Text(
                               videoQuality.label,
                               style: TextStyle(
@@ -1201,12 +1198,11 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                                           MainAxisAlignment.center,
                                       children: [
                                         Obx(() {
-                                          int duration =
-                                              Get.find<
-                                                    AiDynamicVideoController
-                                                  >(tag: _uniqueKey)
-                                                  .videoDuration
-                                                  .value;
+                                          int duration = Get.find<
+                                                      AiDynamicVideoController>(
+                                                  tag: _uniqueKey)
+                                              .videoDuration
+                                              .value;
                                           return Text(
                                             "${duration}S",
                                             style: TextStyle(
@@ -1363,10 +1359,10 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                                         controller.bgmTitle1.isNotEmpty == true
                                     ? controller.bgmTitle1
                                     : controller.type == 1 &&
-                                          controller.bgmTitle2.isNotEmpty ==
-                                              true
-                                    ? controller.bgmTitle2
-                                    : "音乐名称",
+                                            controller.bgmTitle2.isNotEmpty ==
+                                                true
+                                        ? controller.bgmTitle2
+                                        : "音乐名称",
                                 style: TextStyle(
                                   color: Color(0xFF0B1843),
                                   fontSize: 14.sp,
@@ -1552,8 +1548,7 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                     ).showTextToVideoPrompts.value;
                     return Expanded(
                       child: Opacity(
-                        opacity:
-                            (Get.find<AiDynamicVideoController>(
+                        opacity: (Get.find<AiDynamicVideoController>(
                                       tag: _uniqueKey,
                                     ).type ==
                                     1 &&
@@ -1570,49 +1565,43 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                                         ? "promptsForText"
                                         : "promptsForImage",
                                     tag: _uniqueKey,
-                                    builder: (AiDynamicVideoController controller) {
+                                    builder:
+                                        (AiDynamicVideoController controller) {
                                       return SizedBox(
                                         height: 24.h,
-                                        child: NotificationListener<ScrollNotification>(
-                                          onNotification:
-                                              (
-                                                ScrollNotification notification,
-                                              ) {
-                                                if (notification
-                                                    is ScrollEndNotification) {
-                                                  controller
-                                                          .scrollingForTextToVideo
-                                                          .value =
-                                                      false;
-                                                } else if (notification
-                                                    is ScrollUpdateNotification) {
-                                                  controller
-                                                          .scrollingForTextToVideo
-                                                          .value =
-                                                      true;
-                                                }
-                                                return false;
-                                              },
+                                        child: NotificationListener<
+                                            ScrollNotification>(
+                                          onNotification: (
+                                            ScrollNotification notification,
+                                          ) {
+                                            if (notification
+                                                is ScrollEndNotification) {
+                                              controller.scrollingForTextToVideo
+                                                  .value = false;
+                                            } else if (notification
+                                                is ScrollUpdateNotification) {
+                                              controller.scrollingForTextToVideo
+                                                  .value = true;
+                                            }
+                                            return false;
+                                          },
                                           child: ListView.separated(
                                             scrollDirection: Axis.horizontal,
                                             itemBuilder: (context, index) {
                                               Map<dynamic, dynamic> data = {};
                                               if (controller.type == 0) {
                                                 if (controller
-                                                        .currentMode
-                                                        .value ==
+                                                        .currentMode.value ==
                                                     0) {
                                                   data = controller
                                                       .prompts1[index];
                                                 } else if (controller
-                                                        .currentMode
-                                                        .value ==
+                                                        .currentMode.value ==
                                                     1) {
                                                   data = controller
                                                       .prompts3[index];
                                                 } else if (controller
-                                                        .currentMode
-                                                        .value ==
+                                                        .currentMode.value ==
                                                     2) {
                                                   data = controller
                                                       .prompts4[index];
@@ -1624,20 +1613,21 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                                               return GestureDetector(
                                                 child: Container(
                                                   height: 24.h,
-                                                  padding:
-                                                      EdgeInsetsDirectional.only(
-                                                        start: 10.w,
-                                                        end: 10.w,
-                                                      ),
+                                                  padding: EdgeInsetsDirectional
+                                                      .only(
+                                                    start: 10.w,
+                                                    end: 10.w,
+                                                  ),
                                                   alignment:
                                                       AlignmentDirectional
                                                           .center,
                                                   decoration: BoxDecoration(
                                                     color: Colors.white,
                                                     borderRadius:
-                                                        BorderRadiusDirectional.all(
-                                                          Radius.circular(12.h),
-                                                        ),
+                                                        BorderRadiusDirectional
+                                                            .all(
+                                                      Radius.circular(12.h),
+                                                    ),
                                                     border: Border.all(
                                                       color: Color(0xFFEAEEFF),
                                                       width: 1.w,
@@ -1655,49 +1645,41 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                                                   ),
                                                 ),
                                                 onTap: () {
-                                                  if ((Get.find<
-                                                                AiDynamicVideoController
-                                                              >(tag: _uniqueKey)
+                                                  if ((Get.find<AiDynamicVideoController>(
+                                                                  tag:
+                                                                      _uniqueKey)
                                                               .type ==
                                                           1 &&
                                                       showPrompts)) {
                                                     _checkLogin(() {
-                                                      Get.find<
-                                                            AiDynamicVideoController
-                                                          >(tag: _uniqueKey)
+                                                      Get.find<AiDynamicVideoController>(
+                                                              tag: _uniqueKey)
                                                           .addPrompts(
-                                                            data['prompt'],
-                                                          );
+                                                        data['prompt'],
+                                                      );
                                                     });
                                                   }
                                                 },
                                               );
                                             },
-                                            separatorBuilder:
-                                                (
-                                                  BuildContext context,
-                                                  int index,
-                                                ) {
-                                                  return SizedBox(width: 4.w);
-                                                },
+                                            separatorBuilder: (
+                                              BuildContext context,
+                                              int index,
+                                            ) {
+                                              return SizedBox(width: 4.w);
+                                            },
                                             itemCount: controller.type == 0
-                                                ? controller
-                                                              .currentMode
-                                                              .value ==
-                                                          0
-                                                      ? controller
-                                                            .prompts1
-                                                            .length
-                                                      : controller
-                                                                .currentMode
+                                                ? controller.currentMode
+                                                            .value ==
+                                                        0
+                                                    ? controller.prompts1.length
+                                                    : controller.currentMode
                                                                 .value ==
                                                             1
-                                                      ? controller
-                                                            .prompts3
-                                                            .length
-                                                      : controller
-                                                            .prompts4
-                                                            .length
+                                                        ? controller
+                                                            .prompts3.length
+                                                        : controller
+                                                            .prompts4.length
                                                 : controller.prompts2.length,
                                           ),
                                         ),
@@ -1710,8 +1692,8 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                                     child: Obx(() {
                                       bool show =
                                           Get.find<AiDynamicVideoController>(
-                                            tag: _uniqueKey,
-                                          ).scrollingForTextToVideo.value;
+                                        tag: _uniqueKey,
+                                      ).scrollingForTextToVideo.value;
                                       return show == true
                                           ? Align(
                                               alignment: Alignment.centerLeft,
@@ -1743,8 +1725,8 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                                     child: Obx(() {
                                       bool show =
                                           Get.find<AiDynamicVideoController>(
-                                            tag: _uniqueKey,
-                                          ).scrollingForTextToVideo.value;
+                                        tag: _uniqueKey,
+                                      ).scrollingForTextToVideo.value;
                                       return show == true
                                           ? Align(
                                               alignment: Alignment.centerRight,
@@ -1833,50 +1815,52 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
       bool isEnabled = Get.find<AiDynamicVideoController>(
         tag: _uniqueKey,
       ).allowRequest.value;
-      return SizedBox(
-        height: 50,
-        child: FilledButton(
-          onPressed: () {
-            if (isEnabled == true) {
-              _checkLogin(() {
-                if (userController.user.value?.isVip == 1) {
+      return Padding(
+          padding: EdgeInsets.only(bottom: 15.h),
+          child: SizedBox(
+            height: 50,
+            child: FilledButton(
+              onPressed: () {
+                if (isEnabled == true) {
+                  _checkLogin(() {
+                    if (userController.user.value?.isVip == 1) {
+                      Get.find<AiDynamicVideoController>(
+                        tag: _uniqueKey,
+                      ).generateVideo();
+                    } else {
+                      // launchProvider.gotoPay(context, closePay: true);
+                      launchProvider.showPayHalfDialog(
+                        context,
+                        "ai_text_to_video_v2",
+                      );
+                    }
+                  });
+                } else {
+                  ///主要是为了触发错误提示
                   Get.find<AiDynamicVideoController>(
                     tag: _uniqueKey,
                   ).generateVideo();
-                } else {
-                  // launchProvider.gotoPay(context, closePay: true);
-                  launchProvider.showPayHalfDialog(
-                    context,
-                    "ai_text_to_video_v2",
-                  );
                 }
-              });
-            } else {
-              ///主要是为了触发错误提示
-              Get.find<AiDynamicVideoController>(
-                tag: _uniqueKey,
-              ).generateVideo();
-            }
-          },
-          style: TextButton.styleFrom(
-            backgroundColor: isEnabled
-                ? const Color(0xFF5B4BF7)
-                : const Color(0xFFB5B9C6),
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+              },
+              style: TextButton.styleFrom(
+                backgroundColor: isEnabled
+                    ? const Color(0xFF5B4BF7)
+                    : const Color(0xFFB5B9C6),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                "立即生成",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
-          ),
-          child: Text(
-            "立即生成",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      );
+          ));
     });
   }
 
@@ -1901,9 +1885,8 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
     if (index == 0 && calculateSuccessForImage == true) return;
     double height = 0;
     try {
-      ScrollController scrollController = index == 1
-          ? _scrollControllerForText
-          : _scrollControllerForImage;
+      ScrollController scrollController =
+          index == 1 ? _scrollControllerForText : _scrollControllerForImage;
       double maxScrollExtent = scrollController.position.maxScrollExtent;
       if (maxScrollExtent > 0) {
         if (maxScrollExtent >= 400.h) {
@@ -1941,9 +1924,8 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
   Widget _buildTabView({required BuildContext context, int index = 0}) {
     return ListView(
       padding: EdgeInsets.zero,
-      controller: index == 1
-          ? _scrollControllerForText
-          : _scrollControllerForImage,
+      controller:
+          index == 1 ? _scrollControllerForText : _scrollControllerForImage,
       children: [
         _hotProductView(context: context, index: index),
 
@@ -2048,16 +2030,16 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
               child: Stack(
                 children: [
                   Obx(() => SizedBox(
-                    width: double.infinity,
-                    height: 160.w,
-                    child: Image.asset(
-                      userController.isShowSpringStyle.value
-                          ? "assets/springFestival/springFestival-3.png"
-                          : "assets/ai/aiVideo/img_bg.png",
-                      height: 160.w,
-                      fit: BoxFit.fill,
-                    ),
-                  )),
+                        width: double.infinity,
+                        height: 160.w,
+                        child: Image.asset(
+                          userController.isShowSpringStyle.value
+                              ? "assets/springFestival/springFestival-3.png"
+                              : "assets/ai/aiVideo/img_bg.png",
+                          height: 160.w,
+                          fit: BoxFit.fill,
+                        ),
+                      )),
                   SizedBox(
                     width: double.infinity,
                     height: double.infinity,
@@ -2087,7 +2069,8 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                                       },
                                     ),
                                   if (widget.fromHome == true &&
-                                      userController.isShowSpringStyle.value == false)
+                                      userController.isShowSpringStyle.value ==
+                                          false)
                                     Image.asset(
                                       "assets/ai/aiVideo/img_ai_dynamic_video_icon.png",
                                       height: 28.h,
@@ -2177,10 +2160,10 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                                                       fontSize: 16.sp,
                                                       color:
                                                           controller.type == 0
-                                                          ? const Color(
-                                                              0xFF5A4BF7,
-                                                            )
-                                                          : Colors.white,
+                                                              ? const Color(
+                                                                  0xFF5A4BF7,
+                                                                )
+                                                              : Colors.white,
                                                       fontWeight:
                                                           FontWeight.bold,
                                                     ),
@@ -2188,8 +2171,8 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                                                   Opacity(
                                                     opacity:
                                                         controller.type == 0
-                                                        ? 1
-                                                        : 0,
+                                                            ? 1
+                                                            : 0,
                                                     child: SizedBox(
                                                       height: 8.h,
                                                     ),
@@ -2197,8 +2180,8 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                                                   Opacity(
                                                     opacity:
                                                         controller.type == 0
-                                                        ? 1
-                                                        : 0,
+                                                            ? 1
+                                                            : 0,
                                                     child: Container(
                                                       width: 30.w,
                                                       height: 3.h,
@@ -2207,9 +2190,10 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                                                           0xFF5A4BF7,
                                                         ),
                                                         borderRadius:
-                                                            BorderRadius.circular(
-                                                              1.5.h,
-                                                            ),
+                                                            BorderRadius
+                                                                .circular(
+                                                          1.5.h,
+                                                        ),
                                                       ),
                                                     ),
                                                   ),
@@ -2242,10 +2226,10 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                                                       fontSize: 16.sp,
                                                       color:
                                                           controller.type == 1
-                                                          ? const Color(
-                                                              0xFF5A4BF7,
-                                                            )
-                                                          : Colors.white,
+                                                              ? const Color(
+                                                                  0xFF5A4BF7,
+                                                                )
+                                                              : Colors.white,
                                                       fontWeight:
                                                           FontWeight.bold,
                                                     ),
@@ -2253,8 +2237,8 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                                                   Opacity(
                                                     opacity:
                                                         controller.type == 1
-                                                        ? 1
-                                                        : 0,
+                                                            ? 1
+                                                            : 0,
                                                     child: SizedBox(
                                                       height: 8.h,
                                                     ),
@@ -2262,8 +2246,8 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                                                   Opacity(
                                                     opacity:
                                                         controller.type == 1
-                                                        ? 1
-                                                        : 0,
+                                                            ? 1
+                                                            : 0,
                                                     child: Container(
                                                       width: 30.w,
                                                       height: 3.h,
@@ -2272,9 +2256,10 @@ class AIDynamicVideoPageState extends State<AIDynamicVideoPage>
                                                           0xFF5A4BF7,
                                                         ),
                                                         borderRadius:
-                                                            BorderRadius.circular(
-                                                              1.5.h,
-                                                            ),
+                                                            BorderRadius
+                                                                .circular(
+                                                          1.5.h,
+                                                        ),
                                                       ),
                                                     ),
                                                   ),

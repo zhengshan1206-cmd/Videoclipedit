@@ -17,6 +17,7 @@ class NormalInputView extends StatefulWidget {
   final Widget Function(BuildContext context)? toolBarBuilder;
   final bool scrollToBottom;
   final bool focusNode;
+  final FocusNode? externalFocusNode;
 
   const NormalInputView({
     super.key,
@@ -30,6 +31,7 @@ class NormalInputView extends StatefulWidget {
     this.onFinished,
     this.scrollToBottom = false,
     this.focusNode = true,
+    this.externalFocusNode,
   });
 
   @override
@@ -65,6 +67,7 @@ class _NormalInputViewState extends State<NormalInputView> {
       toolBarBuilder: widget.toolBarBuilder,
       scrollToBottom: widget.scrollToBottom,
       focusNode: widget.focusNode,
+      externalFocusNode: widget.externalFocusNode,
     );
   }
 }
@@ -83,6 +86,7 @@ class NormalInputViewInner extends StatefulWidget {
     this.onFinished,
     this.scrollToBottom = false,
     this.focusNode = true,
+    this.externalFocusNode,
   });
 
   final bool canInput;
@@ -96,7 +100,7 @@ class NormalInputViewInner extends StatefulWidget {
   final Widget Function(BuildContext context)? toolBarBuilder;
   final bool scrollToBottom;
   final bool focusNode;
-  
+  final FocusNode? externalFocusNode;
 
   @override
   State<NormalInputViewInner> createState() => _NormalInputViewInnerState();
@@ -104,7 +108,8 @@ class NormalInputViewInner extends StatefulWidget {
 
 class _NormalInputViewInnerState extends State<NormalInputViewInner> {
   late TextEditingController controller;
-  late final FocusNode focusNode = FocusNode();
+  late final FocusNode focusNode;
+  late final bool _ownsFocusNode;
   final ScrollController scrollController = ScrollController();
 
   late var inputValue = (widget.initialValue ?? "").obs;
@@ -117,18 +122,24 @@ class _NormalInputViewInnerState extends State<NormalInputViewInner> {
   void dispose() {
     controller.removeListener(_textChanged);
     focusNode.removeListener(_focusNodeStatusChanged);
+    if (_ownsFocusNode) {
+      focusNode.dispose();
+    }
+    controller.dispose();
     scrollController.dispose();
     super.dispose();
   }
 
   @override
   void initState() {
+    _ownsFocusNode = widget.externalFocusNode == null;
+    focusNode = widget.externalFocusNode ?? FocusNode();
     controller = TextEditingController(text: inputValue.value)
       ..addListener(_textChanged);
 
     Future.microtask(() {
       focusNode.addListener(_focusNodeStatusChanged);
-      if(widget.focusNode){
+      if (widget.focusNode) {
         focusNode.requestFocus();
       }
       
@@ -242,6 +253,8 @@ class _NormalInputViewInnerState extends State<NormalInputViewInner> {
         autofocus: false,
         focusNode: focusNode,
         scrollController: scrollController,
+        // 避免聚焦时系统/框架再上推视图，把顶部标题顶出安全区
+        scrollPadding: EdgeInsets.zero,
         style: TextStyle(
           fontSize: 14.sp,
           fontWeight: FontWeight.normal,

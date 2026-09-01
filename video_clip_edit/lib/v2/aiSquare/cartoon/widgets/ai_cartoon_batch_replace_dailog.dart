@@ -129,7 +129,7 @@ class _AiCartoonBatchReplaceDailogState<T extends AiSettingsMixin>
     return Consumer<T>(builder: (context, provider, child) {
       final bandedWords = provider.bandedWords;
       byDebugPrint(bandedWords, tag: "prohibiteWords:");
-      if(provider.selectedBandedWord.isEmpty){
+      if (provider.selectedBandedWord.isEmpty) {
         provider.selectedBandedWord = bandedWords[0];
       }
 

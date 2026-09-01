@@ -171,8 +171,11 @@ class DioUtils {
 
       ///检查是否有网络链接
       var connectivityResult = await (Connectivity().checkConnectivity());
-      Get.log("===connectivityResult=== ${connectivityResult.first}");
-      if (connectivityResult.first == ConnectivityResult.none) {
+      final List<ConnectivityResult> list = connectivityResult is List<ConnectivityResult>
+          ? connectivityResult as List<ConnectivityResult>
+          : <ConnectivityResult>[connectivityResult as ConnectivityResult];
+      Get.log("===connectivityResult=== $list");
+      if (list.isEmpty || list.first == ConnectivityResult.none) {
         _onError(ExceptionHandle.socket_error, '网络异常，请检查你的网络！', onError);
         return;
       }
@@ -189,16 +192,30 @@ class DioUtils {
       onSuccess?.call(response.data);
     } catch (e, stackTrace) {
       // Dio 请求失败，记录异常便于排查 9999 等未知异常
-      byDebugPrint(
-        'Dio请求失败 url=$url type=${e.runtimeType} msg=$e',
-        tag: '[Dio] ',
-      );
       if (e is DioException) {
+        final err = e.error;
+        if (err is FormatException) {
+          byDebugPrint(
+            '接口返回 JSON 解析失败: $err',
+            tag: '[Dio] ',
+          );
+          LogUtils.e('接口返回 JSON 解析失败: $err', tag: '[Dio] ');
+          _onError(
+            ExceptionHandle.parse_error,
+            kNetSilentParseMsg,
+            onError,
+          );
+          return;
+        }
         byDebugPrint(
           'DioException type=${e.type} error=${e.error} response=${e.response?.statusCode}',
           tag: '[Dio] ',
         );
       }
+      byDebugPrint(
+        'Dio请求失败 url=$url type=${e.runtimeType} msg=$e',
+        tag: '[Dio] ',
+      );
       byDebugPrint('Dio请求失败 stackTrace: $stackTrace', tag: '[Dio] ');
       httpRequest(
         method,
@@ -250,6 +267,15 @@ class DioUtils {
       }
     } catch (e) {
       print('________二次请求网络异常$e');
+      if (e is FormatException) {
+        LogUtils.e('二次请求 JSON 解析失败: $e', tag: '[Dio] ');
+        _onError(
+          ExceptionHandle.parse_error,
+          kNetSilentParseMsg,
+          onError,
+        );
+        return;
+      }
       final NetError error = ExceptionHandle.handleException(e);
       _onError(error.code, error.msg, onError);
     }
@@ -275,8 +301,8 @@ class DioUtils {
     final routeManager = RouteHistoryManager.instance;
     final currentRoute = routeManager.getCurrentRoute();
     final previousRoute = routeManager.getPreviousRoute();
-    headers[ConstKeys.kPagePath] = currentRoute;
-    headers[ConstKeys.kPrePagePath] = previousRoute;
+    headers['page_path'] = currentRoute;
+    headers['pre_page_path'] = previousRoute;
     return headers;
   }
 
@@ -295,8 +321,8 @@ class DioUtils {
     final routeManager = RouteHistoryManager.instance;
     final currentRoute = routeManager.getCurrentRoute();
     final previousRoute = routeManager.getPreviousRoute();
-    _dio.options.headers[ConstKeys.kPagePath] = currentRoute;
-    _dio.options.headers[ConstKeys.kPrePagePath] = previousRoute;
+    _dio.options.headers['page_path'] = currentRoute;
+    _dio.options.headers['pre_page_path'] = previousRoute;
   }
 }
 
@@ -313,12 +339,19 @@ void _cancelLogPrint(dynamic e, String url) {
 }
 
 void _onError(int? code, String msg, NetErrorCallback? onError) {
-  if (code == null) {
-    code = ExceptionHandle.unknown_error;
-    msg = '未知异常';
+  final int outCode = code ?? ExceptionHandle.unknown_error;
+  String outMsg = msg;
+  if (msg == kNetSilentParseMsg) {
+    onError?.call(outCode, outMsg);
+    return;
   }
-  LogUtils.e('接口请求异常： code: $code, mag: $msg');
-  onError?.call(code, msg);
+  if (msg == '未知异常') {
+    outMsg = '请求失败，请稍后重试';
+  } else if (code == null && msg.trim().isEmpty) {
+    outMsg = '请求失败，请稍后重试';
+  }
+  LogUtils.e('接口请求异常： code: $outCode, mag: $outMsg');
+  onError?.call(outCode, outMsg);
 }
 
 /// 自定义Header

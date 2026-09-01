@@ -371,10 +371,16 @@ class NewAiVideoController extends GetxController {
               Get.context!,
               maxCount: 1,
               type: RequestType.image,
-              onSelectedCallback: (asstes) async {
-                if (asstes.isEmpty) return;
-                File? file = await asstes.first.file;
+              onSelectedCallback: (asstes, {List<String>? urls}) async {
+                File? file;
+                if (urls != null && urls.isNotEmpty) {
+                  file = File(urls.first);
+                  if (!file.existsSync()) return;
+                } else if (asstes.isNotEmpty) {
+                  file = await asstes.first.file;
+                }
                 if (file == null) return;
+                final filePath = file.path;
                 final fileSize = ImageSizeGetter.getSize(FileInput(file));
                 if (fileSize.width < 300 || fileSize.height < 200) {
                   BotToast.showText(text: "图片尺寸过小，请重新选择");
@@ -385,7 +391,7 @@ class NewAiVideoController extends GetxController {
                   onSuccess: (UploadInfoBean infoBean) {
                     ByFfmpegUtil.uploadFile(
                       infoBean: infoBean,
-                      filePath: file.path,
+                      filePath: filePath,
                       onSuccess: (resp) {
                         Get.log("上传的数据信息===> ${infoBean.toJson()}");
 
@@ -393,12 +399,18 @@ class NewAiVideoController extends GetxController {
                         contentsRisk(
                           url: infoBean.objectUrl,
                           onSuccess: () {
+                            /// 仅使用服务端返回的 object_url，且必须为网络地址，避免提交本地路径
+                            final networkUrl = infoBean.objectUrl;
+                            if (!ByCommonUtils.isNetworkUrl(networkUrl)) {
+                              BotToast.showText(text: "上传返回地址异常，请重试");
+                              return;
+                            }
                             if (selectImageType == 1) {
-                              imageUrl = infoBean.objectUrl;
+                              imageUrl = networkUrl;
                             } else if (selectImageType == 2) {
-                              imageUrl2 = infoBean.objectUrl;
+                              imageUrl2 = networkUrl;
                             } else {
-                              imageUrl3 = infoBean.objectUrl;
+                              imageUrl3 = networkUrl;
                             }
                             updateButtonState();
                             update();
@@ -840,8 +852,7 @@ class NewAiVideoController extends GetxController {
   }
 
   bool checkVip() {
-    final isVip =
-        Provider.of<LaunchProvider>(
+    final isVip = Provider.of<LaunchProvider>(
           Get.context!,
           listen: false,
         ).launchInfo?.isVip ??

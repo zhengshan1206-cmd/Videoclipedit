@@ -129,76 +129,67 @@ class LoginContentPageState extends State<LoginContentPage> {
             // 如果是一键登录但不可用，也显示手机号登录界面
             final shouldShowPhone =
                 controller.loginType.value == LoginType.phone ||
-                (controller.loginType.value == LoginType.oneKey &&
-                    !controller.oneKeyGetPhone.value);
+                    (controller.loginType.value == LoginType.oneKey &&
+                        !controller.oneKeyGetPhone.value);
             return Offstage(
               offstage: !shouldShowPhone,
               child: _buildPhoneCodeWidgetr(),
             );
           }),
-          Obx(
-            () => Offstage(
-              offstage: controller.loginType.value != LoginType.wx,
-              child: _buildOtherMehods(context),
-            ),
-          ),
+          Obx(() => Offstage(
+                offstage: controller.loginType.value != LoginType.wx,
+                child: _buildOtherMehods(context),
+              )),
           Obx(() {
             final shouldShowSpacer =
                 controller.loginType.value == LoginType.phone ||
-                (controller.loginType.value == LoginType.oneKey &&
-                    !controller.oneKeyGetPhone.value);
+                    (controller.loginType.value == LoginType.oneKey &&
+                        !controller.oneKeyGetPhone.value);
             return Offstage(
               offstage: !shouldShowSpacer,
               child: SizedBox(height: 18.w),
             );
           }),
           if (!controller.onlyPhone! && controller.oneKeyGetPhone.value)
-            Obx(
-              () => Offstage(
-                offstage: controller.loginType.value != LoginType.phone,
-                child: GestureDetector(
-                  onTap: () {
-                    final isAudit = context
-                        .read<LaunchProvider>()
-                        .launchInfo!
-                        .isAudit;
-                    if (isAudit == 1) {
-                      controller.agreementCheckedStatusChanged(false);
-                    }
+            Obx(() => Offstage(
+                  offstage: controller.loginType.value != LoginType.phone,
+                  child: GestureDetector(
+                    onTap: () {
+                      final isAudit =
+                          context.read<LaunchProvider>().launchInfo!.isAudit;
+                      if (isAudit == 1) {
+                        controller.agreementCheckedStatusChanged(false);
+                      }
 
-                    /// 切换为一键登录
-                    controller.updateLoginType(LoginType.oneKey);
-                    controller.initOneKeyWidget();
-                  },
-                  child: Text(
-                    "本机号码一键登录",
-                    style: TextStyle(color: Colors.black, fontSize: 14.sp),
+                      /// 切换为一键登录
+                      controller.updateLoginType(LoginType.oneKey);
+                      controller.initOneKeyWidget();
+                    },
+                    child: Text(
+                      "本机号码一键登录",
+                      style: TextStyle(color: Colors.black, fontSize: 14.sp),
+                    ),
                   ),
-                ),
-              ),
-            ),
+                )),
           SizedBox(height: controller.onlyPhone! ? 15.w : 5.w),
           GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () {
               controller.agreementCheckedStatusChanged(
-                !controller.agreementChecked.value,
-              );
+                  !controller.agreementChecked.value);
             },
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 20),
               child: Row(
                 children: [
                   const Spacer(),
-                  Obx(
-                    () => Image.asset(
-                      controller.agreementChecked.value
-                          ? "assets/login/checked.png"
-                          : "assets/login/uncheck.png",
-                      width: 16,
-                      height: 16,
-                    ),
-                  ),
+                  Obx(() => Image.asset(
+                        controller.agreementChecked.value
+                            ? "assets/login/checked.png"
+                            : "assets/login/uncheck.png",
+                        width: 16,
+                        height: 16,
+                      )),
                   const SizedBox(width: 5),
                   ByWidgetsUtil.commonRichText(
                     texts: [
@@ -211,15 +202,14 @@ class LoginContentPageState extends State<LoginContentPage> {
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
                             ByNavRouterUtils.jumpWebViewPage(
-                              context,
-                              "",
-                              context
-                                      .read<LaunchProvider>()
-                                      .launchInfo
-                                      ?.config
-                                      .protocol ??
-                                  "",
-                            );
+                                context,
+                                "",
+                                context
+                                        .read<LaunchProvider>()
+                                        .launchInfo
+                                        ?.config
+                                        .protocol ??
+                                    "");
                           },
                       ),
                       TextSpan(
@@ -230,22 +220,20 @@ class LoginContentPageState extends State<LoginContentPage> {
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
                             ByNavRouterUtils.jumpWebViewPage(
-                              context,
-                              "",
-                              context
-                                      .read<LaunchProvider>()
-                                      .launchInfo
-                                      ?.config
-                                      .privacy ??
-                                  "",
-                            );
+                                context,
+                                "",
+                                context
+                                        .read<LaunchProvider>()
+                                        .launchInfo
+                                        ?.config
+                                        .privacy ??
+                                    "");
                           },
                       ),
                     ],
                     fontSize: 12.sp,
-                    textColor: ByColorUtil.LoginTextfieldTextColor.withOpacity(
-                      0.6,
-                    ),
+                    textColor:
+                        ByColorUtil.LoginTextfieldTextColor.withOpacity(0.6),
                   ),
                   const Spacer(),
                 ],
@@ -276,14 +264,12 @@ class LoginContentPageState extends State<LoginContentPage> {
                 },
               ),
               Offstage(
-                offstage:
-                    (controller.phoneNO?.length ?? 0) == 11 ||
+                offstage: (controller.phoneNO?.length ?? 0) == 11 ||
                     !phoneNode.hasFocus,
                 child: SizedBox(height: 3.h),
               ),
               Offstage(
-                offstage:
-                    (controller.phoneNO?.length ?? 0) == 11 ||
+                offstage: (controller.phoneNO?.length ?? 0) == 11 ||
                     !phoneNode.hasFocus,
                 child: Row(
                   children: [
@@ -301,7 +287,7 @@ class LoginContentPageState extends State<LoginContentPage> {
                     ),
                   ],
                 ),
-              ),
+              )
             ],
           ),
         ),

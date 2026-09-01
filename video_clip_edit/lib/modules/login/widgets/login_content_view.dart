@@ -24,6 +24,7 @@ import 'package:video_clip_edit/modules/login/widgets/count_down_btn.dart';
 import 'package:video_clip_edit/modules/login/widgets/login_text_field.dart';
 import 'package:video_clip_edit/modules/login/widgets/login_agreement_view.dart';
 import 'package:video_clip_edit/utils/comon/by_navigator_util.dart';
+import 'package:video_clip_edit/utils/comon/by_package_utils.dart';
 import 'package:video_clip_edit/modules/main/controllers/main_controller.dart';
 import 'package:video_clip_edit/v2/profile/controllers/home_mine_controller.dart';
 
@@ -152,31 +153,28 @@ class LoginContentViewState extends State<LoginContentView> {
     EasyLoading.show();
     oneKeyLoginManager = OneKeyLoginManager();
     //"tA75VwxF"
-    oneKeyLoginManager
-        .init(appId: "fCS7ETTA")
-        .then((shanYanResult) {
-          setState(() {
-            // print("~~~~~~~~闪验：：：code:$_code,,content:$_content,,result: $_result");
-            print("~~~~~~~~闪验结果：：：code111");
-            if (shanYanResult.code != 1000) {
-              EasyLoading.dismiss();
-              provider.oneKeyGetPhone = false;
-              // 闪验初始化失败，切换到验证码登录
-              if (provider.loginType != LoginType.phone) {
-                provider.updateLoginType(LoginType.phone);
-              }
-            }
-          });
-        })
-        .catchError((error) {
-          // 闪验初始化异常，切换到验证码登录
+    oneKeyLoginManager.init(appId: "fCS7ETTA").then((shanYanResult) {
+      setState(() {
+        // print("~~~~~~~~闪验：：：code:$_code,,content:$_content,,result: $_result");
+        print("~~~~~~~~闪验结果：：：code111");
+        if (shanYanResult.code != 1000) {
           EasyLoading.dismiss();
           provider.oneKeyGetPhone = false;
+          // 闪验初始化失败，切换到验证码登录
           if (provider.loginType != LoginType.phone) {
             provider.updateLoginType(LoginType.phone);
           }
-          print("闪验初始化异常: $error");
-        });
+        }
+      });
+    }).catchError((error) {
+      // 闪验初始化异常，切换到验证码登录
+      EasyLoading.dismiss();
+      provider.oneKeyGetPhone = false;
+      if (provider.loginType != LoginType.phone) {
+        provider.updateLoginType(LoginType.phone);
+      }
+      print("闪验初始化异常: $error");
+    });
 
     oneKeyLoginManager.setOneKeyLoginListener((ShanYanResult shanYanResult) {
       byDebugPrint(shanYanResult, tag: "XXXXXXX点击：");
@@ -380,44 +378,41 @@ class LoginContentViewState extends State<LoginContentView> {
       }
     });
 
-    oneKeyLoginManager
-        .getPhoneInfo()
-        .then((ShanYanResult shanYanResult) {
-          ShanYanResult shanYanPhoneInfoResult = shanYanResult;
-          String? result = shanYanPhoneInfoResult.message;
-          var dataJson = json.decode(result!);
-          setState(() {
-            EasyLoading.dismiss();
-            print("~~~~~~~~闪验结果：：：code:$dataJson");
-            if (shanYanPhoneInfoResult.code == 1000) {
-              oneKeyLoginnumberPhone = dataJson["number"];
-              // provider.updateLoginType(LoginType.oneKey);
-              provider.oneKeyGetPhone = true;
-              _startOnKeyLogin();
-              // provider.notifyListeners();
-            } else {
-              // 闪验获取手机号失败，切换到验证码登录
-              provider.oneKeyGetPhone = false;
-              if (provider.loginType == LoginType.oneKey) {
-                provider.updateLoginType(LoginType.phone);
-              }
-              print(
-                "闪验获取手机号失败，code: ${shanYanPhoneInfoResult.code}, message: $dataJson",
-              );
-            }
-          });
-        })
-        .catchError((error) {
-          // 闪验获取手机号异常，切换到验证码登录
-          setState(() {
-            EasyLoading.dismiss();
-            provider.oneKeyGetPhone = false;
-            if (provider.loginType == LoginType.oneKey) {
-              provider.updateLoginType(LoginType.phone);
-            }
-            print("闪验获取手机号异常: $error");
-          });
-        });
+    oneKeyLoginManager.getPhoneInfo().then((ShanYanResult shanYanResult) {
+      ShanYanResult shanYanPhoneInfoResult = shanYanResult;
+      String? result = shanYanPhoneInfoResult.message;
+      var dataJson = json.decode(result!);
+      setState(() {
+        EasyLoading.dismiss();
+        print("~~~~~~~~闪验结果：：：code:$dataJson");
+        if (shanYanPhoneInfoResult.code == 1000) {
+          oneKeyLoginnumberPhone = dataJson["number"];
+          // provider.updateLoginType(LoginType.oneKey);
+          provider.oneKeyGetPhone = true;
+          _startOnKeyLogin();
+          // provider.notifyListeners();
+        } else {
+          // 闪验获取手机号失败，切换到验证码登录
+          provider.oneKeyGetPhone = false;
+          if (provider.loginType == LoginType.oneKey) {
+            provider.updateLoginType(LoginType.phone);
+          }
+          print(
+            "闪验获取手机号失败，code: ${shanYanPhoneInfoResult.code}, message: $dataJson",
+          );
+        }
+      });
+    }).catchError((error) {
+      // 闪验获取手机号异常，切换到验证码登录
+      setState(() {
+        EasyLoading.dismiss();
+        provider.oneKeyGetPhone = false;
+        if (provider.loginType == LoginType.oneKey) {
+          provider.updateLoginType(LoginType.phone);
+        }
+        print("闪验获取手机号异常: $error");
+      });
+    });
   }
 
   @override
@@ -461,8 +456,7 @@ class LoginContentViewState extends State<LoginContentView> {
         children: [
           Offstage(
             // 如果是一键登录但不可用，也显示手机号登录界面
-            offstage:
-                provider.loginType != LoginType.phone &&
+            offstage: provider.loginType != LoginType.phone &&
                 !(provider.loginType == LoginType.oneKey &&
                     !provider.oneKeyGetPhone),
             child: _buildPhoneCodeWidgetr(),
@@ -496,61 +490,57 @@ class LoginContentViewState extends State<LoginContentView> {
           //   ),
           // ),
           SizedBox(height: 5.w),
-          // _weiXinLoginBtn(),
+          _weiXinLoginBtn(),
         ],
       ),
     );
   }
 
   _startOnKeyLogin() {
-    oneKeyLoginManager
-        .openLoginAuth()
-        .then((data) {
-          if (1000 == data.code) {
-            if (provider.pages.isEmpty ||
-                provider.pages.last != LoginType.phone) {
-              provider.updateLoginType(LoginType.phone);
-            }
-          } else {
-            ///一键登录拉起失败，回退到验证码登录
-            EasyLoading.dismiss();
-            provider.oneKeyGetPhone = false;
-            provider.updateLoginType(LoginType.phone);
-            return;
-          }
-          oneKeyLoginManager.setOneKeyLoginListener((data) {
-            if (1000 == data.code) {
-              // 上报一键登录按钮点击埋点
-              ByNavigatorUtil.reportDataPoint(
-                pageTag: "login_page_one_click_btn",
-                operateType: "click",
-                funcDetailTag: _getLoginTypeTag(LoginType.oneKey).toString(),
-                funcDetailImg: "",
-              );
-              oneKeyLoginManager.finishAuthControllerCompletion();
-              setLoginSuccess(provider);
-              provider.oneclickv2(data.token.toString(), context);
-              // ///一键登录获取token成功
-              // ByNavRouterUtils.goBack(context);
-            } else if (1011 == data.code) {
-              ///点击返回/取消 （强制自动销毁）
-              ByNavRouterUtils.goBack(context);
-            } else {
-              ///一键登录获取token失败，回退到验证码登录
-              oneKeyLoginManager.finishAuthControllerCompletion();
-              EasyLoading.dismiss();
-              provider.oneKeyGetPhone = false;
-              provider.updateLoginType(LoginType.phone);
-              // 自动回退不是用户点击触发，不上报埋点
-            }
-          });
-        })
-        .catchError((error) {
-          ///一键登录拉起异常，回退到验证码登录
+    oneKeyLoginManager.openLoginAuth().then((data) {
+      if (1000 == data.code) {
+        if (provider.pages.isEmpty || provider.pages.last != LoginType.phone) {
+          provider.updateLoginType(LoginType.phone);
+        }
+      } else {
+        ///一键登录拉起失败，回退到验证码登录
+        EasyLoading.dismiss();
+        provider.oneKeyGetPhone = false;
+        provider.updateLoginType(LoginType.phone);
+        return;
+      }
+      oneKeyLoginManager.setOneKeyLoginListener((data) {
+        if (1000 == data.code) {
+          // 上报一键登录按钮点击埋点
+          ByNavigatorUtil.reportDataPoint(
+            pageTag: "login_page_one_click_btn",
+            operateType: "click",
+            funcDetailTag: _getLoginTypeTag(LoginType.oneKey).toString(),
+            funcDetailImg: "",
+          );
+          oneKeyLoginManager.finishAuthControllerCompletion();
+          setLoginSuccess(provider);
+          provider.oneclickv2(data.token.toString(), context);
+          // ///一键登录获取token成功
+          // ByNavRouterUtils.goBack(context);
+        } else if (1011 == data.code) {
+          ///点击返回/取消 （强制自动销毁）
+          ByNavRouterUtils.goBack(context);
+        } else {
+          ///一键登录获取token失败，回退到验证码登录
+          oneKeyLoginManager.finishAuthControllerCompletion();
           EasyLoading.dismiss();
           provider.oneKeyGetPhone = false;
           provider.updateLoginType(LoginType.phone);
-        });
+          // 自动回退不是用户点击触发，不上报埋点
+        }
+      });
+    }).catchError((error) {
+      ///一键登录拉起异常，回退到验证码登录
+      EasyLoading.dismiss();
+      provider.oneKeyGetPhone = false;
+      provider.updateLoginType(LoginType.phone);
+    });
   }
 
   Widget _weiXinLoginBtn() {
@@ -606,28 +596,84 @@ class LoginContentViewState extends State<LoginContentView> {
           ),
         ),
         SizedBox(height: 15.h),
-        ByWidgetsUtil.imageBtn(
-          image: "assets/login/wei_xin_logo_icon.png",
-          width: 36.w,
-          height: 36.w,
-          imageWidth: 36.w,
-          imageHeight: 36.w,
-          bgColor: Colors.transparent,
-          onClick: () {
-            // 上报登录按钮点击埋点（微信登录）
-            ByNavigatorUtil.reportDataPoint(
-              pageTag: "login_page_one_click_btn",
-              operateType: "click",
-              funcDetailTag: _getLoginTypeTag(LoginType.wx).toString(),
-              funcDetailImg: "",
-            );
-            setLoginSuccess(provider);
-            provider.clickWechatLogin();
-            // provider.updateLoginType(LoginType.wx);
-          },
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // 华为一键登录（旧版丝滑逻辑：先关闭登录页，延迟后打开华为页，避免关闭/成功时露出验证码）
+            if (ByPackageUtils.isOhos) ...[
+              ByWidgetsUtil.imageBtn(
+                image: "assets/login/huawei.png",
+                width: 36.w,
+                height: 36.w,
+                imageWidth: 36.w,
+                imageHeight: 36.w,
+                bgColor: Colors.transparent,
+                onClick: () {
+                  setLoginSuccess(provider);
+                  ByNavRouterUtils.goBack(context);
+                  Future.delayed(const Duration(milliseconds: 300), () {
+                    final ctx = Get.context;
+                    if (ctx == null || !ctx.mounted) return;
+                    ByNavigatorUtil.startHuaweiLogin(
+                      context: ctx,
+                      loginPageClosedBeforeOpen: true,
+                      onSuccess: () async {
+                        if (widget.successLogin != null) {
+                          widget.successLogin!();
+                        } else {
+                          _executeNextStepAfterLogin();
+                        }
+                      },
+                      onFallback: (reason) async {
+                        if (reason == 'OTHER_LOGIN_METHOD') {
+                          Get.find<UserController>().login(
+                            forcePhoneLogin: true,
+                            successLogin: widget.successLogin,
+                          );
+                        }
+                      },
+                    );
+                  });
+                },
+              ),
+              // SizedBox(width: 20.w),
+            ],
+            // ByWidgetsUtil.imageBtn(
+            //   image: "assets/login/wei_xin_logo_icon.png",
+            //   width: 36.w,
+            //   height: 36.w,
+            //   imageWidth: 36.w,
+            //   imageHeight: 36.w,
+            //   bgColor: Colors.transparent,
+            //   onClick: () {
+            //     ByNavigatorUtil.reportDataPoint(
+            //       pageTag: "login_page_one_click_btn",
+            //       operateType: "click",
+            //       funcDetailTag: _getLoginTypeTag(LoginType.wx).toString(),
+            //       funcDetailImg: "",
+            //     );
+            //     setLoginSuccess(provider);
+            //     provider.clickWechatLogin();
+            //   },
+            // ),
+          ],
         ),
       ],
     );
+  }
+
+  /// 登录成功后的处理（与旧版一致）
+  Future<void> _handleLoginSuccess() async {
+    final Function? loginSuccessCallback = provider.loginSuccess;
+    if (loginSuccessCallback != null) {
+      final dynamic result = loginSuccessCallback();
+      if (result is Future) {
+        await result;
+      }
+      provider.loginSuccess = null;
+      return;
+    }
+    _executeNextStepAfterLogin();
   }
 
   ///验证码登录
@@ -649,14 +695,12 @@ class LoginContentViewState extends State<LoginContentView> {
                 },
               ),
               Offstage(
-                offstage:
-                    (provider.phoneNO?.length ?? 0) == 11 ||
+                offstage: (provider.phoneNO?.length ?? 0) == 11 ||
                     !phoneNode.hasFocus,
                 child: SizedBox(height: 3.h),
               ),
               Offstage(
-                offstage:
-                    (provider.phoneNO?.length ?? 0) == 11 ||
+                offstage: (provider.phoneNO?.length ?? 0) == 11 ||
                     !phoneNode.hasFocus,
                 child: Row(
                   children: [

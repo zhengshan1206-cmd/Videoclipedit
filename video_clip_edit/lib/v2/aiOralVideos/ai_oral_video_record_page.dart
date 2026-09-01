@@ -59,9 +59,7 @@ class _AiOralVideoRecordPageState extends State<AiOralVideoRecordPage> {
       );
       _cameraController = CameraController(
         frontCamera,
-        fps: 30,
         ResolutionPreset.veryHigh,
-        videoBitrate: 3000000,
       );
       await _cameraController?.initialize();
       if (!mounted) return;
@@ -244,7 +242,7 @@ class _AiOralVideoRecordPageState extends State<AiOralVideoRecordPage> {
                     if (_cameras.isEmpty) {
                       return;
                     }
-                    _currentCameraIndex +=1;
+                    _currentCameraIndex += 1;
                     _initializeCamera();
                   },
                 ),

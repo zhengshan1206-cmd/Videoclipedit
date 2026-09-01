@@ -15,6 +15,7 @@ import 'package:video_clip_edit/v2/aiOralVideos/beans/ai_oral_video_item_bean.da
 import 'package:video_clip_edit/v2/aiOralVideos/providers/ai_oral_video_management_provider.dart';
 import 'package:video_clip_edit/v2/aiSquare/draw/widgets/ai_videos_downoad_dialog.dart';
 import 'package:video_clip_edit/v2/aiOralVideos/widgets/ai_oral_video_management_list_view.dart';
+import 'package:video_clip_edit/widgets/common/works_management_bottom_bar_shell.dart';
 
 enum ManagementRecord {
   ///数字人
@@ -63,6 +64,8 @@ class _AiOralVideoManagementPageState extends State<AiOralVideoManagementPage> {
     final isRefreshing = context.select<AiOralVideoManagementProvider, bool>(
       (p) => p.isRefreshing,
     );
+    final editing = context
+        .select<AiOralVideoManagementProvider, bool>((p) => p.videosEditing);
     return Scaffold(
         appBar: _buildAppBar(context),
         backgroundColor: ByColorUtil.CommonPageBgColor,
@@ -70,24 +73,26 @@ class _AiOralVideoManagementPageState extends State<AiOralVideoManagementPage> {
           top: false,
           child: Stack(
             children: [
-              EasyRefresh(
-                refreshOnStart: true,
-                onRefresh: () {
-                  _loadVideos(reset: true);
-                },
-                onLoad: _loadVideos,
-                canRefreshAfterNoMore: true,
-                canLoadAfterNoMore: false,
-                child: VideoManagementView(
-                  tips: tips,
-                  recordType: widget.recordType,
-                ),
-              ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: _buildBottmBar(context),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: EasyRefresh(
+                      refreshOnStart: true,
+                      onRefresh: () {
+                        _loadVideos(reset: true);
+                      },
+                      onLoad: _loadVideos,
+                      canRefreshAfterNoMore: true,
+                      canLoadAfterNoMore: false,
+                      child: VideoManagementView(
+                        tips: tips,
+                        recordType: widget.recordType,
+                      ),
+                    ),
+                  ),
+                  if (editing) _buildBottmBar(context),
+                ],
               ),
               if (isRefreshing)
                 Positioned.fill(
@@ -110,20 +115,15 @@ class _AiOralVideoManagementPageState extends State<AiOralVideoManagementPage> {
 
   _buildBottmBar(BuildContext context) {
     final provider = context.read<AiOralVideoManagementProvider>();
-    return Offstage(
-      offstage: !context
-          .select<AiOralVideoManagementProvider, bool>((p) => p.videosEditing),
-      child: PhysicalModel(
-        color: Colors.black,
-        elevation: 0,
-        child: Container(
-          height: 66.h,
-          width: double.infinity,
-          color: ByColorUtil.WhiteColor,
-          alignment: Alignment.center,
-          child: SizedBox(
-            height: 44.h,
-            child: Row(
+    final rowH = ByScreenUtils.managementBottomActionRowHeight(44.h);
+    final barH = ByScreenUtils.managementBottomBarSurfaceHeight(
+      scaledBarH: 66.h,
+      actionRowHeight: rowH,
+    );
+    return WorksManagementBottomBarShell(
+      barSurfaceHeight: barH,
+      actionRowHeight: rowH,
+      actionsRow: Row(
               children: [
                 SizedBox(
                   width: 12.w,
@@ -240,9 +240,6 @@ class _AiOralVideoManagementPageState extends State<AiOralVideoManagementPage> {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
     );
   }
 

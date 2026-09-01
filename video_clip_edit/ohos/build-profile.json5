@@ -1,0 +1,85 @@
+{
+  "app": {
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "storeFile": "/Users/frcc/Desktop/cd/harmony3/harmony3/video_clip_edit/ohos/sign/mbgf.p12",
+          "storePassword": "0000001CAA82F63E56129C7ABEE96A58F5F7203D871CAAEDE962B20E655BC038FFC18B3ACD4CF3BA1E696FD8",
+          "keyAlias": "mbgfKey",
+          "keyPassword": "0000001CD19E031ADA1BB011C3D60C4950CD769BA52EDD1BA4164979C39F8DB831F2A72937D2FCE26D5FD4E2",
+          "signAlg": "SHA256withECDSA",
+          "profile": "/Users/frcc/Desktop/cd/harmony3/harmony3/video_clip_edit/ohos/sign/debug/mbgfProfileLoginDebugDebug.p7b",
+          "certpath": "/Users/frcc/Desktop/cd/harmony3/harmony3/video_clip_edit/ohos/sign/debug/mbgfLoginDebug.cer"
+        }
+      },
+      {
+        "name": "channel",
+        "type": "HarmonyOS",
+        "material": {
+          "storeFile": "/Users/frcc/Desktop/cd/harmony3/harmony3/video_clip_edit/ohos/sign/mbgf.p12",
+          "storePassword": "0000001C4582E0FACA9E37F0A198A41A13FEA6193FBD26ED99A6740F32A0F4B0D030437C9C96FE6379AF390B",
+          "keyAlias": "mbgfKey",
+          "keyPassword": "0000001CFFB2A6F2B333895CC3182E2D3595B2CF844FB1495C0BAB013E4366FEE9407FBA556320E5C0DFADDB",
+          "signAlg": "SHA256withECDSA",
+          "profile": "/Users/frcc/Desktop/cd/harmony3/harmony3/video_clip_edit/ohos/sign/release/mbgfRelease.p7b",
+          "certpath": "/Users/frcc/Desktop/cd/harmony3/harmony3/video_clip_edit/ohos/sign/release/mbgfRelease.cer"
+        }
+      },
+      {
+        "name": "release",
+        "type": "HarmonyOS",
+        "material": {
+          "storeFile": "/Users/frcc/Desktop/cd/harmony3/harmony3/video_clip_edit/ohos/sign/mbgf.p12",
+          "storePassword": "0000001C039404D5C4ECCB6A10ECB1BC5C06F2E5E7AA40CB520CE1CE202E2416CA87631EC577334DD020E345",
+          "keyAlias": "mbgfKey",
+          "keyPassword": "0000001C2C4157B3E6E501D528357AA8803055F0C63B7DEC5FE04771428407764DE290E70F1424D7B531FCA8",
+          "signAlg": "SHA256withECDSA",
+          "profile": "/Users/frcc/Desktop/cd/harmony3/harmony3/video_clip_edit/ohos/sign/release/mbgfProfileLoginReleasRelease.p7b",
+          "certpath": "/Users/frcc/Desktop/cd/harmony3/harmony3/video_clip_edit/ohos/sign/release/mbgfLoginRelease.cer"
+        }
+      }
+    ],
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+        "compatibleSdkVersion": "5.0.2(14)",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "strictMode": {
+            "useNormalizedOHMUrl": true
+          }
+        },
+        "targetSdkVersion": "5.1.1(19)"
+      },
+      {
+        "name": "release",
+        "signingConfig": "release",
+        "compatibleSdkVersion": "5.0.2(14)",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "strictMode": {
+            "useNormalizedOHMUrl": true
+          }
+        },
+        "targetSdkVersion": "5.1.1(19)"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    }
+  ]
+}

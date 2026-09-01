@@ -2,6 +2,9 @@ enum ChannelType {
   ///华为应用市场
   huawei('e30dbe3dff145d54', 414),
 
+  ///鸿蒙应用市场
+  harmony('29afcdc0700fdeec', 1833),
+
   ///快手-磁力聚星
   kwaiMgs('d512a115aa4d351a', 719),
 
@@ -37,12 +40,6 @@ enum ChannelType {
 
   /// 腾讯投放
   tencentLaunch('644e58b2cd60a708', 436),
-
-  ///头条
-  headlinesTest('67d6883cab7d84b1', 1516),
-
-  ///录屏包
-  screenRecord('109bcee76d1c7589', 2438),
 
   ///低价策略
   lowPrice('882cd7bb079ffbc8', 1862);

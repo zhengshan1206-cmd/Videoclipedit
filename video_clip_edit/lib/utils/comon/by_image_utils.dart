@@ -23,21 +23,17 @@ class ByImageUtils {
   ///
   /// image: AssetImage('assets/images/set.png')
   /// widget: Image.asset('assets/images/set.png', fit: BoxFit.cover, width: 50, height: 50.0),
-  static ImageProvider getAssetImage(
-    String name, {
-    ImageFormat format = ImageFormat.png,
-  }) {
+  static ImageProvider getAssetImage(String name,
+      {ImageFormat format = ImageFormat.png}) {
     //    print('路径-- '+ getImgPath(name, format: format));
     return AssetImage(getImgPath(name, format: format));
   }
 
   /// 获取图片路径
-  static String getImgPath(
-    String name, {
-    ImageFormat format = ImageFormat.png,
-  }) {
+  static String getImgPath(String name,
+      {ImageFormat format = ImageFormat.png}) {
     return 'assets/images/$name.${_methodValues[format]}';
-    //    return 'images/$name.$format';
+//    return 'images/$name.$format';
   }
 
   /// 验证URL是否有效（必须包含协议和主机名）
@@ -56,17 +52,13 @@ class ByImageUtils {
   }
 
   /// 加载本地或者URL图片
-  static ImageProvider loadImage(
-    String imageUrl, {
-    String placeholder = 'ic_placeholder',
-  }) {
+  static ImageProvider loadImage(String imageUrl,
+      {String placeholder = 'ic_placeholder'}) {
     if (imageUrl.isEmpty || !_isValidUrl(imageUrl)) {
       return AssetImage(getImgPath(placeholder));
     }
-    return CachedNetworkImageProvider(
-      imageUrl,
-      errorListener: (error) => print('图片加载失败！$error'),
-    );
+    return CachedNetworkImageProvider(imageUrl,
+        errorListener: (error) => print('图片加载失败！$error'));
   }
 }
 

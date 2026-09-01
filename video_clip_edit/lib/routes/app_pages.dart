@@ -25,10 +25,6 @@ import 'package:video_clip_edit/v2/business/benefits_for_creator_page.dart';
 import 'package:video_clip_edit/v2/folkStory/widget/folk_story_success_create.dart';
 import 'package:video_clip_edit/v2/hotCreate/new_short_play_list_page.dart';
 import 'package:video_clip_edit/v2/hotCreate/providers/new_short_play_list_binding.dart';
-import 'package:video_clip_edit/v2/minorMode/bindings/minor_binding.dart';
-import 'package:video_clip_edit/v2/minorMode/bindings/minor_create_binding.dart';
-import 'package:video_clip_edit/v2/minorMode/pages/minor_create_page.dart';
-import 'package:video_clip_edit/v2/minorMode/pages/minor_page.dart';
 import 'package:video_clip_edit/v2/profile/bindings/home_mine_binding.dart';
 import 'package:video_clip_edit/v2/profile/bindings/user_profile_binding.dart';
 import 'package:video_clip_edit/v2/profile/views/user_profile_page.dart';
@@ -197,22 +193,6 @@ class AppPages {
       page: () {
         return const ShortDramaPage();
       },
-    ),
-
-    GetPage(
-      name: _Paths.minorPage,
-      page: () {
-        return const MinorPage();
-      },
-      binding: MinorBinding(),
-    ),
-
-    GetPage(
-      name: _Paths.minorCreatePage,
-      page: () {
-        return const MinorCreatePage();
-      },
-      binding: MinorCreateBinding(),
     ),
   ];
 }

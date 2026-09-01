@@ -50,7 +50,7 @@ mixin StreamDataMixin {
   }
 
   String _getSign(int timestamp) {
-    final token = ByAESStorageUtils.getString(ConstKeys.kToken) ?? "";
+    final token = getToken();
     final sign = ByEncryptUtils.md5String("$timestamp$token");
     return sign;
   }

@@ -114,6 +114,9 @@ class NewUserBenefitsController extends GetxController {
     ///获取前置配置
     _purchaseProvider?.preLoginConfig(onSuccess: () {});
     checkTime();
+    // Future.delayed(const Duration(milliseconds: 1500), () {
+    //   checkTime();
+    // });
   }
 
   ///检测新用户是否需要弹出短剧引导弹窗
@@ -194,46 +197,52 @@ class NewUserBenefitsController extends GetxController {
       final isAudit =
           Get.context?.read<LaunchProvider>().launchInfo?.isAudit ?? 0;
 
-      final newUserUndertakeType =
-          Get.context
+      final newUserUndertakeType = Get.context
               ?.read<LaunchProvider>()
               .launchInfo
               ?.verConfig
               .newUserUndertakeType ??
           "";
 
-      print("isAudit: $isAudit");
-      print("userInfo?.hasAttribution: ${userInfo?.hasAttribution}");
-      print("userInfo?.isVip: ${userInfo?.isVip}");
-      print(
-        "userInfo?.isNewAttributionUser: ${userInfo?.isNewAttributionUser}",
-      );
-      print(
-        "isShowNewUserRedEnvelope: ${_userController?.isShowNewUserRedEnvelope}",
-      );
-
       ///如果用户是VIP，则不展示弹窗.  是否审核。是否有过检测链接
-      if (userInfo?.isVip == 1 ||
-          isAudit == 1 ||
-          userInfo?.hasAttribution == 0) {
-        _requestNotificationPermission();
-        return;
-      }
+      // if (userInfo?.isVip == 1 ||
+      //     isAudit == 1 ||
+      //     userInfo?.hasAttribution == 0) {
+      //   _requestNotificationPermission();
+      //   return;
+      // }
       // /检测新用户是否需要弹出短剧引导弹窗（每天只弹一次，并且归因下和未审核才展示）
       // 使用日期作为key，检查今天是否已经弹出过
       final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
       final storageKey = 'short_film_guide_dialog_$date';
       final hasShownToday = ByStorageUtils.getBool(storageKey) ?? false;
 
-      if (_userController?.isShowNewUserRedEnvelope == true) {
-        if (userInfo?.isNewAttributionUser == 1 &&
-            userInfo?.isVip == 0 &&
-            !hasShownToday &&
-            isAudit == 0) {
-          checkShortFilmGuideDialog();
-        }
+      print("hasShownToday===> $hasShownToday");
+      print(
+          "isShowNewUserRedEnvelope===> ${_userController?.isShowNewUserRedEnvelope}");
+      print(
+          "userInfo?.isNewAttributionUser===> ${userInfo?.isNewAttributionUser}");
+      print("userInfo?.isVip===> ${userInfo?.isVip}");
+      print("isAudit===> $isAudit");
+      print("newUserUndertakeType===> $newUserUndertakeType");
+
+      // 与旧版一致：不在此处弹 NewUserWidget，仅通过 checkUserOpenTime -> firstDayOpenEvent 在首日弹窗，避免报错
+      if (userInfo?.isNewAttributionUser == 1 &&
+          userInfo?.isVip == 0 &&
+          !hasShownToday &&
+          isAudit == 0) {
+        checkShortFilmGuideDialog();
         return;
       }
+      // if (_userController?.isShowNewUserRedEnvelope == true) {
+      //   if (userInfo?.isNewAttributionUser == 1 &&
+      //       userInfo?.isVip == 0 &&
+      //       !hasShownToday &&
+      //       isAudit == 0) {
+      //     checkShortFilmGuideDialog();
+      //   }
+      //   return;
+      // }
 
       // if (_userController?.isShowNewUserRedEnvelope == true) {
       //   if (userInfo?.isNewAttributionUser == 1 &&
@@ -341,10 +350,10 @@ class NewUserBenefitsController extends GetxController {
             if (openDialog == true) {
               if (Get.context != null) {
                 Get.context?.read<LaunchProvider>().gotoPay(
-                  Get.context!,
-                  closePay: true,
-                  needCheckLogin: false,
-                );
+                      Get.context!,
+                      closePay: true,
+                      needCheckLogin: false,
+                    );
               }
             }
             _showType.value = 3;
@@ -415,9 +424,9 @@ class NewUserBenefitsController extends GetxController {
               if (value != true) {
                 if (Get.context != null) {
                   Get.context?.read<LaunchProvider>().gotoPay(
-                    Get.context!,
-                    closePay: false,
-                  );
+                        Get.context!,
+                        closePay: false,
+                      );
                 }
               }
               _showType.value = 2;
@@ -457,9 +466,9 @@ class NewUserBenefitsController extends GetxController {
                       ///登录成功
                       if (Get.context != null) {
                         Get.context?.read<LaunchProvider>().gotoPay(
-                          Get.context!,
-                          closePay: true,
-                        );
+                              Get.context!,
+                              closePay: true,
+                            );
                       }
                       _showType.value = 2;
                     } else {
@@ -520,8 +529,9 @@ class NewUserBenefitsController extends GetxController {
     } else {
       ///未登录
       if (userInfo?.isVip != 1) {
-        ///未付费=>弹出迎新弹窗
+        ///未付费=>弹出迎新弹窗（与旧版一致：Future.delayed + 仅判 context != null，避免鸿蒙报错）
         Future.delayed(Duration.zero, () {
+          if (Get.context == null) return;
           ByNavigatorUtil.reportDataPoint(
             pageTag: "promotion_page_red_pack_dialog",
             operateType: "view",
@@ -529,7 +539,6 @@ class NewUserBenefitsController extends GetxController {
             funcDetailImg: "",
             extra: {"desc": "本地图片1"},
           );
-
           showDialog(
             context: Get.context!,
             builder: (context) => NewUserWidget(
@@ -558,7 +567,6 @@ class NewUserBenefitsController extends GetxController {
             if (Get.find<UserController>().user.value?.isVip != 1) {
               _showType.value = 1;
             }
-            // 弹窗关闭后，请求通知权限（延迟500ms确保弹窗完全关闭）
             _requestNotificationPermission(delayMs: 500);
           });
         });
@@ -598,9 +606,9 @@ class NewUserBenefitsController extends GetxController {
             ///跳转付费页
             if (Get.context != null) {
               Get.context?.read<LaunchProvider>().gotoPay(
-                Get.context!,
-                closePay: true,
-              );
+                    Get.context!,
+                    closePay: true,
+                  );
             }
           });
         } else {

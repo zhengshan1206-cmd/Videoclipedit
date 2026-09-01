@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:math' as math;
+
 import 'package:get/get.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +18,24 @@ import 'package:video_clip_edit/core/base/controllers/base_controller.dart';
 import '../../../widgets/toast_util.dart';
 
 class SlicingHomeController extends BaseController with StreamDataMixin {
-  final double bottomViewHeight = 222.h;
+  /// 设计稿底栏高度比。禁止 `final h = 222.h` 字段缓存：
+  /// GetX Controller 只在创建时算一次，旋转/折叠后仍用旧高度，会把输入文案压扁。
+  static const double _designBottomH = 222;
+  static const double _designScreenH = 812;
+
+  double get bottomViewHeight => _designBottomH.h;
+
+  /// 每次按当前屏幕重算（仅 AI 成片模块：列表底距 + 输入面板高度）。
+  double bottomPanelHeight(BuildContext context) {
+    final screenH = MediaQuery.sizeOf(context).height;
+    final byMedia = screenH * (_designBottomH / _designScreenH);
+    final bySu = bottomViewHeight;
+    final target = math.max(byMedia, bySu);
+    final floor = math.min(180.0, screenH * 0.36);
+    final ceil = math.min(280.0, screenH * 0.40);
+    return target.clamp(floor, ceil).toDouble();
+  }
+
   final RxList<SlicingItemBean> categoryBeans = <SlicingItemBean>[].obs;
 
   /// 当前选中的标签页索引

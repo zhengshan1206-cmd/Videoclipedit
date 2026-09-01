@@ -13,10 +13,16 @@ String homeBroadcastBeanToJson(HomeBroadcastBean data) =>
 class HomeBroadcastBean {
   String title;
 
-  HomeBroadcastBean({required this.title});
+  HomeBroadcastBean({
+    required this.title,
+  });
 
   factory HomeBroadcastBean.fromJson(Map<String, dynamic> json) =>
-      HomeBroadcastBean(title: json["title"]?.toString() ?? "");
+      HomeBroadcastBean(
+        title: json["title"],
+      );
 
-  Map<String, dynamic> toJson() => {"title": title};
+  Map<String, dynamic> toJson() => {
+        "title": title,
+      };
 }

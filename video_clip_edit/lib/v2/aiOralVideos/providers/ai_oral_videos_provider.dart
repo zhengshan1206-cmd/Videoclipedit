@@ -58,9 +58,8 @@ class AiOralVideosProvider extends BaseProvider {
       success: (data) {
         banners.clear();
         final List bannerData = data["data"]["item"] ?? [];
-        List<SubFunction> beans = bannerData
-            .map((e) => SubFunction.fromJson(e))
-            .toList();
+        List<SubFunction> beans =
+            bannerData.map((e) => SubFunction.fromJson(e)).toList();
         updateBanners(beans);
       },
       fail: (code, msg) {
@@ -137,8 +136,8 @@ class AiOralVideosProvider extends BaseProvider {
       APIs.getDefaultTxt,
       {},
       success: (data) {
-        final List<String> defaultTxts = (data["data"]["content"] ?? [])
-            .cast<String>();
+        final List<String> defaultTxts =
+            (data["data"]["content"] ?? []).cast<String>();
 
         final List<String> tip = (data["data"]["tip"] ?? []).cast<String>();
         updateDefaultTxts(defaultTxts);
@@ -253,9 +252,8 @@ class AiOralVideosProvider extends BaseProvider {
       success: (data) {
         byDebugPrint(data["data"]["items"], tag: "本地bgm素材库列表:");
         final List videoData = data["data"]["items"] ?? [];
-        final List<AiOralMyVideoBean> beans = videoData
-            .map((e) => AiOralMyVideoBean.fromJson(e))
-            .toList();
+        final List<AiOralMyVideoBean> beans =
+            videoData.map((e) => AiOralMyVideoBean.fromJson(e)).toList();
         updateUserVideoBeans(beans);
         // bool underReview = false;
         // for (var element in beans) {
@@ -400,9 +398,8 @@ class AiOralVideosProvider extends BaseProvider {
         final List items = data["data"]["data"] ?? [];
         if (reset) cloneBeans.clear();
 
-        final List<AiOralCloneBean> beans = items
-            .map((e) => AiOralCloneBean.fromJson(e))
-            .toList();
+        final List<AiOralCloneBean> beans =
+            items.map((e) => AiOralCloneBean.fromJson(e)).toList();
 
         final res = List<AiOralCloneBean>.from(cloneBeans);
         clonePage = res.addElementsByRemovingLast(
@@ -633,9 +630,8 @@ class AiOralVideosProvider extends BaseProvider {
       success: (data) {
         byDebugPrint(data);
         final List items = data["data"]["data"];
-        final List<AiOralDubbingCloneDetailBean> beans = items
-            .map((e) => AiOralDubbingCloneDetailBean.fromJson(e))
-            .toList();
+        final List<AiOralDubbingCloneDetailBean> beans =
+            items.map((e) => AiOralDubbingCloneDetailBean.fromJson(e)).toList();
         updateDubbingCloneDetailBeanList(beans);
       },
     );
@@ -658,6 +654,20 @@ class AiOralVideosProvider extends BaseProvider {
     String? referenceAudioUrl,
     String? refContent,
   }) {
+    byDebugPrint({
+      "refVideoUrl": refVideoUrl,
+      "refAudioUrl": refAudioUrl,
+      "userAudioTTSId": userAudioTTSId,
+      "face_restoration": enableEnhance,
+      "task_type": taskType,
+      "ttsType": ttsType,
+      "content": content,
+      "ttsParamId": ttsParamId,
+      "userAudioCloneId": userAudioCloneId,
+      "referenceAudioUrl": referenceAudioUrl,
+      "refContent": refContent,
+    }, tag: "创建数字人===>");
+
     HttpUtils.post(
       APIs.createDigitalHuman,
       {

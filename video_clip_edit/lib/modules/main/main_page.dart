@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +10,6 @@ import 'package:video_clip_edit/modules/main/controllers/new_user_benefits_contr
 import 'package:video_clip_edit/utils/comon/by_colors.dart';
 import 'package:video_clip_edit/modules/main/controllers/main_controller.dart';
 import 'package:video_clip_edit/v2/business/new_user_benefits_page.dart';
-import 'package:video_clip_edit/v2/minorMode/controllers/minor_mode_controller.dart';
 
 import '../../controller/user_controller.dart';
 
@@ -113,15 +114,9 @@ class MainPage extends GetView<MainController> {
       builder: (controller) {
         return BaseView(
           hasAppBar: false,
-          bottomNavigationBar: Obx(
-            () {
-              if (MinorModeController.to.isMinorModeEnabled) {
-                return const SizedBox.shrink();
-              }
-              return _buildCustomBottomBar(controller);
-            },
-          ),
+          bottomNavigationBar: _buildCustomBottomBar(controller),
           child: Stack(
+            clipBehavior: Clip.none,
             children: [
               ...controller.tabBarPages.map((e) {
                 return Offstage(
@@ -132,9 +127,6 @@ class MainPage extends GetView<MainController> {
                 );
               }),
               Obx(() {
-                if (MinorModeController.to.isMinorModeEnabled) {
-                  return const SizedBox();
-                }
                 bool isIntegralVipController =
                     Get.isRegistered<NewUserBenefitsController>();
                 if (!isIntegralVipController) {
@@ -152,10 +144,21 @@ class MainPage extends GetView<MainController> {
                 if (controller.currentIndex != 0) {
                   return const SizedBox();
                 }
+                final mq = MediaQuery.of(context);
+                final lift = math.max(
+                  mq.viewPadding.bottom,
+                  mq.padding.bottom,
+                );
+                // 首页底栏为自定义 Tab，部分机型（如 Pura X Max）body 侧 padding.bottom 偏小，
+                // 仅靠 lift 易与手势条/底栏视觉重叠导致福利条裁切，再抬升一截。
+                final welfareBottom = lift + 8.h + 2;
                 if (newUserBenefitsController.showType.value == 1) {
                   return Positioned(
-                    bottom: 0.h,
+                    left: 0,
+                    right: 0,
+                    bottom: welfareBottom,
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         const NewUserBenefitsWidget(),
                         SizedBox(height: 5.h),
@@ -164,8 +167,11 @@ class MainPage extends GetView<MainController> {
                   );
                 } else if (newUserBenefitsController.showType.value == 3) {
                   return Positioned(
-                    bottom: 0.h,
+                    left: 0,
+                    right: 0,
+                    bottom: welfareBottom,
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         const BenefitsForCreatorWidget(),
                         SizedBox(height: 5.h),
@@ -174,8 +180,11 @@ class MainPage extends GetView<MainController> {
                   );
                 } else if (newUserBenefitsController.showType.value == 2) {
                   return Positioned(
-                    bottom: 0.h,
+                    left: 0,
+                    right: 0,
+                    bottom: welfareBottom,
                     child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         const RedEnvelopeNoticeWidget(),
                         SizedBox(height: 5.h),

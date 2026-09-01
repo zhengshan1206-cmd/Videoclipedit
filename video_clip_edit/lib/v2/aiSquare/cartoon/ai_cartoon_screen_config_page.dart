@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -748,8 +749,13 @@ class _AiCartoonScreenConfigImageCellState
         context,
         type: RequestType.image,
         maxCount: 1,
-        onSelectedCallback: (asstes) async {
-          final file = await asstes.first.file;
+        onSelectedCallback: (asstes, {List<String>? urls}) async {
+          File? file;
+          if (urls != null && urls.isNotEmpty) {
+            file = File(urls.first);
+          } else if (asstes.isNotEmpty) {
+            file = await asstes.first.file;
+          }
           if (file == null || file.existsSync() == false) {
             BotToast.showText(text: "图片上传失败，请稍后重试");
             return;

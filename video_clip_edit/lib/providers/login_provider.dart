@@ -17,6 +17,7 @@ import 'package:video_clip_edit/providers/base_provider.dart';
 import 'package:video_clip_edit/providers/launch_provider.dart';
 import 'package:video_clip_edit/utils/comon/by_common_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_device_info_utils.dart';
+import 'package:video_clip_edit/utils/comon/by_package_utils.dart';
 import 'package:video_clip_edit/modules/login/beans/login_info_bean.dart';
 import 'package:video_clip_edit/modules/main/beans/launch_info_bean.dart';
 
@@ -127,9 +128,9 @@ class LoginProvider extends BaseProvider {
   StreamSubscription<WechatResp>? _respSubs;
   WechatAuthResp? authResp;
 
-  /// 订阅微信登陆
+  /// 订阅微信登陆（Android / 鸿蒙）
   void subscribeWXLoginResp(BuildContext context) {
-    if (!Platform.isAndroid) return;
+    if (!ByPackageUtils.isAndroid && !ByPackageUtils.isOhos) return;
     cancelSubscribeWXLoginResp();
     _respSubs = WechatKitPlatform.instance.respStream().listen((resp) {
       if (resp is WechatAuthResp) {

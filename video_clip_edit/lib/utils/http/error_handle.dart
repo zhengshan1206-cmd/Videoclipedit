@@ -5,6 +5,9 @@ library;
 import 'dart:io';
 import 'package:dio/dio.dart';
 
+/// 与 [ExceptionHandle.parse_error] 成对出现：[HttpUtils] 识别后仅关闭 loading，不向用户 Toast。
+const String kNetSilentParseMsg = '__NET_PARSE_SILENT__';
+
 class ExceptionHandle {
   static const int success = 200; // 请求成功的状态码
   static const int success_not_content = 204;
@@ -22,18 +25,6 @@ class ExceptionHandle {
   static const int receive_timeout_error = 1006;
   static const int cancel_error = 1007;
   static const int unknown_error = 9999;
-
-  static bool isSuccessStatus(dynamic status) {
-    if (status == null) return false;
-    if (status == success) return true;
-    return status.toString() == '200';
-  }
-
-  static int? parseStatusCode(dynamic status) {
-    if (status == null) return null;
-    if (status is int) return status;
-    return int.tryParse(status.toString());
-  }
 
   static final Map<int, NetError> _errorMap = <int, NetError>{
     net_error: NetError(net_error, '网络异常，请检查你的网络！'),
@@ -107,6 +98,8 @@ extension DioErrorCodeExtension on DioExceptionType {
         return ExceptionHandle.cancel_error;
       case DioExceptionType.connectionError:
         return ExceptionHandle.net_error;
+      case DioExceptionType.transformTimeout:
+        return ExceptionHandle.receive_timeout_error;
       case DioExceptionType.unknown:
         return ExceptionHandle.unknown_error;
     }

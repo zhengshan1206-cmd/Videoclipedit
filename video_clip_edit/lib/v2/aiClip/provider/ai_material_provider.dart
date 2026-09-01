@@ -501,11 +501,13 @@ class AiMaterialProvider extends BaseProvider {
   }
 
   /// 上传 video
+  /// [asset] 鸿蒙选图/相机可能只返回路径，asset 为空时 duration 用 0
   uploadMaterial({
-    required AssetEntity asset,
+    AssetEntity? asset,
     required File file,
     required EasyRefreshController controller,
   }) {
+    final duration = asset?.duration ?? 0;
     ByFfmpegUtil.loadUploadInfo(
       type: MediaType.video,
       onSuccess: (UploadInfoBean infoBean) {
@@ -519,7 +521,7 @@ class AiMaterialProvider extends BaseProvider {
               {
                 "type": "video",
                 "url": infoBean.objectUrl,
-                "duration": asset.duration,
+                "duration": duration,
                 "cover": infoBean.coverUrl,
                 "needRisk": 1,
                 "name":

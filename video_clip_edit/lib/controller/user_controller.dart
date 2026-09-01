@@ -18,7 +18,6 @@ import 'package:video_clip_edit/widgets/dialog/bind_phone_view.dart';
 
 import '../modules/login/controller/login_manager.dart';
 import '../modules/purchase/beans/pre_login_config_bean.dart';
-import '../v2/minorMode/controllers/minor_mode_controller.dart';
 import '../widgets/toast_util.dart';
 
 class UserController extends GetxController {
@@ -84,12 +83,19 @@ class UserController extends GetxController {
     update();
   }
 
-  Future login({VoidCallback? cancelLogin, VoidCallback? successLogin}) async {
+  Future login({
+    VoidCallback? cancelLogin,
+    VoidCallback? successLogin,
+
+    /// 是否强制使用手机验证码登录（如华为登录页点击“其他登录方式”后切回）
+    bool forcePhoneLogin = false,
+  }) async {
     ///显示登录页面
     await LoginManager.showLoginPage(
       cancelLogin: cancelLogin,
       useSafeArea: true,
       successLogin: successLogin,
+      forcePhoneLogin: forcePhoneLogin,
     ).then((value) async {
       // Get.log("login back~~~~~~ ");
       // await needBindPhoneEvent(showTitle: true, needConfirm: true);
@@ -177,6 +183,7 @@ class UserController extends GetxController {
               reloadUserInfo(
                 successAction: (_) {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
+                    Get.find<NewUserBenefitsController>().checkTime();
                     if (Get.find<NewUserBenefitsController>().showType.value ==
                         1) {
                       Get.find<NewUserBenefitsController>().checkTime();
@@ -239,9 +246,8 @@ class UserController extends GetxController {
     await _userProvider.getUserInfo(
       onSuccess: (userInfo) {
         saveUser(userInfo);
-        MinorModeController.to.fetchMinorModeInfo(showLoading: false);
         // Get.log("保存用户数据===>${userInfo?.toJson()}");
-        // byDebugPrint(userInfo?.toJson(), tag: "保存用户数据===>");
+
         if (goBack != null) {
           goBack();
         }
@@ -410,7 +416,6 @@ class UserController extends GetxController {
         ToastUtil().showToast(msg);
       },
     );
-    MinorModeController.to.fetchMinorModeInfo(showLoading: false);
   }
 
   ///更新支付后弹窗配置

@@ -26,6 +26,7 @@ import 'package:video_clip_edit/utils/comon/by_screen_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_widgets_util.dart';
 import 'package:video_clip_edit/utils/comon/by_nav_router_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_colors.dart';
+import 'package:video_clip_edit/utils/comon/by_package_utils.dart';
 import 'package:video_clip_edit/utils/pay/ios_buy_engine.dart';
 import 'package:video_clip_edit/controller/user_controller.dart';
 import 'package:video_clip_edit/v2/aiSquare/widgets/ai_video_player.dart';
@@ -198,8 +199,8 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // 只有 Android 平台需要监听应用生命周期进行支付确认
-    if (Platform.isAndroid) {
+    // Android / 鸿蒙：监听应用生命周期，从微信/支付宝返回时进行支付确认
+    if (Platform.isAndroid || ByPackageUtils.isOhos) {
       final provider = context.read<PurchaseProvider>();
       if (state == AppLifecycleState.resumed) {
         if (provider.needShowDialog && !(Get.isDialogOpen ?? false)) {
@@ -235,24 +236,22 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
         backgroundColor: const Color(0xFFF6F6F6),
         body: Platform.isIOS
             ? Consumer<IosPurchaseProvider>(
-                builder:
-                    (
-                      BuildContext context,
-                      IosPurchaseProvider iosPurchaseProvider,
-                      Widget? child,
-                    ) {
-                      return _buildBody(context);
-                    },
+                builder: (
+                  BuildContext context,
+                  IosPurchaseProvider iosPurchaseProvider,
+                  Widget? child,
+                ) {
+                  return _buildBody(context);
+                },
               )
             : Consumer<PurchaseProvider>(
-                builder:
-                    (
-                      BuildContext context,
-                      PurchaseProvider purchaseProvider,
-                      Widget? child,
-                    ) {
-                      return _buildBody(context);
-                    },
+                builder: (
+                  BuildContext context,
+                  PurchaseProvider purchaseProvider,
+                  Widget? child,
+                ) {
+                  return _buildBody(context);
+                },
               ),
       ),
     );
@@ -369,8 +368,7 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
                 : null,
             "view",
             vipId: androidProvider
-                .vipTypeBeans[androidProvider.selectedVIPTypeIndex]
-                .id
+                .vipTypeBeans[androidProvider.selectedVIPTypeIndex].id
                 .toString(),
           );
         }
@@ -517,8 +515,7 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
     List<VipTypeBean> vipTypeBeans,
     int selectedVIPTypeIndex,
     List<String> vipPageTopDataList,
-  })
-  _getProviderDataForReport() {
+  }) _getProviderDataForReport() {
     final vipTypeBeans = Platform.isIOS
         ? iosPurchaseProvider?.vipTypeBeans ?? []
         : provider?.vipTypeBeans ?? [];
@@ -554,8 +551,7 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
     int payType = 0,
   }) {
     final data = _getProviderDataForReport();
-    final currentVipId =
-        vipId ??
+    final currentVipId = vipId ??
         _getCurrentVipId(
           vipTypeBeans: data.vipTypeBeans,
           selectedVIPTypeIndex: data.selectedVIPTypeIndex,
@@ -656,9 +652,8 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
     // 如果列表有数据，显示轮播图
     if (imageList.isNotEmpty) {
       // 过滤掉空字符串或无效的URL
-      final validImageList = imageList
-          .where((url) => _isValidImageUrl(url))
-          .toList();
+      final validImageList =
+          imageList.where((url) => _isValidImageUrl(url)).toList();
 
       if (validImageList.isEmpty) {
         // 如果没有有效的图片URL，显示默认图片
@@ -811,7 +806,6 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
           children: [
             Container(
               width: double.infinity,
-              height: 69.h,
               padding: EdgeInsets.only(
                 left: 12.w,
                 right: 12.w,
@@ -836,12 +830,13 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
                 ],
               ),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         ByWidgetsUtil.commonText(
                           text: vipTypeBean.title,
@@ -1116,14 +1111,12 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
                   ? iosProvider.vipPageTopDataList.first
                   : null,
               "click",
-              vipId:
-                  iosProvider.vipTypeBeans.isNotEmpty &&
+              vipId: iosProvider.vipTypeBeans.isNotEmpty &&
                       iosProvider.selectedVIPTypeIndex <
                           iosProvider.vipTypeBeans.length
                   ? iosProvider
-                        .vipTypeBeans[iosProvider.selectedVIPTypeIndex]
-                        .id
-                        .toString()
+                      .vipTypeBeans[iosProvider.selectedVIPTypeIndex].id
+                      .toString()
                   : null,
             );
           } else {
@@ -1134,14 +1127,12 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
                   ? androidProvider.vipPageTopDataList.first
                   : null,
               "click",
-              vipId:
-                  androidProvider.vipTypeBeans.isNotEmpty &&
+              vipId: androidProvider.vipTypeBeans.isNotEmpty &&
                       androidProvider.selectedVIPTypeIndex <
                           androidProvider.vipTypeBeans.length
                   ? androidProvider
-                        .vipTypeBeans[androidProvider.selectedVIPTypeIndex]
-                        .id
-                        .toString()
+                      .vipTypeBeans[androidProvider.selectedVIPTypeIndex].id
+                      .toString()
                   : null,
             );
           }
@@ -1190,7 +1181,8 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
       behavior: HitTestBehavior.opaque,
       onTap: () {
         // 如果没有展示选择按钮且是默认同意状态，点击协议文字不应取消同意
-        if (currentProvider.agreementNum && currentProvider.isAgreementChecked) return;
+        if (currentProvider.agreementNum && currentProvider.isAgreementChecked)
+          return;
         currentProvider.agreementCheckedStatusChanged(
           !currentProvider.isAgreementChecked,
         );
@@ -1242,9 +1234,7 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
                                 final url = currentProvider
-                                    .vipPageBean
-                                    ?.user
-                                    .integralRule;
+                                    .vipPageBean?.user.integralRule;
                                 debugPrint("open Url:$url");
                                 if (url == null || url.isEmpty) return;
                                 ByNavRouterUtils.jumpWebViewPage(
@@ -1326,9 +1316,7 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
                           recognizer: TapGestureRecognizer()
                             ..onTap = () {
                               final url = currentProvider
-                                  .vipPageBean
-                                  ?.user
-                                  .subScribeProtocolUrl;
+                                  .vipPageBean?.user.subScribeProtocolUrl;
                               debugPrint("open Url:$url");
                               if (url == null || url.isEmpty) return;
                               ByNavRouterUtils.jumpWebViewPage(
@@ -1350,9 +1338,7 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () {
                                     final url = currentProvider
-                                        .vipPageBean
-                                        ?.user
-                                        .integralRule;
+                                        .vipPageBean?.user.integralRule;
                                     debugPrint("open Url:$url");
                                     if (url == null || url.isEmpty) return;
                                     ByNavRouterUtils.jumpWebViewPage(
@@ -1400,8 +1386,7 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
             ? provider.vipPageTopDataList.first
             : null,
         "view",
-        vipId:
-            provider.vipTypeBeans.isNotEmpty &&
+        vipId: provider.vipTypeBeans.isNotEmpty &&
                 provider.selectedVIPTypeIndex < provider.vipTypeBeans.length
             ? provider.vipTypeBeans[provider.selectedVIPTypeIndex].id.toString()
             : null,
@@ -1420,12 +1405,11 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
                     ? provider.vipPageTopDataList.first
                     : null,
                 "click",
-                vipId:
-                    provider.vipTypeBeans.isNotEmpty &&
+                vipId: provider.vipTypeBeans.isNotEmpty &&
                         provider.selectedVIPTypeIndex <
                             provider.vipTypeBeans.length
                     ? provider.vipTypeBeans[provider.selectedVIPTypeIndex].id
-                          .toString()
+                        .toString()
                     : null,
               );
               currentProvider.agreementCheckedStatusChanged(true);
@@ -1446,12 +1430,11 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
                     ? provider.vipPageTopDataList.first
                     : null,
                 "click",
-                vipId:
-                    provider.vipTypeBeans.isNotEmpty &&
+                vipId: provider.vipTypeBeans.isNotEmpty &&
                         provider.selectedVIPTypeIndex <
                             provider.vipTypeBeans.length
                     ? provider.vipTypeBeans[provider.selectedVIPTypeIndex].id
-                          .toString()
+                        .toString()
                     : null,
               );
             },
@@ -1481,14 +1464,12 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
             ? currentProvider.vipPageTopDataList.first
             : null,
         "view",
-        vipId:
-            currentProvider.vipTypeBeans.isNotEmpty &&
+        vipId: currentProvider.vipTypeBeans.isNotEmpty &&
                 currentProvider.selectedVIPTypeIndex <
                     currentProvider.vipTypeBeans.length
             ? currentProvider
-                  .vipTypeBeans[currentProvider.selectedVIPTypeIndex]
-                  .id
-                  .toString()
+                .vipTypeBeans[currentProvider.selectedVIPTypeIndex].id
+                .toString()
             : null,
       );
 
@@ -1510,14 +1491,12 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
                     ? currentProvider.vipPageTopDataList.first
                     : null,
                 "click",
-                vipId:
-                    currentProvider.vipTypeBeans.isNotEmpty &&
+                vipId: currentProvider.vipTypeBeans.isNotEmpty &&
                         currentProvider.selectedVIPTypeIndex <
                             currentProvider.vipTypeBeans.length
                     ? currentProvider
-                          .vipTypeBeans[currentProvider.selectedVIPTypeIndex]
-                          .id
-                          .toString()
+                        .vipTypeBeans[currentProvider.selectedVIPTypeIndex].id
+                        .toString()
                     : null,
               );
 
@@ -1543,14 +1522,12 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
                 ? currentProvider.vipPageTopDataList.first
                 : null,
             "click",
-            vipId:
-                currentProvider.vipTypeBeans.isNotEmpty &&
+            vipId: currentProvider.vipTypeBeans.isNotEmpty &&
                     currentProvider.selectedVIPTypeIndex <
                         currentProvider.vipTypeBeans.length
                 ? currentProvider
-                      .vipTypeBeans[currentProvider.selectedVIPTypeIndex]
-                      .id
-                      .toString()
+                    .vipTypeBeans[currentProvider.selectedVIPTypeIndex].id
+                    .toString()
                 : null,
           );
         }
@@ -1640,8 +1617,7 @@ class _PurchasePageFiveState extends State<PurchasePageFive>
 
     Get.customDialog(
       barrierDismissible: false,
-      widget:
-          userController.payJumpImage.isNotEmpty &&
+      widget: userController.payJumpImage.isNotEmpty &&
               userController.payJumpUrl.isNotEmpty
           ? PaySuccessNewDialog(
               onAddBtnTap: () {

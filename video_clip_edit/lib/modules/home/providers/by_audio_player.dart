@@ -2,10 +2,10 @@
 
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:video_clip_edit/utils/comon/by_common_utils.dart';
+import 'package:video_clip_edit/utils/comon/by_package_utils.dart';
 import 'package:video_clip_edit/v2/aiSquare/cartoon/provider/ai_cartoon_audio_status_provider.dart';
 
 /// 播放器当前的状态
@@ -68,6 +68,7 @@ class ByAudioPlayer {
   bool initialized = false;
 
   /// 播放音频
+  /// [releaseMode] 为 [ReleaseMode.release] 时视为短音/瞬态音，采用 duck 焦点策略，避免打断系统/其他应用正在播放的音乐且无法恢复
   Future<bool> play(
     String url, {
     ReleaseMode releaseMode = ReleaseMode.loop,
@@ -75,17 +76,44 @@ class ByAudioPlayer {
     double playbackRate = 1.0,
     double volume = 1.0,
   }) async {
-    /// 每次播放前先停止正在播放的内容
+    /// 短音/瞬态音：使用 gainTransientMayDuck（duck），符合鸿蒙/Android 短音体验规范；长音使用 gain
+    final bool isShortOrTransient = releaseMode == ReleaseMode.release;
+    if (Platform.isAndroid || ByPackageUtils.isOhos) {
+      try {
+        await _audioPlayer.setAudioContext(AudioContext(
+          android: AudioContextAndroid(
+            audioFocus: isShortOrTransient
+                ? AndroidAudioFocus.gainTransientMayDuck
+                : AndroidAudioFocus.gain,
+          ),
+        ));
+      } catch (_) {
+        // 鸿蒙 fork 若未实现 setAudioContext 则忽略
+      }
+    }
+
     _playerStatusController.sink.add(ByAudioPlayerStatus.playing);
     _audioStatusProvider.changeAudioStatus(AiCartoonAudioStatus.playing);
     await _audioPlayer.stop();
 
-    /// 播放的新的内容 做ios兼容
+    /// 播放的新的内容 做ios/鸿蒙兼容
     if (Platform.isAndroid) {
       await _audioPlayer.play(
         UrlSource(url),
         position: position,
       );
+    } else if (ByPackageUtils.isOhos) {
+      if (url.startsWith('/data')) {
+        await _audioPlayer.play(
+          DeviceFileSource(url),
+          position: position,
+        );
+      } else {
+        await _audioPlayer.play(
+          UrlSource(url),
+          position: position,
+        );
+      }
     } else {
       Get.log("换一种音频文件播放形式==>${url}");
       await _audioPlayer.play(
@@ -119,7 +147,7 @@ class ByAudioPlayer {
   }
 
   Future<void> setSource(String url) async {
-    if (Platform.isIOS) {
+    if (Platform.isIOS || ByPackageUtils.isOhos) {
       return _audioPlayer.setSourceDeviceFile(url);
     } else {
       return _audioPlayer.setSource(UrlSource(url));

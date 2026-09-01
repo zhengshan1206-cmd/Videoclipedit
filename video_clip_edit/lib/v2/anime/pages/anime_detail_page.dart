@@ -61,9 +61,20 @@ class AnimeDetailPage extends StatelessWidget {
                   ByNavigatorUtil.checkLogin(
                             context: context,
                             nextStepEvent: () {
-                              showModalBottomSheet(context: context, builder: (context) {
-                                return AnimeDetailSettingPage(bean: bean,);
-                              });
+                              showModalBottomSheet<void>(
+                                context: context,
+                                isScrollControlled: true,
+                                useSafeArea: false,
+                                backgroundColor: Colors.transparent,
+                                builder: (ctx) {
+                                  return Padding(
+                                    padding: EdgeInsets.only(
+                                      bottom: MediaQuery.viewInsetsOf(ctx).bottom,
+                                    ),
+                                    child: AnimeDetailSettingPage(bean: bean),
+                                  );
+                                },
+                              );
                             });
               }),
             )

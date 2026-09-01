@@ -11,7 +11,6 @@ import 'package:video_clip_edit/utils/comon/by_common_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_widgets_util.dart';
 import 'package:video_clip_edit/utils/comon/by_screen_utils.dart';
 import 'package:video_clip_edit/modules/home/widgets/sub_funcs_view.dart';
-import 'package:video_clip_edit/v2/minorMode/minor_mode_ui.dart';
 import 'package:video_clip_edit/v2/toolBox/beans/new_tool_box_list_bean.dart';
 import 'package:video_clip_edit/v2/toolBox/providers/home_gride_view_provider.dart';
 
@@ -62,16 +61,19 @@ class ToolBoxGrideView extends StatelessWidget {
     super.key,
     required this.isLarge,
     required this.index,
+    /// 为 false 时不再叠加 [ByScreenUtils.bottomInsetForScrollable]（由外层如 [SafeArea] 已处理底部手势区）
+    this.includeBottomSafeInset = true,
   });
   final bool isLarge;
   final int index;
+  final bool includeBottomSafeInset;
 
   @override
   Widget build(BuildContext context) {
-    List<NewToolBoxListBean> listBeans = context
-        .select<HomeGrideViewProvider, List<NewToolBoxListBean>>(
-          (value) => value.listBeans,
-        );
+    List<NewToolBoxListBean> listBeans =
+        context.select<HomeGrideViewProvider, List<NewToolBoxListBean>>(
+      (value) => value.listBeans,
+    );
     final loadTimes = context.select<HomeGrideViewProvider, int>(
       (value) => value.loadTimes,
     );
@@ -83,7 +85,10 @@ class ToolBoxGrideView extends StatelessWidget {
             padding: EdgeInsets.only(
               left: 12.w,
               right: 12.w,
-              bottom: ByScreenUtils.bottomSafeHeight,
+              bottom: 12.h +
+                  (includeBottomSafeInset
+                      ? ByScreenUtils.bottomInsetForScrollable(context)
+                      : 0),
             ),
             // physics: const NeverScrollableScrollPhysics(),
             // shrinkWrap: true,
@@ -134,27 +139,25 @@ class ToolBoxCommonCell extends StatelessWidget {
     final doubleBtns = bean.similarType != 0;
     return GestureDetector(
       onTap: () {
-        MinorModeUi.runHomeNavigation(context, () {
-          print("bean.id:====> ${bean.id}");
-          print("bean.icon:====> ${bean.icon}");
-          ByNavigatorUtil.reportDataPoint(
-            pageTag: "home_video_square_video",
-            operateType: "click",
-            funcDetailTag: bean.id.toString(),
-            funcDetailImg: bean.bgimg,
-          );
-          final data = SubFunction.fromJson({
-            "id": bean.id,
-            "title": bean.title,
-            "img_url": bean.icon,
-            "jump_url": bean.jumpUrl,
-            "jump_param": bean.jumpParam,
-            "type": bean.type,
-            "des": bean.des,
-            "isNew": false,
-          });
-          ByCommonUtils.subFunctionCase(context, data);
+        print("bean.id:====> ${bean.id}");
+        print("bean.icon:====> ${bean.icon}");
+        ByNavigatorUtil.reportDataPoint(
+          pageTag: "home_video_square_video",
+          operateType: "click",
+          funcDetailTag: bean.id.toString(),
+          funcDetailImg: bean.bgimg,
+        );
+        final data = SubFunction.fromJson({
+          "id": bean.id,
+          "title": bean.title,
+          "img_url": bean.icon,
+          "jump_url": bean.jumpUrl,
+          "jump_param": bean.jumpParam,
+          "type": bean.type,
+          "des": bean.des,
+          "isNew": false,
         });
+        ByCommonUtils.subFunctionCase(context, data);
       },
       child: AspectRatio(
         aspectRatio: type.aspectRatio,
@@ -267,97 +270,93 @@ class ToolBoxCommonCell extends StatelessWidget {
                       children: [
                         const Spacer(),
                         if (!doubleBtns)
-                          MinorModeUi.hideWhenRestricted(
-                            Container(
-                              height: isLarge ? 48.h : 36.h,
-                              margin: EdgeInsets.symmetric(horizontal: 10.w),
-                              child: _buildButton(
-                                title: bean.typeName,
-                                bgColor: bean.typeBgcolor,
-                                textColor: Colors.white,
-                                fonSize: isLarge ? 16.sp : 14.sp,
-                                onTap: () {
-                                  final data = SubFunction.fromJson({
-                                    "id": bean.id,
-                                    "title": bean.title,
-                                    "img_url": bean.icon,
-                                    "jump_url": bean.jumpUrl,
-                                    "jump_param": bean.jumpParam,
-                                    "type": bean.type,
-                                    "des": bean.des,
-                                    "isNew": false,
-                                  });
-                                  ByCommonUtils.subFunctionCase(context, data);
-                                },
-                                fontWeight: FontWeight.bold,
-                                borderRadius: 12.h,
-                              ),
+                          Container(
+                            height: isLarge ? 48.h : 36.h,
+                            margin: EdgeInsets.symmetric(horizontal: 10.w),
+                            child: _buildButton(
+                              title: bean.typeName,
+                              bgColor: bean.typeBgcolor,
+                              textColor: Colors.white,
+                              fonSize: isLarge ? 16.sp : 14.sp,
+                              onTap: () {
+                                final data = SubFunction.fromJson({
+                                  "id": bean.id,
+                                  "title": bean.title,
+                                  "img_url": bean.icon,
+                                  "jump_url": bean.jumpUrl,
+                                  "jump_param": bean.jumpParam,
+                                  "type": bean.type,
+                                  "des": bean.des,
+                                  "isNew": false,
+                                });
+                                ByCommonUtils.subFunctionCase(context, data);
+                              },
+                              fontWeight: FontWeight.bold,
+                              borderRadius: 12.h,
                             ),
                           ),
                         if (doubleBtns)
-                          MinorModeUi.hideWhenRestricted(
-                            SizedBox(
-                              height: isLarge ? 48.h : 36.h,
-                              child: Row(
-                                children: [
-                                  SizedBox(width: 3.w),
-                                  Expanded(
-                                    child: _buildButton(
-                                      title: bean.similarTypeName,
-                                      bgColor: bean.similarTypeBgcolor,
-                                      textColor: ByColorUtil.WhiteColor,
-                                      blur: true,
-                                      fonSize: 16.sp,
-                                      onTap: () {
-                                        final data = SubFunction.fromJson({
-                                          "id": bean.id,
-                                          "title": bean.title,
-                                          "img_url": bean.icon,
-                                          "jump_url": bean.similarJumpUrl,
-                                          "jump_param": bean.similarJumpParam,
-                                          "type": bean.similarType,
-                                          "des": bean.des,
-                                          "isNew": false,
-                                        });
-                                        ByCommonUtils.subFunctionCase(
-                                          context,
-                                          data,
-                                        );
-                                      },
-                                      fontWeight: FontWeight.bold,
-                                      borderRadius: 12.h,
-                                    ),
+                          SizedBox(
+                            height: isLarge ? 48.h : 36.h,
+                            child: Row(
+                              children: [
+                                SizedBox(width: 3.w),
+                                Expanded(
+                                  child: _buildButton(
+                                    title: bean.similarTypeName,
+                                    bgColor: bean.similarTypeBgcolor,
+                                    textColor: ByColorUtil.WhiteColor,
+                                    blur: true,
+                                    fonSize: 16.sp,
+                                    onTap: () {
+                                      final data = SubFunction.fromJson({
+                                        "id": bean.id,
+                                        "title": bean.title,
+                                        "img_url": bean.icon,
+                                        "jump_url": bean.similarJumpUrl,
+                                        "jump_param": bean.similarJumpParam,
+                                        "type": bean.similarType,
+                                        "des": bean.des,
+                                        "isNew": false,
+                                      });
+                                      ByCommonUtils.subFunctionCase(
+                                        context,
+                                        data,
+                                      );
+                                    },
+                                    fontWeight: FontWeight.bold,
+                                    borderRadius: 12.h,
                                   ),
-                                  SizedBox(width: 11.w),
-                                  Expanded(
-                                    child: _buildButton(
-                                      title: bean.typeName,
-                                      bgColor: bean.typeBgcolor,
-                                      textColor: Colors.white,
-                                      fonSize: 16.sp,
-                                      onTap: () {
-                                        final data = SubFunction.fromJson({
-                                          "id": bean.id,
-                                          "title": bean.title,
-                                          "img_url": bean.icon,
-                                          "jump_url": bean.jumpUrl,
-                                          "jump_param": bean.jumpParam,
-                                          "type": bean.type,
-                                          "des": bean.des,
-                                          "isNew": false,
-                                        });
-                                        ByCommonUtils.subFunctionCase(
-                                          context,
-                                          data,
-                                        );
-                                      },
-                                      fontWeight: FontWeight.bold,
-                                      borderRadius: 12.h,
-                                    ),
+                                ),
+                                SizedBox(width: 11.w),
+                                Expanded(
+                                  child: _buildButton(
+                                    title: bean.typeName,
+                                    bgColor: bean.typeBgcolor,
+                                    textColor: Colors.white,
+                                    fonSize: 16.sp,
+                                    onTap: () {
+                                      final data = SubFunction.fromJson({
+                                        "id": bean.id,
+                                        "title": bean.title,
+                                        "img_url": bean.icon,
+                                        "jump_url": bean.jumpUrl,
+                                        "jump_param": bean.jumpParam,
+                                        "type": bean.type,
+                                        "des": bean.des,
+                                        "isNew": false,
+                                      });
+                                      ByCommonUtils.subFunctionCase(
+                                        context,
+                                        data,
+                                      );
+                                    },
+                                    fontWeight: FontWeight.bold,
+                                    borderRadius: 12.h,
                                   ),
-                                  SizedBox(width: 3.w),
-                                ],
-                              ),
+                                ),
+                                SizedBox(width: 3.w),
+                              ],
                             ),
                           ),
                         SizedBox(height: isLarge ? 15.h : 2.h),
@@ -526,9 +525,8 @@ class ToolBoxCommonCell extends StatelessWidget {
       fontSize: fonSize,
       borderRadius: borderRadius,
       title: title,
-      bgColor: bgColor.isNotEmpty
-          ? ByColorUtil.hexaToColor(bgColor)
-          : Colors.white,
+      bgColor:
+          bgColor.isNotEmpty ? ByColorUtil.hexaToColor(bgColor) : Colors.white,
       textColor: textColor,
       padding: EdgeInsets.zero,
       fontWeight: fontWeight,
@@ -554,27 +552,25 @@ class ToolBoxStoryCell extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
-        MinorModeUi.runHomeNavigation(context, () {
-          log("点击了====> ${bean.typeBgcolor}");
-          ByNavigatorUtil.reportDataPoint(
-            pageTag: "home_video_square_video",
-            operateType: "click",
-            funcDetailTag: bean.id.toString(),
-            funcDetailImg: bean.bgimg,
-          );
+        log("点击了====> ${bean.typeBgcolor}");
+        ByNavigatorUtil.reportDataPoint(
+          pageTag: "home_video_square_video",
+          operateType: "click",
+          funcDetailTag: bean.id.toString(),
+          funcDetailImg: bean.bgimg,
+        );
 
-          final data = SubFunction.fromJson({
-            "id": bean.id,
-            "title": bean.title,
-            "img_url": bean.icon,
-            "jump_url": bean.jumpUrl,
-            "jump_param": bean.jumpParam,
-            "type": bean.type,
-            "des": bean.des,
-            "isNew": false,
-          });
-          ByCommonUtils.subFunctionCase(context, data);
+        final data = SubFunction.fromJson({
+          "id": bean.id,
+          "title": bean.title,
+          "img_url": bean.icon,
+          "jump_url": bean.jumpUrl,
+          "jump_param": bean.jumpParam,
+          "type": bean.type,
+          "des": bean.des,
+          "isNew": false,
         });
+        ByCommonUtils.subFunctionCase(context, data);
       },
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12.w),
@@ -586,13 +582,13 @@ class ToolBoxStoryCell extends StatelessWidget {
                 child: ByWidgetsUtil.gradientBgContainer(
                   gradient:
                       ByColorUtil.lineareGradientMultipleWithHexaColorsString(
-                        // colorsString: bean.typeBgcolor.isNotEmpty
-                        //     ? bean.typeBgcolor
-                        //     : "#FFFFFFFF",
-                        colorsString: bean.typeBgcolor,
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                    // colorsString: bean.typeBgcolor.isNotEmpty
+                    //     ? bean.typeBgcolor
+                    //     : "#FFFFFFFF",
+                    colorsString: bean.typeBgcolor,
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   child: const SizedBox.expand(),
                 ),
               ),
@@ -665,27 +661,25 @@ class HomePageTypeCell extends StatelessWidget {
   final NewToolBoxListBean bean;
 
   _onTap(BuildContext context) {
-    MinorModeUi.runHomeNavigation(context, () {
-      log("===首页item点击===   ${bean.toJson()}");
-      ByNavigatorUtil.reportDataPoint(
-        pageTag: "home_video_square_video",
-        operateType: "click",
-        funcDetailTag: bean.id.toString(),
-        funcDetailImg: bean.bgimg,
-      );
-      final data = SubFunction.fromJson({
-        "id": bean.id,
-        "title": bean.title,
-        "img_url": bean.icon,
-        "jump_url": bean.jumpUrl,
-        "jump_param": bean.jumpParam,
-        "type": bean.type,
-        "des": bean.des,
-        "isNew": false,
-      });
-      // 传递完整的列表数据，用于后续页面使用
-      ByCommonUtils.subFunctionCase(context, data, extraData: bean.toJson());
+    log("===首页item点击===   ${bean.toJson()}");
+    ByNavigatorUtil.reportDataPoint(
+      pageTag: "home_video_square_video",
+      operateType: "click",
+      funcDetailTag: bean.id.toString(),
+      funcDetailImg: bean.bgimg,
+    );
+    final data = SubFunction.fromJson({
+      "id": bean.id,
+      "title": bean.title,
+      "img_url": bean.icon,
+      "jump_url": bean.jumpUrl,
+      "jump_param": bean.jumpParam,
+      "type": bean.type,
+      "des": bean.des,
+      "isNew": false,
     });
+    // 传递完整的列表数据，用于后续页面使用
+    ByCommonUtils.subFunctionCase(context, data, extraData: bean.toJson());
   }
 
   @override
@@ -736,46 +730,42 @@ class HomePageTypeCell extends StatelessWidget {
                     textColor: ByColorUtil.CommonTextColor,
                   ),
                 ),
-                MinorModeUi.hideWhenRestricted(
-                  Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () {
-                            _onTap(context);
-                          },
-                          child: SizedBox(
-                            height: 32.h,
-                            child: ByWidgetsUtil.commonContainer(
-                              alignment: Alignment.center,
-                              bgColor: const Color(0xFFEAEEFF),
-                              borerRadius: 20.h,
-                              child: ByWidgetsUtil.commonRichText(
-                                texts: [
-                                  const TextSpan(text: "创作同款"),
-                                  TextSpan(
-                                    text: "  ${bean.useTime}",
-                                    style: TextStyle(
-                                      fontSize: 10.sp,
-                                      fontWeight: FontWeight.normal,
-                                      color: ByColorUtil
-                                          .TabTextColorSelected.withOpacity(0.8),
-                                    ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          _onTap(context);
+                        },
+                        child: SizedBox(
+                          height: 32.h,
+                          child: ByWidgetsUtil.commonContainer(
+                            alignment: Alignment.center,
+                            bgColor: const Color(0xFFEAEEFF),
+                            borerRadius: 20.h,
+                            child: ByWidgetsUtil.commonRichText(
+                              texts: [
+                                const TextSpan(text: "创作同款"),
+                                TextSpan(
+                                  text: "  ${bean.useTime}",
+                                  style: TextStyle(
+                                    fontSize: 10.sp,
+                                    fontWeight: FontWeight.normal,
+                                    color: ByColorUtil.TabTextColorSelected
+                                        .withOpacity(0.8),
                                   ),
-                                ],
-                                fontSize: 14.sp,
-                                fontWeight: FontWeight.w600,
-                                textColor: ByColorUtil.TabTextColorSelected,
-                              ),
+                                ),
+                              ],
+                              fontSize: 14.sp,
+                              fontWeight: FontWeight.w600,
+                              textColor: ByColorUtil.TabTextColorSelected,
                             ),
                           ),
                         ),
                       ),
-                      SizedBox(width: 5.w),
-                    ],
-                  ),
-                ),
+                    ),
+                    SizedBox(width: 5.w),
                     // Stack(
                     //   clipBehavior: Clip.none,
                     //   children: [
@@ -810,6 +800,8 @@ class HomePageTypeCell extends StatelessWidget {
                     //     ),
                     //   ],
                     // ),
+                  ],
+                ),
               ],
             ),
             if (bean.icon.isNotEmpty)

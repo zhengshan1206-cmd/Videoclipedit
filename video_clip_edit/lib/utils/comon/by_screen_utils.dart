@@ -1,6 +1,8 @@
 ///  description:  屏幕信息
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -91,8 +93,49 @@ class ByScreenUtils {
     return mediaQuery.padding.top;
   }
 
+  /// 系统底部安全距离（手势条 / Home 指示条）。
+  ///
+  /// **注意**：若页面根布局已使用 [SafeArea]（默认包含底部），则列表尾部、悬浮底栏等处
+  /// **不要再叠加**本值，否则会与系统留白重复，底部空白过大。
   static double get bottomSafeHeight {
     return mediaQuery.padding.bottom;
+  }
+
+  /// 全屏 [Stack] 底部悬浮栏与手势区的间距：基于 [bottomSafeHeight]，过大时收敛（减轻鸿蒙等机型留白）。
+  static double get bottomInsetForOverlayBar {
+    final p = mediaQuery.padding.bottom;
+    if (p <= 0) return 0;
+    return math.min(p, 20);
+  }
+
+  /// 管理页底栏按钮行高度：横屏等场景下 [.h] 过小会导致 [ByWidgetsUtil.commonBtn]
+  /// 默认纵向 padding + 单行中文被父级 [SizedBox] 裁切。
+  static double managementBottomActionRowHeight(num scaledRowH) {
+    return math.max(scaledRowH.toDouble(), 48.0);
+  }
+
+  /// 管理页底栏白底区域高度（不含外层 [MediaQuery.viewPadding] 底部内边距）。
+  static double managementBottomBarSurfaceHeight({
+    required num scaledBarH,
+    required double actionRowHeight,
+  }) {
+    return math.max(scaledBarH.toDouble(), actionRowHeight + 18.0);
+  }
+
+  /// 列表/瀑布流等底部内边距，避免最后一排与系统手势条重叠。
+  /// 优先 [MediaQuery.viewPaddingOf]；鸿蒙等机型在 **NestedScrollView / PageView** 里常返回 0，
+  /// 再与全局面板 [viewPadding]/[padding] 取大；若仍为 0 则给最小兜底，避免内容贴到屏幕最底。
+  static double bottomInsetForScrollable(BuildContext context) {
+    final fromContext = MediaQuery.viewPaddingOf(context).bottom;
+    final g = mediaQuery;
+    final fromView = g.viewPadding.bottom;
+    final fromPad = g.padding.bottom;
+    final m = math.max(
+      fromContext,
+      math.max(fromView, fromPad),
+    );
+    if (m > 0) return m;
+    return 20;
   }
 
   static updateStatusBarStyle(SystemUiOverlayStyle style) {

@@ -84,6 +84,7 @@ class AiVideoManagementProvider extends BaseProvider {
       },
       success: (data) {
         final List items = data["data"]["data"] ?? [];
+        print("items===> $items");
         List<AiVideoGenerationTaskModel> beans =
             List<AiVideoGenerationTaskModel>.from(
           items.map((e) {
@@ -108,7 +109,7 @@ class AiVideoManagementProvider extends BaseProvider {
         times++;
         _isRefreshing = false;
         notifyListeners();
-       return  ToastUtil().showToast(msg);
+        return ToastUtil().showToast(msg);
         // return BotToast.showText(text: msg);
       },
     );

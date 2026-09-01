@@ -33,7 +33,8 @@ class _LaunchLogPageState extends State<LaunchLogPage> {
   Future<void> _loadErrorInfo() async {
     final controller = Get.find<LaunchErrorController>();
     // 如果 errorInfo 为空，自动加载
-    if (controller.errorInfo.isEmpty) {
+    final c = controller as dynamic;
+    if (c.errorInfo.value.isEmpty) {
       try {
         // 获取设备信息
         final Map deviceInfo = await ByDeviceInfoUtils.getUserDiviceInfo();
@@ -59,7 +60,7 @@ class _LaunchLogPageState extends State<LaunchLogPage> {
           },
         };
 
-        controller.errorInfo.value = combinedInfo;
+        c.errorInfo.value = combinedInfo;
       } catch (e) {
         // 加载失败，保持空状态
       }
@@ -69,6 +70,7 @@ class _LaunchLogPageState extends State<LaunchLogPage> {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<LaunchErrorController>();
+    final c = controller as dynamic;
 
     return Scaffold(
       backgroundColor: ByColorUtil.WhiteColor,
@@ -120,7 +122,7 @@ class _LaunchLogPageState extends State<LaunchLogPage> {
                       width: double.infinity,
                       padding: EdgeInsets.all(16.w),
                       child: Obx(() {
-                        if (controller.errorInfo.isEmpty) {
+                        if (c.errorInfo.value.isEmpty) {
                           return Center(
                             child: ByWidgetsUtil.commonText(
                               text: "暂无错误信息",
@@ -135,7 +137,7 @@ class _LaunchLogPageState extends State<LaunchLogPage> {
                           // 格式化 JSON 显示
                           final formattedJson =
                               const JsonEncoder.withIndent('  ')
-                                  .convert(controller.errorInfo);
+                                  .convert(c.errorInfo.value);
 
                           return SingleChildScrollView(
                             padding: EdgeInsets.all(8.w),
@@ -213,15 +215,16 @@ class _LaunchLogPageState extends State<LaunchLogPage> {
 
   /// 下载错误信息为 txt 文件
   Future<void> _downloadErrorInfo(LaunchErrorController controller) async {
+    final c = controller as dynamic;
     try {
-      if (controller.errorInfo.isEmpty) {
+      if (c.errorInfo.value.isEmpty) {
         BotToast.showText(text: "暂无错误信息可下载");
         return;
       }
 
       // 格式化 JSON
       final formattedJson =
-          const JsonEncoder.withIndent('  ').convert(controller.errorInfo);
+          const JsonEncoder.withIndent('  ').convert(c.errorInfo.value);
 
       // 获取临时目录
       final directory = await getTemporaryDirectory();
@@ -251,15 +254,16 @@ class _LaunchLogPageState extends State<LaunchLogPage> {
 
   /// 复制错误信息到剪贴板
   Future<void> _copyErrorInfo(LaunchErrorController controller) async {
+    final c = controller as dynamic;
     try {
-      if (controller.errorInfo.isEmpty) {
+      if (c.errorInfo.value.isEmpty) {
         BotToast.showText(text: "暂无错误信息可复制");
         return;
       }
 
       // 格式化 JSON
       final formattedJson =
-          const JsonEncoder.withIndent('  ').convert(controller.errorInfo);
+          const JsonEncoder.withIndent('  ').convert(c.errorInfo.value);
 
       // 复制到剪贴板
       await Clipboard.setData(ClipboardData(text: formattedJson));

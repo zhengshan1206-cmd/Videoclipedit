@@ -180,7 +180,7 @@ class _AiDrawPageState extends State<AiDrawPage> {
 
         /// 底部留白
         SliverToBoxAdapter(
-          child: SizedBox(height: ByScreenUtils.bottomSafeHeight + 55.h),
+          child: SizedBox(height: ByScreenUtils.bottomInsetForOverlayBar + 55.h),
         ),
       ],
     );
@@ -347,7 +347,7 @@ class _AiDrawPageState extends State<AiDrawPage> {
           color: Colors.white,
           padding: EdgeInsets.only(
             top: 8.h,
-            bottom: 8.h + ByScreenUtils.bottomSafeHeight,
+            bottom: 8.h + ByScreenUtils.bottomInsetForOverlayBar,
             left: 12.w,
             right: 12.w,
           ),

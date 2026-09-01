@@ -98,7 +98,7 @@ class _SingleListPageState extends State<SingleListPage>
     return Scaffold(
       body: Obx(() => ListView.builder(
             padding: EdgeInsets.only(
-              bottom: homeController.bottomViewHeight,
+              bottom: homeController.bottomPanelHeight(context),
             ),
             itemCount: controller.promptItemBeans.isNotEmpty
                 ? controller.promptItemBeans.length + 1

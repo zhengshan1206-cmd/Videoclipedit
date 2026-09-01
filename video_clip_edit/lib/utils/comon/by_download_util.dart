@@ -5,10 +5,11 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get_core/src/get_main.dart';
-import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:video_clip_edit/utils/comon/by_common_utils.dart';
+import 'package:video_clip_edit/utils/comon/by_package_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_permission_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_widgets_util.dart';
 import 'package:video_clip_edit/utils/http/apis.dart';
@@ -50,12 +51,12 @@ class ByDownloadUtil {
     return imgPath;
   }
 
-  ///这里的目录要对ios android做区分会引起不同的异常
+  ///这里的目录要对ios android 鸿蒙做区分会引起不同的异常
   static Future<String> getExternalStorageDirectoryThumbPath() async {
     Directory? directory;
     if (Platform.isIOS) {
       directory = await getApplicationCacheDirectory();
-    } else if (Platform.isAndroid) {
+    } else if (Platform.isAndroid || ByPackageUtils.isOhos) {
       directory = await getExternalStorageDirectory();
     }
     return directory?.path ?? "";
@@ -281,16 +282,6 @@ class ByDownloadUtil {
     }
     fileName ??= filePath.split(Platform.pathSeparator).last;
 
-    // final assetSearch = await ByAssetsUtil.getAssetEntityByName(fileName);
-
-    // if (assetSearch != null) {
-    //   EasyLoading.dismiss();
-    //   if (isToast) {
-    //     BotToast.showText(text: "视频已存在");
-    //   }
-    //   return null;
-    // }
-
     final asset = await PhotoManager.editor.saveVideo(file, title: fileName);
     EasyLoading.dismiss();
     if (isToast) {
@@ -306,7 +297,7 @@ class ByDownloadUtil {
   }) async {
     fileName ??= filePath.split(Platform.pathSeparator).last;
     // final asset = await PhotoManager.editor.saveVideo(File(filePath));
-    final result = await ImageGallerySaverPlus.saveFile(filePath);
+    final result = await ImageGallerySaver.saveFile(filePath);
     EasyLoading.dismiss();
     File(filePath).delete();
     Get.log("===下载的视频资源属性=== ${result}");
@@ -340,7 +331,7 @@ class ByDownloadUtil {
         /// 创建Dio实例
         Dio dio = Dio();
 
-        // 下载视频
+        // 下载图片
         await dio.download(
           url,
           filePath,
@@ -409,7 +400,7 @@ class ByDownloadUtil {
     );
 
     // 保存到相册
-    final result = await ImageGallerySaverPlus.saveImage(
+    final result = await ImageGallerySaver.saveImage(
       Uint8List.fromList(response.data),
       quality: 80, // 图片质量
     );

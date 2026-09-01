@@ -15,7 +15,9 @@ import 'package:video_clip_edit/utils/comon/by_navigator_util.dart';
 import 'package:video_clip_edit/utils/comon/by_permission_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_widgets_util.dart';
 import 'package:video_clip_edit/utils/comon/by_screen_utils.dart';
+import 'package:video_clip_edit/utils/channel/channel_operate.dart';
 import 'package:video_clip_edit/utils/comon/by_nav_router_utils.dart';
+import 'package:video_clip_edit/utils/comon/by_package_utils.dart';
 import 'package:video_clip_edit/modules/common/widget/common_dialog.dart';
 import 'package:video_clip_edit/v2/aiOralVideos/ai_oral_video_record_page.dart';
 import 'package:video_clip_edit/modules/home/words/beans/upload_info_bean.dart';
@@ -313,6 +315,33 @@ class _AiOralVideoListViewState extends State<AiOralVideoListView> {
                                     borderRadius: 12.w,
                                     onClick: () async {
                                       ByNavRouterUtils.goBack(context);
+                                      if (ByPackageUtils.isOhos) {
+                                        final status =
+                                            await ByPermissionUtils.videos();
+                                        if (!status) return;
+                                        final List<dynamic> videos =
+                                            await ChannelOperate
+                                                .getVideoPathFromAlbum(1);
+                                        if (videos.isEmpty) return;
+                                        final String url =
+                                            videos.first.toString();
+                                        final int duration =
+                                            await ChannelOperate
+                                                .getAudioDuration(url);
+                                        if (duration < 15 * 1000 ||
+                                            duration > 2 * 60 * 1000) {
+                                          BotToast.showText(
+                                              text: "视频应大于15秒，小于2分钟");
+                                          return;
+                                        }
+                                        _uploadVideo(
+                                          videoPath: url,
+                                          context: context,
+                                          videoDuration: duration ~/ 1000,
+                                          isFromCamera: false,
+                                        );
+                                        return;
+                                      }
                                       final videos =
                                           await ByCommonUtils.pickVideos(
                                         context,
@@ -355,6 +384,29 @@ class _AiOralVideoListViewState extends State<AiOralVideoListView> {
                                       final status =
                                           await ByPermissionUtils.camera();
                                       if (!status) return;
+                                      if (ByPackageUtils.isOhos) {
+                                        final String? video =
+                                            await ChannelOperate
+                                                .getVideoPathFromCamera();
+                                        if (video == null || video.isEmpty)
+                                          return;
+                                        final int duration =
+                                            await ChannelOperate
+                                                .getAudioDuration(video);
+                                        if (duration < 15 * 1000 ||
+                                            duration > 2 * 60 * 1000) {
+                                          BotToast.showText(
+                                              text: "视频应大于15秒，小于2分钟");
+                                          return;
+                                        }
+                                        _uploadVideo(
+                                          videoPath: video,
+                                          context: context,
+                                          videoDuration: duration ~/ 1000,
+                                          isFromCamera: true,
+                                        );
+                                        return;
+                                      }
                                       ByNavRouterUtils.push(
                                         context,
                                         AiOralVideoRecordPage(
@@ -682,9 +734,9 @@ class AiUploadView extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: () {
         ByNavigatorUtil.checkLogin(
-            context: context,
-            nextStepEvent: () {
-              AuthManager.materialAuth(onSuccess: () {
+          context: context,
+          nextStepEvent: () {
+            AuthManager.materialAuth(onSuccess: () {
               if (ByAudioPlayer.sharedInstance.isPlaying) {
                 ByAudioPlayer.sharedInstance.pause();
               }
@@ -894,6 +946,28 @@ class AiUploadView extends StatelessWidget {
                         borderRadius: 12.w,
                         onClick: () async {
                           ByNavRouterUtils.goBack(context);
+                          if (ByPackageUtils.isOhos) {
+                            final status = await ByPermissionUtils.videos();
+                            if (!status) return;
+                            final List<dynamic> videos =
+                                await ChannelOperate.getVideoPathFromAlbum(1);
+                            if (videos.isEmpty) return;
+                            final String url = videos.first.toString();
+                            final int duration =
+                                await ChannelOperate.getAudioDuration(url);
+                            if (duration < 15 * 1000 ||
+                                duration > 2 * 60 * 1000) {
+                              BotToast.showText(text: "视频应大于15秒，小于2分钟");
+                              return;
+                            }
+                            _uploadVideo(
+                              videoPath: url,
+                              context: context,
+                              videoDuration: duration ~/ 1000,
+                              isFromCamera: false,
+                            );
+                            return;
+                          }
                           final videos = await ByCommonUtils.pickVideos(
                             context,
                             maxCount: 1,
@@ -909,7 +983,6 @@ class AiUploadView extends StatelessWidget {
                           }
 
                           byDebugPrint(videoFile.path, tag: "===开始上传视频:");
-                          // final cover
                           _uploadVideo(
                             videoPath: videoFile.path,
                             context: context,
@@ -932,6 +1005,25 @@ class AiUploadView extends StatelessWidget {
                           ByNavRouterUtils.goBack(context);
                           final status = await ByPermissionUtils.camera();
                           if (!status) return;
+                          if (ByPackageUtils.isOhos) {
+                            final String? video =
+                                await ChannelOperate.getVideoPathFromCamera();
+                            if (video == null || video.isEmpty) return;
+                            final int duration =
+                                await ChannelOperate.getAudioDuration(video);
+                            if (duration < 15 * 1000 ||
+                                duration > 2 * 60 * 1000) {
+                              BotToast.showText(text: "视频应大于15秒，小于2分钟");
+                              return;
+                            }
+                            _uploadVideo(
+                              videoPath: video,
+                              context: context,
+                              videoDuration: duration ~/ 1000,
+                              isFromCamera: true,
+                            );
+                            return;
+                          }
                           ByNavRouterUtils.push(
                             context,
                             AiOralVideoRecordPage(

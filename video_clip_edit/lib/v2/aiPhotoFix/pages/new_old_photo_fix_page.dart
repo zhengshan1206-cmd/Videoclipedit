@@ -102,16 +102,22 @@ class _NewOldPhotoFixPageState extends State<NewOldPhotoFixPage>
           context,
           maxCount: 1,
           type: RequestType.image,
-          onSelectedCallback: (asstes) async {
-            if (asstes.isEmpty) return;
-            File? file = await asstes.first.file;
+          onSelectedCallback: (asstes, {List<String>? urls}) async {
+            File? file;
+            if (urls != null && urls.isNotEmpty) {
+              file = File(urls.first);
+              if (!file.existsSync()) return;
+            } else if (asstes.isNotEmpty) {
+              file = await asstes.first.file;
+            }
             if (file == null) return;
+            final filePath = file.path;
             ByFfmpegUtil.loadUploadInfo(
                 type: MediaType.picture,
                 onSuccess: (UploadInfoBean infoBean) {
                   ByFfmpegUtil.uploadFile(
                       infoBean: infoBean,
-                      filePath: file.path,
+                      filePath: filePath,
                       onSuccess: (resp) {
                         ///增加鉴黄逻辑
                         ByFfmpegUtil.contentsRisk(
@@ -145,7 +151,6 @@ class _NewOldPhotoFixPageState extends State<NewOldPhotoFixPage>
         );
       },
     );
-    
   }
 
   void showRecords() {

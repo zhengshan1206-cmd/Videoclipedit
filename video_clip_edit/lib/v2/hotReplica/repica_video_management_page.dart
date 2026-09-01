@@ -14,6 +14,7 @@ import 'package:video_clip_edit/v2/aiSquare/draw/widgets/ai_videos_downoad_dialo
 import 'package:video_clip_edit/v2/aiSquare/cartoon/beans/ai_cartoon_video_record_bean.dart';
 import 'package:video_clip_edit/v2/hotReplica/widgets/replica_video_management_list_view.dart';
 import 'package:video_clip_edit/v2/hotReplica/providers/replica_video_management_provider.dart';
+import 'package:video_clip_edit/widgets/common/works_management_bottom_bar_shell.dart';
 
 class RepicaVideoManagementPage extends StatefulWidget {
   const RepicaVideoManagementPage({
@@ -31,26 +32,30 @@ class _AiOralVideoManagementPageState extends State<RepicaVideoManagementPage> {
 
   @override
   Widget build(BuildContext context) {
+    final editing = context
+        .select<ReplicaVideoManagementProvider, bool>((p) => p.videosEditing);
     return Scaffold(
       appBar: _buildAppBar(context),
       backgroundColor: ByColorUtil.CommonPageBgColor,
       body: Stack(
         children: [
-          EasyRefresh(
-            refreshOnStart: true,
-            onRefresh: () {
-              _loadVideos(reset: true);
-            },
-            onLoad: _loadVideos,
-            canRefreshAfterNoMore: true,
-            canLoadAfterNoMore: false,
-            child: VideoManagementView(tips: tips),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _buildBottomBar(context),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: EasyRefresh(
+                  refreshOnStart: true,
+                  onRefresh: () {
+                    _loadVideos(reset: true);
+                  },
+                  onLoad: _loadVideos,
+                  canRefreshAfterNoMore: true,
+                  canLoadAfterNoMore: false,
+                  child: VideoManagementView(tips: tips),
+                ),
+              ),
+              if (editing) _buildBottomBar(context),
+            ],
           ),
         ],
       ),
@@ -59,20 +64,16 @@ class _AiOralVideoManagementPageState extends State<RepicaVideoManagementPage> {
 
   _buildBottomBar(BuildContext context) {
     final provider = context.read<ReplicaVideoManagementProvider>();
-    return Offstage(
-      offstage: !context
-          .select<ReplicaVideoManagementProvider, bool>((p) => p.videosEditing),
-      child: PhysicalModel(
-        color: Colors.black,
-        elevation: 10,
-        child: Container(
-          height: Platform.isAndroid ? 66.h : 80.h,
-          width: double.infinity,
-          color: ByColorUtil.WhiteColor,
-          alignment: Alignment.center,
-          child: SizedBox(
-            height: 44.h,
-            child: Row(
+    final rowH = ByScreenUtils.managementBottomActionRowHeight(44.h);
+    final barH = ByScreenUtils.managementBottomBarSurfaceHeight(
+      scaledBarH: Platform.isAndroid ? 66.h : 80.h,
+      actionRowHeight: rowH,
+    );
+    return WorksManagementBottomBarShell(
+      barSurfaceHeight: barH,
+      actionRowHeight: rowH,
+      materialElevation: 10,
+      actionsRow: Row(
               children: [
                 SizedBox(
                   width: 12.w,
@@ -187,9 +188,6 @@ class _AiOralVideoManagementPageState extends State<RepicaVideoManagementPage> {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
     );
   }
 

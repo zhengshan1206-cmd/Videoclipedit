@@ -17,7 +17,6 @@ import 'package:video_clip_edit/utils/comon/by_permission_utils.dart';
 import 'package:video_clip_edit/v2/aiSquare/draw/ai_draw_management_page.dart';
 import 'package:video_clip_edit/v2/aiSquare/draw/providers/ai_draw_provider.dart';
 import 'package:video_clip_edit/v2/aiSquare/draw/widgets/ai_imgs_downoad_dialog.dart';
-import 'package:video_clip_edit/v2/minorMode/minor_mode_ui.dart';
 import 'package:video_clip_edit/v2/aiSquare/cartoon/ai_cartoon_image_preview_page.dart';
 import 'package:video_clip_edit/v2/aiSquare/draw/beans/ai_draw_my_work_detail_bean.dart';
 import 'package:video_clip_edit/v2/aiSquare/draw/providers/ai_draw_work_management_provider.dart';
@@ -155,50 +154,48 @@ class _AiDrawWorkDetailsPageState extends State<AiDrawWorkDetailsPage> {
                     ),
                     SizedBox(
                       height: 32.h,
-                      child: MinorModeUi.hideWhenRestricted(
-                        GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () async {
-                            final status = await ByPermissionUtils.storage();
-                            if (!status) return;
-                            showDialog(
-                              context: context,
-                              builder: (c) {
-                                return AiImgsDownoadDialog(
-                                  contents: "",
-                                  maxLine: 10,
-                                  cancelBtnTitle: "取消",
-                                  confirmBtnTitle: "确定",
-                                  confirmCallback: () {},
-                                  imgUrls: [workDetailItemBean!.picUrl],
-                                );
-                              },
-                            );
-                          },
-                          child: ByWidgetsUtil.commonContainer(
-                            padding: EdgeInsets.symmetric(horizontal: 12.w),
-                            bgColor: const Color(0xFFEBEEFD),
-                            borerRadius: 9.w,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                SizedBox(
-                                  width: 13,
-                                  height: 12,
-                                  child: Image.asset(
-                                    "assets/ai/ai_same_case_download.png",
-                                    fit: BoxFit.contain,
-                                  ),
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () async {
+                          final status = await ByPermissionUtils.storage();
+                          if (!status) return;
+                          showDialog(
+                            context: context,
+                            builder: (c) {
+                              return AiImgsDownoadDialog(
+                                contents: "",
+                                maxLine: 10,
+                                cancelBtnTitle: "取消",
+                                confirmBtnTitle: "确定",
+                                confirmCallback: () {},
+                                imgUrls: [workDetailItemBean!.picUrl],
+                              );
+                            },
+                          );
+                        },
+                        child: ByWidgetsUtil.commonContainer(
+                          padding: EdgeInsets.symmetric(horizontal: 12.w),
+                          bgColor: const Color(0xFFEBEEFD),
+                          borerRadius: 9.w,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 13,
+                                height: 12,
+                                child: Image.asset(
+                                  "assets/ai/ai_same_case_download.png",
+                                  fit: BoxFit.contain,
                                 ),
-                                SizedBox(width: 5.w),
-                                ByWidgetsUtil.commonText(
-                                  text: "保存",
-                                  textColor: const Color(0xFF584CEE),
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ],
-                            ),
+                              ),
+                              SizedBox(width: 5.w),
+                              ByWidgetsUtil.commonText(
+                                text: "保存",
+                                textColor: const Color(0xFF584CEE),
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ],
                           ),
                         ),
                       ),
@@ -321,43 +318,41 @@ class _AiDrawWorkDetailsPageState extends State<AiDrawWorkDetailsPage> {
                 ),
               ],
             ),
-          MinorModeUi.hideWhenRestricted(
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: PhysicalModel(
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: PhysicalModel(
+              color: Colors.white,
+              child: Container(
+                height: Platform.isAndroid ? 66.h : 86.h,
                 color: Colors.white,
-                child: Container(
-                  height: Platform.isAndroid ? 66.h : 86.h,
-                  color: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 12.w),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () {
-                            doSameCase();
-                          },
-                          child: SizedBox(
-                            height: 50.h,
-                            child: ByWidgetsUtil.commonContainer(
-                              alignment: Alignment.center,
-                              bgColor: ByColorUtil.LoginBtnBgColor,
-                              borerRadius: 20.h,
-                              child: ByWidgetsUtil.commonRichText(
-                                texts: [const TextSpan(text: "做同款")],
-                                fontSize: 18.sp,
-                                fontWeight: FontWeight.w600,
-                                textColor: ByColorUtil.WhiteColor,
-                              ),
+                padding: EdgeInsets.symmetric(horizontal: 12.w),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          doSameCase();
+                        },
+                        child: SizedBox(
+                          height: 50.h,
+                          child: ByWidgetsUtil.commonContainer(
+                            alignment: Alignment.center,
+                            bgColor: ByColorUtil.LoginBtnBgColor,
+                            borerRadius: 20.h,
+                            child: ByWidgetsUtil.commonRichText(
+                              texts: [const TextSpan(text: "做同款")],
+                              fontSize: 18.sp,
+                              fontWeight: FontWeight.w600,
+                              textColor: ByColorUtil.WhiteColor,
                             ),
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),

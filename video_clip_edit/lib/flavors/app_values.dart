@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -22,7 +24,9 @@ final theme = ThemeData(
       statusBarColor: Colors.transparent,
       statusBarBrightness: Brightness.light,
       statusBarIconBrightness:
-          GetPlatform.isAndroid ? Brightness.dark : Brightness.light,
+          (GetPlatform.isAndroid || (Platform.operatingSystem == 'ohos'))
+              ? Brightness.dark
+              : Brightness.light,
     ), // 设置状态栏颜
   ),
 );

@@ -44,11 +44,10 @@ class _AiCartoonVideoManagementSliverListViewState
     extends State<AiCartoonVideoManagementSliverListView> {
   @override
   Widget build(BuildContext context) {
-    final List<AiCartoonVideoRecordBean> videoRecordBeans = context
-        .select<
-          AiCartoonVideoManagementProvider,
-          List<AiCartoonVideoRecordBean>
-        >((p) => p.videoRecordBeans);
+    final List<AiCartoonVideoRecordBean> videoRecordBeans = context.select<
+        AiCartoonVideoManagementProvider, List<AiCartoonVideoRecordBean>>(
+      (p) => p.videoRecordBeans,
+    );
 
     return SliverGrid.builder(
       itemCount: videoRecordBeans.length,
@@ -92,11 +91,10 @@ class _AiCartoonVideoManagementListViewState
   @override
   Widget build(BuildContext context) {
     byDebugPrint("AiCartoonVideoManagementListView:----");
-    final List<AiCartoonVideoRecordBean> videoRecordBeans = context
-        .select<
-          AiCartoonVideoManagementProvider,
-          List<AiCartoonVideoRecordBean>
-        >((p) => p.videoRecordBeans);
+    final List<AiCartoonVideoRecordBean> videoRecordBeans = context.select<
+        AiCartoonVideoManagementProvider, List<AiCartoonVideoRecordBean>>(
+      (p) => p.videoRecordBeans,
+    );
 
     return GridView.builder(
       itemCount: videoRecordBeans.length,
@@ -207,26 +205,22 @@ class AiCartoonVideoManagementListViewCell extends StatelessWidget {
     byDebugPrint("---AiCartoonVideoManagementListViewCell");
     final status = AiCartoonVideoStatusExt.fromRawValue(bean.status);
 
-    bool showCommonBg =
-        status != AiCartoonVideoStatus.finished &&
+    bool showCommonBg = status != AiCartoonVideoStatus.finished &&
         status != AiCartoonVideoStatus.failed &&
         status != AiCartoonVideoStatus.deleted;
 
-    bool showFaildBg =
-        status == AiCartoonVideoStatus.failed ||
+    bool showFaildBg = status == AiCartoonVideoStatus.failed ||
         status == AiCartoonVideoStatus.deleted;
 
     String mode = bean.isAutoVideo == 1 ? "自动模式" : "手动模式";
 
-    final videosEditing = context
-        .select<AiCartoonVideoManagementProvider, bool>(
-          (value) => value.videosEditing,
-        );
+    final videosEditing =
+        context.select<AiCartoonVideoManagementProvider, bool>(
+            (value) => value.videosEditing);
 
-    final selectedVideoIdxs = context
-        .select<AiCartoonVideoManagementProvider, List<int>>(
-          (value) => value.selectedVideoIdxs,
-        );
+    final selectedVideoIdxs =
+        context.select<AiCartoonVideoManagementProvider, List<int>>(
+            (value) => value.selectedVideoIdxs);
     final selected = selectedVideoIdxs.contains(index);
     final updateAt = ByCommonUtils.timestamp2DatetimeString(
       bean.updateAt * 1000,
@@ -255,14 +249,13 @@ class AiCartoonVideoManagementListViewCell extends StatelessWidget {
               funcDetailImg: bean.imgUrl,
             );
             ByNavRouterUtils.push(
-              context,
-              AiCartoonVideoPreviewPage(
-                videoQueryType: videoQueryType,
-                videoBean: bean,
-                provider3: context.read<AiCartoonVideoManagementProvider>(),
-                source: source,
-              ),
-            );
+                context,
+                AiCartoonVideoPreviewPage(
+                  videoQueryType: videoQueryType,
+                  videoBean: bean,
+                  provider3: context.read<AiCartoonVideoManagementProvider>(),
+                  source: source,
+                ));
           } else if (status == AiCartoonVideoStatus.videoGenerating) {
             ByNavRouterUtils.push(context, const AiVideoGeneratingPage());
           }
@@ -274,93 +267,87 @@ class AiCartoonVideoManagementListViewCell extends StatelessWidget {
           children: [
             if (showCommonBg)
               Positioned.fill(
-                child: Image.asset(
-                  "assets/ai/ai_cartoon_video_bg_faild.png",
-                  fit: BoxFit.cover,
-                ),
-              ),
+                  child: Image.asset(
+                "assets/ai/ai_cartoon_video_bg_faild.png",
+                fit: BoxFit.cover,
+              )),
             if (showFaildBg)
               Positioned.fill(
-                child: Image.asset(
-                  "assets/ai/ai_cartoon_video_bg_faild.png",
-                  fit: BoxFit.cover,
-                ),
-              ),
+                  child: Image.asset(
+                "assets/ai/ai_cartoon_video_bg_faild.png",
+                fit: BoxFit.cover,
+              )),
             if (status == AiCartoonVideoStatus.finished)
               Positioned.fill(
-                child: CachedNetworkImage(
-                  imageUrl: bean.imgUrl,
-                  fit: BoxFit.cover,
-                ),
-              ),
+                  child: CachedNetworkImage(
+                imageUrl: bean.imgUrl,
+                fit: BoxFit.cover,
+              )),
             if (status == AiCartoonVideoStatus.videoGenerating)
               Positioned.fill(
-                child: Column(
-                  children: [
-                    SizedBox(height: 40.h),
-                    ByWidgetsUtil.activityIndicator(
-                      color: const Color(0xFFFFFFFF),
-                    ),
-                    // RotatingWidget(
-                    //   duration: 2,
-                    //   child: Image.asset(
-                    //     "assets/ai/clip/ai_clip_video_generating.png",
-                    //     width: 30.w,
-                    //     height: 30.w,
-                    //   ),
-                    // ),
-                    SizedBox(height: 40.h),
-                    ByWidgetsUtil.commonText(
-                      text: "视频生成中...",
-                      textColor: Colors.white,
+                  child: Column(
+                children: [
+                  SizedBox(height: 40.h),
+                  ByWidgetsUtil.activityIndicator(
+                      color: const Color(0xFFFFFFFF)),
+                  // RotatingWidget(
+                  //   duration: 2,
+                  //   child: Image.asset(
+                  //     "assets/ai/clip/ai_clip_video_generating.png",
+                  //     width: 30.w,
+                  //     height: 30.w,
+                  //   ),
+                  // ),
+                  SizedBox(height: 40.h),
+                  ByWidgetsUtil.commonText(
+                    text: "视频生成中...",
+                    textColor: Colors.white,
+                    fontSize: 14.sp,
+                  ),
+                  SizedBox(height: 30.h),
+                  //刷新进度-短剧
+                  SizedBox(
+                    width: 150.w,
+                    height: 32.h,
+                    child: ByWidgetsUtil.commonBtn(
+                      padding: EdgeInsets.zero,
+                      fontWeight: FontWeight.normal,
+                      bgColor: ByColorUtil.TabTextColorSelected,
+                      borderRadius: 8.w,
                       fontSize: 14.sp,
+                      title: "刷新进度",
+                      onClick: () {
+                        context
+                            .read<AiCartoonVideoManagementProvider>()
+                            .resetPages();
+                        context
+                            .read<AiCartoonVideoManagementProvider>()
+                            .refresh();
+                        context
+                            .read<AiCartoonVideoManagementProvider>()
+                            .loadVideoList(
+                              videoQueryType: videoQueryType,
+                              source: source ?? EntranceSource.normal,
+                            );
+                      },
                     ),
-                    SizedBox(height: 30.h),
-                    //刷新进度-短剧
-                    SizedBox(
-                      width: 150.w,
-                      height: 32.h,
-                      child: ByWidgetsUtil.commonBtn(
-                        padding: EdgeInsets.zero,
-                        fontWeight: FontWeight.normal,
-                        bgColor: ByColorUtil.TabTextColorSelected,
-                        borderRadius: 8.w,
-                        fontSize: 14.sp,
-                        title: "刷新进度",
-                        onClick: () {
-                          context
-                              .read<AiCartoonVideoManagementProvider>()
-                              .resetPages();
-                          context
-                              .read<AiCartoonVideoManagementProvider>()
-                              .refresh();
-                          context
-                              .read<AiCartoonVideoManagementProvider>()
-                              .loadVideoList(
-                                videoQueryType: videoQueryType,
-                                source: source ?? EntranceSource.normal,
-                              );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
+                ],
+              )),
             if (status == AiCartoonVideoStatus.pictureGenerting)
               Positioned.fill(
-                child: Column(
-                  children: [
-                    SizedBox(height: 75.h),
-                    ByWidgetsUtil.activityIndicator(),
-                    SizedBox(height: 50.h),
-                    ByWidgetsUtil.commonText(
-                      text: "成图中...",
-                      textColor: Colors.white,
-                      fontSize: 14.sp,
-                    ),
-                  ],
-                ),
-              ),
+                  child: Column(
+                children: [
+                  SizedBox(height: 75.h),
+                  ByWidgetsUtil.activityIndicator(),
+                  SizedBox(height: 50.h),
+                  ByWidgetsUtil.commonText(
+                    text: "成图中...",
+                    textColor: Colors.white,
+                    fontSize: 14.sp,
+                  )
+                ],
+              )),
             Positioned(
               left: 0,
               right: 0,
@@ -411,127 +398,117 @@ class AiCartoonVideoManagementListViewCell extends StatelessWidget {
             ),
             if (status == AiCartoonVideoStatus.paragraphFinished)
               Positioned.fill(
-                child: Column(
-                  children: [
-                    SizedBox(height: 75.h),
-                    Image.asset(
-                      "assets/ai/ai_cartoon_video_paragraph.png",
-                      width: 32.w,
-                      height: 32.h,
-                      fit: BoxFit.contain,
-                    ),
-                    SizedBox(height: 24.h),
-                    ByWidgetsUtil.commonText(
-                      text: "已完成分段",
-                      textColor: Colors.white,
+                  child: Column(
+                children: [
+                  SizedBox(height: 75.h),
+                  Image.asset(
+                    "assets/ai/ai_cartoon_video_paragraph.png",
+                    width: 32.w,
+                    height: 32.h,
+                    fit: BoxFit.contain,
+                  ),
+                  SizedBox(height: 24.h),
+                  ByWidgetsUtil.commonText(
+                    text: "已完成分段",
+                    textColor: Colors.white,
+                    fontSize: 14.sp,
+                  ),
+                  SizedBox(height: 22.h),
+                  SizedBox(
+                    width: 150.w,
+                    height: 32.h,
+                    child: ByWidgetsUtil.commonBtn(
+                      padding: EdgeInsets.zero,
+                      fontWeight: FontWeight.normal,
+                      bgColor: ByColorUtil.CommonTextColor.withOpacity(0.8),
+                      borderRadius: 8.w,
                       fontSize: 14.sp,
-                    ),
-                    SizedBox(height: 22.h),
-                    SizedBox(
-                      width: 150.w,
-                      height: 32.h,
-                      child: ByWidgetsUtil.commonBtn(
-                        padding: EdgeInsets.zero,
-                        fontWeight: FontWeight.normal,
-                        bgColor: ByColorUtil.CommonTextColor.withOpacity(0.8),
-                        borderRadius: 8.w,
-                        fontSize: 14.sp,
-                        title: "继续成片",
-                        onClick: () {
-                          final provider = AiCartoonProvider();
-                          provider.selectedVideoModeIndex =
-                              bean.isAutoVideo == 1 ? 0 : 1;
-                          provider.pid = bean.id.toString();
+                      title: "继续成片",
+                      onClick: () {
+                        final provider = AiCartoonProvider();
+                        provider.selectedVideoModeIndex =
+                            bean.isAutoVideo == 1 ? 0 : 1;
+                        provider.pid = bean.id.toString();
 
-                          /// 跳转到页面配置
+                        /// 跳转到页面配置
+                        ByNavRouterUtils.push(
+                          context,
+                          ChangeNotifierProvider.value(
+                            value: provider,
+                            child: AiCartoonScreenConfigPage(
+                                isRecovery: true, bean: bean),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              )),
+            if (status == AiCartoonVideoStatus.failed)
+              Positioned.fill(
+                  child: Column(
+                children: [
+                  SizedBox(height: 32.h),
+                  ByWidgetsUtil.commonText(
+                      fontSize: 14.sp,
+                      text: "生成失败积分已退回",
+                      textColor: Colors.white,
+                      fontWeight: FontWeight.bold),
+                  SizedBox(height: 40.h),
+                  Image.asset(
+                    "assets/ai/ai_cartoon_video_faild.png",
+                    width: 32.w,
+                    height: 32.h,
+                    fit: BoxFit.contain,
+                  ),
+                  const Spacer(),
+                  SizedBox(
+                    width: 150.w,
+                    height: 32.h,
+                    child: ByWidgetsUtil.commonBtn(
+                      padding: EdgeInsets.zero,
+                      fontWeight: FontWeight.normal,
+                      bgColor: ByColorUtil.TabTextColorSelected,
+                      borderRadius: 8.w,
+                      fontSize: 14.sp,
+                      title: "重新生成",
+                      onClick: () {
+                        byDebugPrint(bean.toJson());
+                        final provider = AiCartoonProvider();
+                        provider.desc = bean.text;
+                        // /// 跳转到页面配置
+                        if (type == AiCartoonVideoManagementPageType.normal) {
                           ByNavRouterUtils.push(
                             context,
                             ChangeNotifierProvider.value(
                               value: provider,
-                              child: AiCartoonScreenConfigPage(
-                                isRecovery: true,
-                                bean: bean,
-                              ),
+                              child: const AiCartoonPage(),
                             ),
                           );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            if (status == AiCartoonVideoStatus.failed)
-              Positioned.fill(
-                child: Column(
-                  children: [
-                    SizedBox(height: 32.h),
-                    ByWidgetsUtil.commonText(
-                      fontSize: 14.sp,
-                      text: "生成失败积分已退回",
-                      textColor: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    SizedBox(height: 40.h),
-                    Image.asset(
-                      "assets/ai/ai_cartoon_video_faild.png",
-                      width: 32.w,
-                      height: 32.h,
-                      fit: BoxFit.contain,
-                    ),
-                    const Spacer(),
-                    SizedBox(
-                      width: 150.w,
-                      height: 32.h,
-                      child: ByWidgetsUtil.commonBtn(
-                        padding: EdgeInsets.zero,
-                        fontWeight: FontWeight.normal,
-                        bgColor: ByColorUtil.TabTextColorSelected,
-                        borderRadius: 8.w,
-                        fontSize: 14.sp,
-                        title: "重新生成",
-                        onClick: () {
-                          byDebugPrint(bean.toJson());
-                          final provider = AiCartoonProvider();
-                          provider.desc = bean.text;
-                          // /// 跳转到页面配置
-                          if (type == AiCartoonVideoManagementPageType.normal) {
-                            ByNavRouterUtils.push(
+                        } else {
+                          final clipProvider = AiClipProvider();
+                          clipProvider.desc = bean.text;
+                          ByNavRouterUtils.push(
                               context,
-                              ChangeNotifierProvider.value(
-                                value: provider,
-                                child: const AiCartoonPage(),
-                              ),
-                            );
-                          } else {
-                            final clipProvider = AiClipProvider();
-                            clipProvider.desc = bean.text;
-                            ByNavRouterUtils.push(
-                              context,
-                              MultiProvider(
-                                providers: [
-                                  ChangeNotifierProvider(
-                                    create: (context) => clipProvider,
-                                  ),
-                                  ChangeNotifierProvider(
-                                    create: (BuildContext context) =>
-                                        AiMaterialProvider(),
-                                  ),
-                                  ChangeNotifierProvider(
-                                    create: (BuildContext context) =>
-                                        AiClipOpeningProvider(),
-                                  ),
-                                ],
-                                child: const AiClipPage(),
-                              ),
-                            );
-                          }
-                        },
-                      ),
+                              MultiProvider(providers: [
+                                ChangeNotifierProvider(
+                                    create: (context) => clipProvider),
+                                ChangeNotifierProvider(
+                                  create: (BuildContext context) =>
+                                      AiMaterialProvider(),
+                                ),
+                                ChangeNotifierProvider(
+                                  create: (BuildContext context) =>
+                                      AiClipOpeningProvider(),
+                                ),
+                              ], child: const AiClipPage()));
+                        }
+                      },
                     ),
-                    SizedBox(height: 40.h),
-                  ],
-                ),
-              ),
+                  ),
+                  SizedBox(height: 40.h),
+                ],
+              )),
             // if (status == AiCartoonVideoStatus.deleted)
             //   Positioned.fill(
             //       child: Column(
@@ -546,59 +523,54 @@ class AiCartoonVideoManagementListViewCell extends StatelessWidget {
             //   )),
             if (status == AiCartoonVideoStatus.finished)
               Positioned.fill(
-                child: Center(
-                  child: Image.asset(
-                    "assets/ai/ai_cartoon_video_play.png",
-                    width: 40.w,
-                    height: 40.h,
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
-            if (showCommonBg && type == AiCartoonVideoManagementPageType.normal)
-              Positioned(
-                top: 14.h,
-                left: 0,
-                right: 0,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(
-                      width: 12.w,
-                      height: 12.w,
-                      child: ByWidgetsUtil.commonContainer(
-                        borerRadius: 12.w,
-                        padding: EdgeInsets.all(3.w),
-                        bgColor: const Color(0xFFFFFFFF).withOpacity(0.3),
-                        child: ByWidgetsUtil.commonContainer(
-                          child: Container(),
-                        ),
-                      ),
-                    ),
-                    SizedBox(width: 5.w),
-                    ByWidgetsUtil.commonText(
-                      text: mode,
-                      textColor: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ],
-                ),
-              ),
-            if (videosEditing &&
-                [
-                  AiCartoonVideoStatus.finished,
-                  AiCartoonVideoStatus.failed,
-                ].contains(status))
-              Positioned(
-                right: 10.w,
-                top: 10.h,
+                  child: Center(
                 child: Image.asset(
-                  "assets/login/mywork_cell_${selected ? "selected" : "unselected"}.png",
-                  width: 24.w,
-                  height: 24.h,
+                  "assets/ai/ai_cartoon_video_play.png",
+                  width: 40.w,
+                  height: 40.h,
                   fit: BoxFit.contain,
                 ),
-              ),
+              )),
+            if (showCommonBg && type == AiCartoonVideoManagementPageType.normal)
+              Positioned(
+                  top: 14.h,
+                  left: 0,
+                  right: 0,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 12.w,
+                        height: 12.w,
+                        child: ByWidgetsUtil.commonContainer(
+                          borerRadius: 12.w,
+                          padding: EdgeInsets.all(3.w),
+                          bgColor: const Color(0xFFFFFFFF).withOpacity(0.3),
+                          child: ByWidgetsUtil.commonContainer(
+                            child: Container(),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 5.w),
+                      ByWidgetsUtil.commonText(
+                        text: mode,
+                        textColor: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ],
+                  )),
+            if (videosEditing &&
+                [AiCartoonVideoStatus.finished, AiCartoonVideoStatus.failed]
+                    .contains(status))
+              Positioned(
+                  right: 10.w,
+                  top: 10.h,
+                  child: Image.asset(
+                    "assets/login/mywork_cell_${selected ? "selected" : "unselected"}.png",
+                    width: 24.w,
+                    height: 24.h,
+                    fit: BoxFit.contain,
+                  )),
           ],
         ),
       ),

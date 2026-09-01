@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -18,10 +20,13 @@ class PurchaseVipHalfList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.read<PurchaseProvider>();
-    final itemH = 120.h;
+    final shortest = MediaQuery.sizeOf(context).shortestSide;
+    final itemH = math.max(112.h, shortest * 0.28);
+    final minCellH = 142.h;
+    final cellH = math.max(itemH * 1.1, minCellH);
     final marginHor = 12.w;
     const itemCount = 3;
-    final contentW = context.byScreenWidth - marginHor * (itemCount - 1);
+    final contentW = context.byScreenWidth - marginHor * 2;
     final itemW = (contentW - marginHor * (itemCount - 1)) / itemCount;
     return Column(
       children: [
@@ -51,7 +56,7 @@ class PurchaseVipHalfList extends StatelessWidget {
                                 crossAxisCount: 3,
                                 mainAxisSpacing: marginHor,
                                 crossAxisSpacing: marginHor,
-                                childAspectRatio: itemW / (itemH * 1.08),
+                                childAspectRatio: itemW / cellH,
                               ),
                               itemBuilder: (context, index) {
                                 return _VipTypeViewNew(
@@ -195,69 +200,81 @@ class _VipTypeViewNew extends StatelessWidget {
                 colorEnd: colorEnd,
               ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SizedBox(height: 18.h),
-                  ByWidgetsUtil.commonText(
-                    fontSize: 14.sp,
-                    text: vipTypeBean.title,
-                    fontWeight: FontWeight.bold,
-                    textColor: tvColor,
-                  ),
-                  SizedBox(height: 8.h),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      ByWidgetsUtil.richText(
-                        unit: vipTypeBean.vipListStyle == 1 ||
-                                (vipTypeBean.vipListStyle == 3 &&
-                                    vipTypeBean.level == VIPLevel.monthy)
-                            ? '¥'
-                            : '≈',
-                        fontSizeUnit: 12.sp,
-                        textColorUnit: tvColor,
-                        fontSizeIntegral:
-                            vipTypeBean.vipListStyle == 1 ? 28.sp : 24.sp,
-                        partIntegral: _getPrefixText(),
-                        textColorIntegral: tvColor,
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(height: 18.h),
+                          ByWidgetsUtil.commonText(
+                            fontSize: 14.sp,
+                            text: vipTypeBean.title,
+                            fontWeight: FontWeight.bold,
+                            textColor: tvColor,
+                          ),
+                          SizedBox(height: 8.h),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              ByWidgetsUtil.richText(
+                                unit: vipTypeBean.vipListStyle == 1 ||
+                                        (vipTypeBean.vipListStyle == 3 &&
+                                            vipTypeBean.level == VIPLevel.monthy)
+                                    ? '¥'
+                                    : '≈',
+                                fontSizeUnit: 12.sp,
+                                textColorUnit: tvColor,
+                                fontSizeIntegral:
+                                    vipTypeBean.vipListStyle == 1 ? 28.sp : 24.sp,
+                                partIntegral: _getPrefixText(),
+                                textColorIntegral: tvColor,
+                              ),
+                              if (vipTypeBean.vipListStyle != 1)
+                                Padding(
+                                  padding: EdgeInsets.only(bottom: 4.h),
+                                  child: ByWidgetsUtil.richText(
+                                    unit: "",
+                                    fontSizeUnit: 12.sp,
+                                    textColorUnit: tvColor,
+                                    fontSizeIntegral: 10.sp,
+                                    partIntegral: "元/",
+                                    textColorIntegral: tvColor,
+                                  ),
+                                ),
+                              if (vipTypeBean.vipListStyle != 1)
+                                Padding(
+                                  padding: EdgeInsets.only(bottom: 4.h),
+                                  child: ByWidgetsUtil.richText(
+                                    unit: "",
+                                    fontSizeUnit: 12.sp,
+                                    textColorUnit: tvColor,
+                                    fontSizeIntegral: 10.sp,
+                                    partIntegral:
+                                        vipTypeBean.vipListStyle == 2 ? "天" : "月",
+                                    textColorIntegral: tvColor,
+                                  ),
+                                ),
+                            ],
+                          ),
+                          SizedBox(height: 4.h),
+                          ByWidgetsUtil.commonText(
+                            text: "¥${vipTypeBean.crossedMoney}",
+                            fontSize: 12.sp,
+                            decoration: TextDecoration.lineThrough,
+                            decorationThickness: 1,
+                            textColor: crossedMoneyColor,
+                            decorationColor: crossedMoneyColor,
+                          ),
+                          SizedBox(height: 8.h),
+                        ],
                       ),
-                      if (vipTypeBean.vipListStyle != 1)
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 4.h),
-                          child: ByWidgetsUtil.richText(
-                            unit: "",
-                            fontSizeUnit: 12.sp,
-                            textColorUnit: tvColor,
-                            fontSizeIntegral: 10.sp,
-                            partIntegral: "元/",
-                            textColorIntegral: tvColor,
-                          ),
-                        ),
-                      if (vipTypeBean.vipListStyle != 1)
-                        Padding(
-                          padding: EdgeInsets.only(bottom: 4.h),
-                          child: ByWidgetsUtil.richText(
-                            unit: "",
-                            fontSizeUnit: 12.sp,
-                            textColorUnit: tvColor,
-                            fontSizeIntegral: 10.sp,
-                            partIntegral:
-                                vipTypeBean.vipListStyle == 2 ? "天" : "月",
-                            textColorIntegral: tvColor,
-                          ),
-                        ),
-                    ],
+                    ),
                   ),
-                  SizedBox(height: 4.h),
-                  ByWidgetsUtil.commonText(
-                    text: "¥${vipTypeBean.crossedMoney}",
-                    fontSize: 12.sp,
-                    decoration: TextDecoration.lineThrough,
-                    decorationThickness: 1,
-                    textColor: crossedMoneyColor,
-                    decorationColor: crossedMoneyColor,
-                  ),
-                  const Spacer(),
                   ClipRRect(
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(16.w),

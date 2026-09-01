@@ -172,10 +172,16 @@ class _ImageToVideoFormState extends State<ImageToVideoForm> {
           context,
           maxCount: 1,
           type: RequestType.image,
-          onSelectedCallback: (asstes) async {
-            if (asstes.isEmpty) return;
-            File? file = await asstes.first.file;
+          onSelectedCallback: (asstes, {List<String>? urls}) async {
+            File? file;
+            if (urls != null && urls.isNotEmpty) {
+              file = File(urls.first);
+              if (!file.existsSync()) return;
+            } else if (asstes.isNotEmpty) {
+              file = await asstes.first.file;
+            }
             if (file == null) return;
+            final filePath = file.path;
             final fileSize = ImageSizeGetter.getSize(FileInput(file));
             if (fileSize.width < 300 || fileSize.height < 200) {
               BotToast.showText(text: "图片尺寸过小，请重新选择");
@@ -187,16 +193,19 @@ class _ImageToVideoFormState extends State<ImageToVideoForm> {
                 onSuccess: (UploadInfoBean infoBean) {
                   ByFfmpegUtil.uploadFile(
                       infoBean: infoBean,
-                      filePath: file.path,
+                      filePath: filePath,
                       onSuccess: (resp) {
                         ///增加鉴黄逻辑
                         ByFfmpegUtil.contentsRisk(
                             url: infoBean.objectUrl,
                             onSuccess: () {
-                              if (mounted) {
+                              final networkUrl = infoBean.objectUrl;
+                              if (ByCommonUtils.isNetworkUrl(networkUrl) && mounted) {
                                 setState(() {
-                                  _imageUrl = infoBean.objectUrl;
+                                  _imageUrl = networkUrl;
                                 });
+                              } else if (mounted && !ByCommonUtils.isNetworkUrl(networkUrl)) {
+                                BotToast.showText(text: "上传返回地址异常，请重试");
                               }
                             });
                       });
@@ -205,7 +214,6 @@ class _ImageToVideoFormState extends State<ImageToVideoForm> {
         );
       },
     );
-    
   }
 
   void pickDrawRecord() async {
@@ -223,6 +231,10 @@ class _ImageToVideoFormState extends State<ImageToVideoForm> {
     FocusManager.instance.primaryFocus?.unfocus();
     if (_imageUrl == null) {
       BotToast.showText(text: "请上传图片");
+      return;
+    }
+    if (!ByCommonUtils.isNetworkUrl(_imageUrl)) {
+      BotToast.showText(text: "图片上传中，请稍后再试");
       return;
     }
     // final isVip = context.read<LaunchProvider>().launchInfo?.isVip ?? 0;

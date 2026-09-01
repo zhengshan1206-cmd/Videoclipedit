@@ -3,8 +3,6 @@ class Consts {
   static const kSystemIOS = "ios";
   ///app安装时间，第一次启动时间
   static const kAppInstalledTime = "kAppInstalledTime";
-  /// 本地设备标识兜底
-  static const kLocalDeviceUuid = "kLocalDeviceUuid";
 
   /// 启动时，用户协议是否已同意
   static const kAgreementChecked = "kAgreementChecked";

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:bot_toast/bot_toast.dart';
 import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter/material.dart';
@@ -50,6 +48,7 @@ class _MyWorksPageState extends State<MyWorksPage> {
 
   @override
   Widget build(BuildContext context) {
+    final worksEditing = context.watch<MinePageProvider>().worksEditing;
     return Scaffold(
       backgroundColor: ByColorUtil.CommonPageBgColor,
       appBar: ByWidgetsUtil.appBar(
@@ -62,16 +61,25 @@ class _MyWorksPageState extends State<MyWorksPage> {
             top: 8.w,
             left: 12.w,
             right: 12.w,
-            bottom: context.byBottomSafeHeight),
+            bottom: worksEditing ? 0 : context.byBottomSafeHeight),
         child: Column(
           children: [
             _buildTipsbar(),
             SizedBox(height: 10.h),
             _buildWorkList(context),
-            _buildBottomBar(context),
           ],
         ),
-      )
+      ),
+      bottomNavigationBar: worksEditing
+          ? SafeArea(
+              top: false,
+              child: Material(
+                elevation: 8,
+                color: ByColorUtil.WhiteColor,
+                child: _worksEditBottomBar(context),
+              ),
+            )
+          : null,
     );
   }
 
@@ -198,81 +206,70 @@ class _MyWorksPageState extends State<MyWorksPage> {
     ];
   }
 
-  _buildBottomBar(BuildContext context) {
-    return Offstage(
-      offstage: !context.select<MinePageProvider, bool>((p) => p.worksEditing),
-      child: Container(
-        height: Platform.isAndroid?66.h:80.h,
-        width: double.infinity,
-        color: ByColorUtil.WhiteColor,
-        alignment: Alignment.center,
-        child: SizedBox(
-          height: 44.h,
-          child: Row(
-            children: [
-              Expanded(
-                child: ByWidgetsUtil.commonBtn(
-                  title: "取消",
-                  fontSize: 16.sp,
-                  borderRadius: 12.w,
-                  fontWeight: FontWeight.w600,
-                  bgColor: ByColorUtil.CommonTextColor.withOpacity(0.2),
-                  textColor: ByColorUtil.WhiteColor,
-                  onClick: () {
-                    if (provider?.worksEditing ?? false) {
-                      provider?.resetSelectCnfigsWithoutNotify();
-                      provider?.unselectAllWorks();
-                    }
-                  },
-                ),
-              ),
-              SizedBox(
-                width: 10.w,
-              ),
-              Expanded(
-                child: ByWidgetsUtil.commonBtn(
-                  title: "删除",
-                  fontSize: 16.sp,
-                  borderRadius: 12.w,
-                  fontWeight: FontWeight.w600,
-                  bgColor: const Color(0xFFFF5373),
-                  textColor: ByColorUtil.WhiteColor,
-                  onClick: () {
-                    final ids = provider!.getSelectedWorkIds();
-                    if (ids.isEmpty) {
-                      BotToast.showText(text: "请选择要删除的组品");
-                      return;
-                    }
-                    showDialog(
-                      context: context,
-                      builder: (ctx) {
-                        return CommonDialog(
-                          reverse: false,
-                          maxLine: 10,
-                          contents: "请确认是否删除，删除后将不可回恢复，请谨慎操作",
-                          confirmBtnTitle: "删除",
-                          confirmCallback: () {
-                            final provider = context.read<MinePageProvider>();
-                            provider.removeRecord(
-                              workId: ids,
-                              onSuccess: () {
-                                provider.resetSelectCnfigsWithoutNotify();
-                                provider.resetPages();
-                                provider.updateSelectAllStatus(false);
-                                provider.loadWorkList(
-                                    status: ["2", "3"].join(","));
-                              },
-                            );
+  /// 管理态底栏：放入 [Scaffold.bottomNavigationBar]，避免横屏矮区内与列表挤高导致按钮被裁切。
+  Widget _worksEditBottomBar(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(12.w, 10.h, 12.w, 10.h),
+      child: Row(
+        children: [
+          Expanded(
+            child: ByWidgetsUtil.commonBtn(
+              title: "取消",
+              fontSize: 16.sp,
+              borderRadius: 12.w,
+              fontWeight: FontWeight.w600,
+              bgColor: ByColorUtil.CommonTextColor.withOpacity(0.2),
+              textColor: ByColorUtil.WhiteColor,
+              onClick: () {
+                if (provider?.worksEditing ?? false) {
+                  provider?.resetSelectCnfigsWithoutNotify();
+                  provider?.unselectAllWorks();
+                }
+              },
+            ),
+          ),
+          SizedBox(width: 10.w),
+          Expanded(
+            child: ByWidgetsUtil.commonBtn(
+              title: "删除",
+              fontSize: 16.sp,
+              borderRadius: 12.w,
+              fontWeight: FontWeight.w600,
+              bgColor: const Color(0xFFFF5373),
+              textColor: ByColorUtil.WhiteColor,
+              onClick: () {
+                final ids = provider!.getSelectedWorkIds();
+                if (ids.isEmpty) {
+                  BotToast.showText(text: "请选择要删除的组品");
+                  return;
+                }
+                showDialog(
+                  context: context,
+                  builder: (ctx) {
+                    return CommonDialog(
+                      reverse: false,
+                      maxLine: 10,
+                      contents: "请确认是否删除，删除后将不可回恢复，请谨慎操作",
+                      confirmBtnTitle: "删除",
+                      confirmCallback: () {
+                        final p = context.read<MinePageProvider>();
+                        p.removeRecord(
+                          workId: ids,
+                          onSuccess: () {
+                            p.resetSelectCnfigsWithoutNotify();
+                            p.resetPages();
+                            p.updateSelectAllStatus(false);
+                            p.loadWorkList(status: ["2", "3"].join(","));
                           },
                         );
                       },
                     );
                   },
-                ),
-              ),
-            ],
+                );
+              },
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -16,6 +17,27 @@ import 'package:video_clip_edit/v2/aiOralVideos/providers/ai_oral_dubbing_anchor
 import 'package:video_clip_edit/v2/aiOralVideos/providers/ai_oral_dubbing_provider.dart';
 import 'package:video_clip_edit/v2/aiOralVideos/providers/ai_oral_videos_provider.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
+
+void _handleLocalAudioSelected(
+  BuildContext context,
+  List<AssetEntity> asstes,
+  List<String>? urls,
+  void Function(String)? onSelect,
+) async {
+  String? path;
+  if (urls != null && urls.isNotEmpty) {
+    final f = File(urls.first);
+    if (f.existsSync()) path = f.path;
+  } else if (asstes.isNotEmpty) {
+    final file = await asstes.first.file;
+    path = file?.path;
+  }
+  if (path == null) {
+    BotToast.showText(text: "选择文件时出错，请重新选择");
+    return;
+  }
+  onSelect?.call(path);
+}
 
 class AiOralDubbingListView extends StatelessWidget {
   const AiOralDubbingListView({
@@ -119,20 +141,13 @@ class AiOralDubbingCell extends StatelessWidget {
             );
             break;
           case 2:
-            final List<AssetEntity> result = await ByCommonUtils.pickAudio(
+            ByCommonUtils.pickAssetsWithAudio(
               context,
               maxCount: 1,
-              durationLimitMin: 15,
-              durationLimit: 120,
+              onSelectedCallback: (asstes, {List<String>? urls}) {
+                _handleLocalAudioSelected(context, asstes, urls, onSelect);
+              },
             );
-            if (result.isEmpty) return;
-            AssetEntity asset = result.first;
-            final file = await asset.file;
-            if (file == null) {
-              BotToast.showText(text: "选择文件时出错，请重新选择");
-              return;
-            }
-            onSelect?.call(file.path);
             break;
           default:
         }

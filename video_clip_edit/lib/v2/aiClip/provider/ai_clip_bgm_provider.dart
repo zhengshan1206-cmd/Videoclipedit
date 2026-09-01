@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:bot_toast/bot_toast.dart';
 import 'package:video_clip_edit/utils/http/apis.dart';
 import 'package:video_clip_edit/utils/http/http_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_list_ext.dart';
@@ -16,7 +15,6 @@ import 'package:video_clip_edit/v2/aiSquare/cartoon/beans/ai_cartoon_bgm_local_b
 import '../../../widgets/toast_util.dart';
 
 class AiClipBgmProvider extends AiBgmMixin {
-
   ///新增bgmType
   final int bgmType;
 
@@ -65,7 +63,7 @@ class AiClipBgmProvider extends AiBgmMixin {
         // "cate": selectedBgmCatId,
         // "useScenes": 4,
 
-        "type":bgmType,
+        "type": bgmType,
       },
       showLoading: true,
       success: (data) {
@@ -136,9 +134,10 @@ class AiClipBgmProvider extends AiBgmMixin {
   /// 上传 bgm
   @override
   uploadMusic({
-    required AssetEntity asset,
+    required AssetEntity? asset,
     required File file,
   }) {
+    if (asset == null) return;
     ByFfmpegUtil.loadUploadInfo(
       type: MediaType.audio,
       onSuccess: (UploadInfoBean infoBean) {

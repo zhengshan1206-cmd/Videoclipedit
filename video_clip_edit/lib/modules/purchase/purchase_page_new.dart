@@ -25,6 +25,7 @@ import 'package:video_clip_edit/controller/user_controller.dart';
 import 'package:video_clip_edit/utils/comon/by_screen_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_widgets_util.dart';
 import 'package:video_clip_edit/utils/comon/by_common_utils.dart';
+import 'package:video_clip_edit/utils/comon/by_package_utils.dart';
 import 'package:video_clip_edit/providers/purchase_provider.dart';
 import 'package:video_clip_edit/utils/comon/by_nav_router_utils.dart';
 import 'package:video_clip_edit/modules/purchase/beans/pay_method_bean.dart';
@@ -232,7 +233,7 @@ class _PurchasePageNewState extends State<PurchasePageNew>
               Row(
                 children: [
                   Offstage(
-                    offstage: Platform.isAndroid,
+                    offstage: Platform.isAndroid || ByPackageUtils.isOhos,
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () {

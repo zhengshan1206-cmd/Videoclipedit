@@ -1,13 +1,10 @@
 import 'dart:async';
-import 'package:ele_progress/ele_progress.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bugly/flutter_bugly.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:video_clip_edit/modules/home/widgets/svga_player.dart';
-import 'package:video_clip_edit/utils/comon/by_storage_utils.dart';
 import '../../controller/user_controller.dart';
 import '../../providers/launch_provider.dart';
 import '../../routes/app_pages.dart';
@@ -146,8 +143,8 @@ class _GuidePageState extends State<GuidePage> {
     final launchPage = launchInfo.verConfig.launchPage;
     Get.log("===跳转时候的launchInfo===${launchInfo.toJson()}");
 
-    // 更新用户信息
-    controller.reloadUserInfo(
+    // 更新用户信息（使用 dynamic 避免部分环境下 onFailed 命名参数解析问题）
+    (controller as dynamic).reloadUserInfo(
       successAction: (updatedUserInfo) {
         if (controller.user.value?.isBindPhone == 0) {
           LoginManager.initShanYan();
@@ -222,14 +219,11 @@ class _GuidePageState extends State<GuidePage> {
               padding: EdgeInsets.only(left: 82.w, right: 82.w, top: 12.w),
               child: SizedBox(
                 width: 1.sw,
-                child: EProgress(
-                  progress: progress,
-                  showText: false,
-                  colors: const [
-                    Color(0XFF819EFF),
-                    Color(0XFFEDCDFF),
-                    Color(0XFFFFB9FA),
-                  ],
+                child: LinearProgressIndicator(
+                  value: progress / 100.0,
+                  backgroundColor: const Color(0XFFE8E8E8),
+                  valueColor:
+                      const AlwaysStoppedAnimation<Color>(Color(0XFF819EFF)),
                 ),
               ),
             ),

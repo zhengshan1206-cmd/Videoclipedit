@@ -10,6 +10,7 @@ import 'package:video_clip_edit/modules/purchase/scale_transition_widget.dart';
 import 'package:video_clip_edit/providers/ios_purchase_provider.dart';
 import 'package:video_clip_edit/providers/purchase_provider.dart';
 import 'package:video_clip_edit/routes/app_pages.dart';
+import 'package:video_clip_edit/utils/comon/by_package_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_nav_router_utils.dart';
 
 class RetentionVipDailog extends StatelessWidget {
@@ -122,7 +123,7 @@ class RetentionVipDailog extends StatelessWidget {
                                   context: context,
                                   retentionPop: true,
                                 );
-                          } else if (Platform.isAndroid) {
+                          } else if (Platform.isAndroid || ByPackageUtils.isOhos) {
                             context.read<PurchaseProvider>().createOrder(
                                   onSuccess: (payOrderBean) {},
                                   context: context,

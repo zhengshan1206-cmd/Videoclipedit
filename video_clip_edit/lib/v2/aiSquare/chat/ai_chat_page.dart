@@ -256,7 +256,16 @@ class _AiChatPageState extends State<AiChatPage> {
       (value) => value.listBeans,
     );
     final hasNoCategories = categoryBeans.isEmpty;
-    return AiChatInputView(
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: SafeArea(
+        top: false,
+        left: false,
+        right: false,
+        bottom: true,
+        child: AiChatInputView(
       onSentCallback: () {
         context.read<AiChatProviders>().focusNode.unfocus();
         _connectWbSocket();
@@ -370,6 +379,8 @@ class _AiChatPageState extends State<AiChatPage> {
             ),
             SizedBox(width: 12.w),
           ],
+        ),
+      ),
         ),
       ),
     );

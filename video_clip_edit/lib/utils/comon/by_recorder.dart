@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_clip_edit/utils/comon/by_common_utils.dart';
+import 'package:video_clip_edit/utils/comon/by_package_utils.dart';
 import 'package:another_audio_recorder/another_audio_recorder.dart';
+import 'package:video_clip_edit/utils/channel/channel_operate.dart';
 
 class ByRecorder {
   // final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
@@ -15,6 +17,11 @@ class ByRecorder {
 
   // 初始化
   Future<void> initialize() async {
+    if (ByPackageUtils.isOhos) {
+      await ChannelOperate.recorderInit();
+      _isInitialized = true;
+      return;
+    }
     if (_isInitialized) return;
     if (await AnotherAudioRecorder.hasPermissions == false) {
       BotToast.showText(text: "麦克风权限被拒绝");
@@ -40,6 +47,10 @@ class ByRecorder {
 
   // 开始录音
   Future<void> startRecording() async {
+    if (ByPackageUtils.isOhos) {
+      await ChannelOperate.recorderStart();
+      return;
+    }
     if (!_isInitialized) {
       BotToast.showText(text: "录音功能启动失败");
       throw Exception('录音器未初始化');
@@ -67,6 +78,10 @@ class ByRecorder {
 
   // 停止录音并返回文件路径
   Future<String?> stopRecording() async {
+    if (ByPackageUtils.isOhos) {
+      final path = await ChannelOperate.recorderEnd();
+      return path is String ? path : path?.toString();
+    }
     if (!_isInitialized) {
       throw Exception('录音器未初始化');
     }
@@ -84,6 +99,11 @@ class ByRecorder {
 
   // 释放资源
   Future<void> dispose() async {
+    if (ByPackageUtils.isOhos) {
+      await ChannelOperate.recorderRelease();
+      _isInitialized = false;
+      return;
+    }
     if (_isInitialized) {
       // await _recorder.closeRecorder();
       _isInitialized = false;

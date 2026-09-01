@@ -7,13 +7,13 @@ import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:video_clip_edit/utils/comon/by_colors.dart';
 import 'package:video_clip_edit/utils/comon/by_screen_utils.dart';
-import 'package:video_clip_edit/utils/comon/by_timer_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_widgets_util.dart';
 import 'package:video_clip_edit/utils/comon/by_permission_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_navigator_util.dart';
 import 'package:video_clip_edit/modules/common/widget/common_dialog.dart';
 import 'package:video_clip_edit/v2/aiSquare/draw/widgets/ai_videos_downoad_dialog.dart';
 import 'package:video_clip_edit/utils/comon/by_loading_widget.dart';
+import 'package:video_clip_edit/widgets/common/works_management_bottom_bar_shell.dart';
 
 import '../models/ai_video_generation_model.dart';
 import '../provider/ai_video_management_provider.dart';
@@ -59,30 +59,34 @@ class _AiVideoManagementPageState extends State<AiVideoManagementPage> {
     final isRefreshing = context.select<AiVideoManagementProvider, bool>(
       (p) => p.isRefreshing,
     );
+    final editing =
+        context.select<AiVideoManagementProvider, bool>((p) => p.videosEditing);
     return Scaffold(
       appBar: _buildAppBar(context),
       backgroundColor: ByColorUtil.CommonPageBgColor,
       // body: SafeArea(top: false,child: ,)
       body: Stack(
         children: [
-          EasyRefresh(
-            refreshOnStart: true,
-            onRefresh: () {
-              _loadVideos(reset: true);
-            },
-            onLoad: _loadVideos,
-            canRefreshAfterNoMore: true,
-            canLoadAfterNoMore: false,
-            child: VideoManagementView(
-              tips: tips,
-              finishPage: widget.finishPage,
-            ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _buildBottmBar(context),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: EasyRefresh(
+                  refreshOnStart: true,
+                  onRefresh: () {
+                    _loadVideos(reset: true);
+                  },
+                  onLoad: _loadVideos,
+                  canRefreshAfterNoMore: true,
+                  canLoadAfterNoMore: false,
+                  child: VideoManagementView(
+                    tips: tips,
+                    finishPage: widget.finishPage,
+                  ),
+                ),
+              ),
+              if (editing) _buildBottmBar(context),
+            ],
           ),
           if (isRefreshing)
             Positioned.fill(
@@ -105,20 +109,15 @@ class _AiVideoManagementPageState extends State<AiVideoManagementPage> {
 
   _buildBottmBar(BuildContext context) {
     final provider = context.read<AiVideoManagementProvider>();
-    return Offstage(
-      offstage: !context
-          .select<AiVideoManagementProvider, bool>((p) => p.videosEditing),
-      child: PhysicalModel(
-        color: Colors.black,
-        elevation: 0,
-        child: Container(
-          height: Platform.isAndroid ? 66.h : 80.h,
-          width: double.infinity,
-          color: ByColorUtil.WhiteColor,
-          alignment: Alignment.center,
-          child: SizedBox(
-            height: 44.h,
-            child: Row(
+    final rowH = ByScreenUtils.managementBottomActionRowHeight(44.h);
+    final barH = ByScreenUtils.managementBottomBarSurfaceHeight(
+      scaledBarH: Platform.isAndroid ? 66.h : 80.h,
+      actionRowHeight: rowH,
+    );
+    return WorksManagementBottomBarShell(
+      barSurfaceHeight: barH,
+      actionRowHeight: rowH,
+      actionsRow: Row(
               children: [
                 SizedBox(
                   width: 12.w,
@@ -233,9 +232,6 @@ class _AiVideoManagementPageState extends State<AiVideoManagementPage> {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
     );
   }
 

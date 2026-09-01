@@ -1,11 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:video_clip_edit/controller/user_controller.dart';
 import 'package:video_clip_edit/core/util/common_ui.dart';
 import 'package:video_clip_edit/core/util/fonts.dart';
@@ -17,7 +15,6 @@ import 'package:video_clip_edit/routes/route_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_colors.dart';
 import 'package:video_clip_edit/utils/comon/by_nav_router_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_navigator_util.dart';
-import 'package:video_clip_edit/v2/minorMode/controllers/minor_mode_controller.dart';
 import 'package:video_clip_edit/v2/profile/controllers/home_mine_controller.dart';
 import 'package:video_clip_edit/core/base/base_view.dart';
 import 'package:video_clip_edit/v2/profile/widget/bubble_view.dart';
@@ -200,8 +197,8 @@ class _HomeMinePageState extends State<HomeMinePage> {
                               child: BYText.instance(
                                 (controller.userInfo?.isFormal ?? 0) == 0
                                     ? (controller.userInfo?.isVip ?? 0) == 1
-                                          ? '游客'
-                                          : '点击登录'
+                                        ? '游客'
+                                        : '点击登录'
                                     : controller.userController.nickName.value,
                                 18.sp,
                               ),
@@ -287,24 +284,13 @@ class _HomeMinePageState extends State<HomeMinePage> {
               height: 24.h,
             ),
             onPressed: () async {
-              ///一些调试api方法 如果有测试需要可以自测
-              // int systemBootTime = await  BdaSignal.systemBootTime();
-              // double appInstallTime = await  BdaSignal.appInstallTime();
-              // log("===获取手机系统启动时间===  $systemBootTime");
-              //  String userAgent = await IosUserAgentUtil.getDefaultUserAgent();
-              // log("===userAgent===  ${userAgent}");
               final purchaseProvider = context.read<PurchaseProvider>();
               if (purchaseProvider.preLoginCheck(context) == false) return;
-              const wechatUrl = 'weixin://';
-              if (await canLaunchUrl(Uri.parse(wechatUrl))) {
-                ByNavRouterUtils.jumpWebViewPage(
-                  Get.context!,
-                  "在线客服",
-                  controller.userInfo?.kfUrl ?? "",
-                );
-              } else {
-                EasyLoading.showToast("由于您未安装微信，无法直接跳转客服。");
-              }
+              await ByNavRouterUtils.launchWechatCustomerService(
+                Get.context!,
+                "在线客服",
+                controller.userInfo?.kfUrl ?? "",
+              );
             },
           ),
           // Padding(
@@ -339,10 +325,7 @@ class _HomeMinePageState extends State<HomeMinePage> {
           ///1、不是VIP 但已登录 2、 不是VIP 未登录且后台配置可支付
           if (controller.userInfo?.isFormal == 1 ||
               (controller.userInfo?.isFormal == 0 &&
-                  controller
-                          .launchProvider
-                          .launchInfo
-                          ?.verConfig
+                  controller.launchProvider.launchInfo?.verConfig
                           .allowTouristsVip ==
                       1)) {
             Get.context!.read<LaunchProvider>().gotoPay(Get.context!);
@@ -417,8 +400,9 @@ class _HomeMinePageState extends State<HomeMinePage> {
                                 BYText.instance(
                                   '个',
                                   10.sp,
-                                  color: ByColorUtil
-                                      .CommonTextColor.withOpacity(0.8),
+                                  color:
+                                      ByColorUtil.CommonTextColor.withOpacity(
+                                          0.8),
                                 ),
                               ],
                             ),
@@ -485,14 +469,6 @@ class _HomeMinePageState extends State<HomeMinePage> {
               },
             );
           } else if (index == controller.settingConfis.length + 2) {
-            return buildTextFormView(
-              '未成年人模式',
-              CustomTextFieldType.choose,
-              onTap: () {
-                MinorModeController.to.openMinorModeFromProfile();
-              },
-            );
-          } else if (index == controller.settingConfis.length + 3) {
             return Obx(() {
               return buildTextFormView(
                 '版本信息',
@@ -517,8 +493,7 @@ class _HomeMinePageState extends State<HomeMinePage> {
                   ? CustomTextFieldType.choose
                   : CustomTextFieldType.edit,
               subTitle: settingItemBean.desc,
-              enable:
-                  (settingItemBean.isAvatar ?? false) ||
+              enable: (settingItemBean.isAvatar ?? false) ||
                       (settingItemBean.canCopy ?? false)
                   ? false
                   : true,
@@ -532,16 +507,16 @@ class _HomeMinePageState extends State<HomeMinePage> {
                       ),
                     )
                   : (settingItemBean.canCopy ?? false)
-                  ? Container(
-                      margin: EdgeInsets.only(left: 4.w),
-                      child: Image.asset(
-                        Assets.mineIconCopy,
-                        width: 15.w,
-                        height: 15.h,
-                        fit: BoxFit.contain,
-                      ),
-                    )
-                  : null,
+                      ? Container(
+                          margin: EdgeInsets.only(left: 4.w),
+                          child: Image.asset(
+                            Assets.mineIconCopy,
+                            width: 15.w,
+                            height: 15.h,
+                            fit: BoxFit.contain,
+                          ),
+                        )
+                      : null,
               onTap: () async {
                 ///todo 这里看情况是否需要针对ios平台
                 if (settingItemBean.canCopy ?? false) {
@@ -556,17 +531,13 @@ class _HomeMinePageState extends State<HomeMinePage> {
                     if (purchaseProvider.preLoginCheck(context) == false) {
                       return;
                     }
-                    const wechatUrl = 'weixin://';
-                    if (await canLaunchUrl(Uri.parse(wechatUrl))) {
-                      ByNavRouterUtils.jumpWebViewPage(
-                        context,
-                        settingItemBean.title,
-                        url,
-                      );
-                      return;
-                    } else {
-                      EasyLoading.showToast("由于您未安装微信，无法直接跳转客服。");
-                    }
+
+                    await ByNavRouterUtils.launchWechatCustomerService(
+                      context,
+                      settingItemBean.title,
+                      url,
+                    );
+                    return;
                   } else {
                     ByNavRouterUtils.jumpWebViewPage(
                       context,
@@ -580,7 +551,7 @@ class _HomeMinePageState extends State<HomeMinePage> {
             );
           }
         },
-        itemCount: controller.settingConfis.length + 4,
+        itemCount: controller.settingConfis.length + 3,
       ),
     );
   }

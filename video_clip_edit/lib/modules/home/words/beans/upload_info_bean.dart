@@ -1,12 +1,17 @@
 import 'dart:convert';
 
+/// 服务端上传参数：提交接口必须使用 object_url（上传文件网络地址），禁止使用本地路径。
+/// object_url：上传后的文件地址，用于提交给业务接口（如图生视频的 images）。
+/// cover_url：封面地址，若服务端返回则用于展示封面等场景。
 class UploadInfoBean {
   String ossAccessKeyId;
   String policy;
   String key;
   String url;
   String signature;
+  /// 上传后的文件网络地址，提交给业务接口时使用此项
   String objectUrl;
+  /// 封面地址（若服务端返回）
   String coverUrl;
 
   UploadInfoBean({

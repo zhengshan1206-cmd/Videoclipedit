@@ -1,0 +1,82 @@
+
+{
+  "module": {
+    "name": "entry",
+    "type": "entry",
+    "description": "$string:module_desc",
+    "mainElement": "EntryAbility",
+    "deviceTypes": [
+      "phone"
+    ],
+    "deliveryWithInstall": true,
+    "installationFree": false,
+    "pages": "$profile:main_pages",
+    "abilities": [
+      {
+        "name": "EntryAbility",
+        "srcEntry": "./ets/entryability/EntryAbility.ets",
+        "description": "$string:EntryAbility_desc",
+        "icon": "$media:layered_image",
+        "label": "$string:EntryAbility_label",
+        "startWindowIcon": "$media:ic_launcher",
+        "startWindowBackground": "$color:start_window_background",
+        "exported": true,
+        "skills": [
+          {
+            "entities": [
+              "entity.system.home"
+            ],
+            "actions": [
+              "action.system.home"
+            ]
+          }
+        ],
+        "orientation": "portrait",
+        "supportWindowMode": ["fullscreen"]
+      }
+    ],
+    //在线客服
+    "querySchemes": [
+//      微信
+      "weixin",
+      "wxopensdk",
+//      支付宝
+      "https",
+      "alipays",
+//      抖音
+      "snssdk1128",
+      "douyinopensdk",
+//      快手
+      "kwai",
+      "ksnebula"
+    ],
+    "requestPermissions": [
+      //网络权限（normal）
+      {"name" :  "ohos.permission.INTERNET"},
+      //获取APPid（normal）
+      {
+        "name": "ohos.permission.APP_TRACKING_CONSENT",
+        "usedScene": {
+          "when": "inuse"
+        },
+        "reason": "$string:app_tracking_consent"
+      },
+      //麦克风（normal）
+      {
+        "name": "ohos.permission.MICROPHONE",
+        "usedScene": {
+          "when": "inuse"
+        },
+        "reason": "$string:microphone_permission"
+      },
+      //剪切板（受限开放权限）
+      {
+        "name": "ohos.permission.READ_PASTEBOARD",
+        "usedScene": {
+          "when": "inuse"
+        },
+        "reason": "$string:read_pasteboard_permission"
+      },
+    ]
+  }
+}

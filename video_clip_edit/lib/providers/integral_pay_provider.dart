@@ -21,13 +21,14 @@ import 'package:video_clip_edit/modules/purchase/beans/wx_yeepay_order_bean.dart
 import 'package:video_clip_edit/modules/purchase/beans/ali_pay_order_bean.dart';
 import 'package:alipay_kit/alipay_kit_platform_interface.dart';
 import 'package:video_clip_edit/modules/profile/providers/third_platform_pay_mixin.dart';
+import 'package:video_clip_edit/utils/comon/by_package_utils.dart';
 
 import '../widgets/toast_util.dart';
 
 class IntegralPayProvider extends ThirdPlatformPayMixin {
   integralinit() {
     // 初始化支付方式
-    if (Platform.isAndroid) {
+    if (Platform.isAndroid || ByPackageUtils.isOhos) {
       currentPayMethod = "wxpay";
     } else {
       currentPayMethod = "applepay";
@@ -44,7 +45,10 @@ class IntegralPayProvider extends ThirdPlatformPayMixin {
   int selectedIndex = 0;
 
   //支付支持
-  String paySupport = Platform.isAndroid ? "wxpay,alipay,yeepay" : "applepay";
+  String paySupport =
+      (Platform.isAndroid || ByPackageUtils.isOhos)
+          ? "wxpay,alipay,yeepay"
+          : "applepay";
 
   //接口下发支持支付
   Map<String, dynamic>? _integralPays;
@@ -104,7 +108,7 @@ class IntegralPayProvider extends ThirdPlatformPayMixin {
         integralRecords = records;
 
         // 处理支付方式
-        if (Platform.isAndroid) {
+        if (Platform.isAndroid || ByPackageUtils.isOhos) {
           _integralPays = data["data"]["pays"];
           availablePayMethods.clear();
           _integralPays!.forEach((key, value) {
@@ -197,9 +201,9 @@ class IntegralPayProvider extends ThirdPlatformPayMixin {
     HttpUtils.post(
       APIs.createOrderv2,
       {
-        "pay": Platform.isAndroid ? currentPayMethod : "apple",
+        "pay": (Platform.isAndroid || ByPackageUtils.isOhos) ? currentPayMethod : "apple",
         "config_id": integralRecords[selectedIndex].id,
-        "support_pays": Platform.isAndroid ? "wxpay,alipay,yeepay" : "apple",
+        "support_pays": (Platform.isAndroid || ByPackageUtils.isOhos) ? "wxpay,alipay,yeepay" : "apple",
       },
       success: (data) {
         EasyLoading.dismiss();
@@ -218,7 +222,7 @@ class IntegralPayProvider extends ThirdPlatformPayMixin {
 
   // 分平台拉起支付
   pullUpPayment(data) async {
-    if (Platform.isAndroid) {
+    if (Platform.isAndroid || ByPackageUtils.isOhos) {
       if (data["call_method"] == "wxpay") {
         //微信支付
         bool canWechatPay = await WechatKitPlatform.instance.isInstalled();
@@ -318,7 +322,7 @@ class IntegralPayProvider extends ThirdPlatformPayMixin {
 
     HttpUtils.post(
       APIs.queryOrder,
-      {"id": orderId, "receipt_data": Platform.isAndroid ? "" : receiptData},
+      {"id": orderId, "receipt_data": (Platform.isAndroid || ByPackageUtils.isOhos) ? "" : receiptData},
       success: (data) {
         byDebugPrint(data["data"], tag: "订单状态:");
         final status = data["data"]["order_status"] ?? "";

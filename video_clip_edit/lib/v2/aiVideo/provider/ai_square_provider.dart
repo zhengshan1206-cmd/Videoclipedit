@@ -594,11 +594,23 @@ class AiSquareProvider extends BaseProvider {
     updateBannerBeans(beans);
   }
 
-  /// 当前页面竖直方向的滚动偏移量
+  /// 当前页面竖直方向的滚动偏移量（同步字段，供少量同步读取）
   double currentOffset = 0;
-  updateOffset(double offset) {
+
+  /// 首页列表滚动偏移：用 [ValueNotifier] 更新，避免每帧 [notifyListeners] 触发整树重建，
+  /// 与 Header 内 Obx / NestedScrollView 叠加导致 markNeedsBuild during build。
+  final ValueNotifier<double> homeListScrollOffset = ValueNotifier<double>(0);
+
+  void updateOffset(double offset) {
+    if (currentOffset == offset) return;
     currentOffset = offset;
-    notifyListeners();
+    homeListScrollOffset.value = offset;
+  }
+
+  @override
+  void dispose() {
+    homeListScrollOffset.dispose();
+    super.dispose();
   }
 
   ///获取首页智能绘图接口数据

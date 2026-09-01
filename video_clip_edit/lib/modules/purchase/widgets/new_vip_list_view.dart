@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -15,10 +17,14 @@ class NewVipListView extends StatelessWidget {
     final vipTypeBeans = context.select<PurchaseProvider, List<VipTypeBean>>(
       (provider) => provider.vipTypeBeans,
     );
-    final itemH = 120.h;
+    final shortest = MediaQuery.sizeOf(context).shortestSide;
+    final itemH = math.max(128.h, shortest * 0.38);
+    // 阔折内屏等宽屏上 Grid 按 aspect 算出的单元高度易偏矮，与卡片内 Column 实际高度不一致会裁切「≈x元/天」
+    final minCellH = 160.h;
+    final cellH = math.max(itemH * 1.34, minCellH);
     final marginHor = 12.w;
     const itemCount = 3;
-    final contentW = context.byScreenWidth - marginHor * (itemCount - 1);
+    final contentW = context.byScreenWidth - marginHor * 2;
     final itemW = (contentW - marginHor * (itemCount - 1)) / itemCount;
 
     Get.log("vipTypeBeans===> ${vipTypeBeans.length}");
@@ -38,7 +44,7 @@ class NewVipListView extends StatelessWidget {
               crossAxisCount: 3,
               mainAxisSpacing: marginHor,
               crossAxisSpacing: marginHor,
-              childAspectRatio: itemW / (itemH * 1.05),
+              childAspectRatio: itemW / cellH,
             ),
             itemBuilder: (context, index) {
               return VipTypeViewNew(

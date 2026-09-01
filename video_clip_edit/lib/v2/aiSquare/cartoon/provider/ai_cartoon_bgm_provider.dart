@@ -129,9 +129,10 @@ class AiCartoonBgmProvider extends AiBgmMixin {
   /// 上传 bgm
   @override
   uploadMusic({
-    required AssetEntity asset,
+    required AssetEntity? asset,
     required File file,
   }) {
+    if (asset == null) return;
     ByFfmpegUtil.loadUploadInfo(
       type: MediaType.audio,
       onSuccess: (UploadInfoBean infoBean) {

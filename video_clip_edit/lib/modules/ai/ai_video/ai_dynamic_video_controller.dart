@@ -713,10 +713,10 @@ class AiDynamicVideoController extends GetxController {
   String? get currentRatio => currentMode.value == 0
       ? currentRatio0
       : currentMode.value == 1
-      ? currentRatio1
-      : currentMode.value == 2
-      ? currentRatio2
-      : null;
+          ? currentRatio1
+          : currentMode.value == 2
+              ? currentRatio2
+              : null;
 
   ///上传/更新选中的图片
   void updateImageUrl({
@@ -730,38 +730,54 @@ class AiDynamicVideoController extends GetxController {
           maxCount: 1,
           type: RequestType.image,
           onSelectedCallback: (asstes, {List<String>? urls}) async {
-            if (asstes.isEmpty) {
-              ///截止2025/05/13号，仅展示单图模式
-              if (urls?.isNotEmpty == true) {
-                if (index < _selectedImg0.length) {
-                  _selectedImg0[index] = Pair(urls![0], urls[0]);
-                  update(["updateImage0"]);
-                  checkParams();
-                }
+            File? file;
+            String? localPath;
+            if (asstes.isNotEmpty) {
+              // 原有流程：相册返回 AssetEntity，取 file 后上传
+              file = await asstes.first.file;
+              if (file == null) return;
+              localPath = file.path;
+            } else if (urls != null && urls.isNotEmpty) {
+              // 仅返回本地路径（如鸿蒙）：先取文件再上传，避免提交本地地址
+              localPath = urls.first;
+              file = File(localPath);
+              if (!file.existsSync()) {
+                BotToast.showText(text: "无法读取文件，请重试");
+                return;
               }
+            } else {
               return;
             }
-            File? file = await asstes.first.file;
-            if (file == null) return;
             final fileSize = ImageSizeGetter.getSize(FileInput(file));
             if (fileSize.width < 300 || fileSize.height < 200) {
               BotToast.showText(text: "图片尺寸过小，请重新选择");
               return;
             }
-
-            ///截止2025/05/13号，仅展示单图模式
-            if (index < _selectedImg0.length) {
-              uploadImgToRemote(
-                file.path,
-                onSuccess: (url) {
-                  _selectedImg0[index] = Pair(file.path, url);
-                  // currentRatio0 = value[1];
-                  update(["updateImage0"]);
-                  checkParams();
-                },
-              );
+            void onUploadSuccess(String networkUrl) {
+              if (currentMode.value == 0 && index < _selectedImg0.length) {
+                _selectedImg0[index] = Pair(localPath!, networkUrl);
+                update(["updateImage0"]);
+              } else if (currentMode.value == 1 &&
+                  index < _selectedImg1.length) {
+                _selectedImg1[index] = Pair(localPath!, networkUrl);
+                update(["updateImage1"]);
+              } else if (currentMode.value == 2 &&
+                  index < _selectedImg2.length) {
+                _selectedImg2[index] = Pair(localPath!, networkUrl);
+                update(["updateImage2"]);
+                if (validIndex().length == 2 || validIndex().length == 3) {
+                  showUpload.value = true;
+                } else {
+                  showUpload.value = false;
+                }
+              }
+              checkParams();
             }
-            return;
+
+            uploadImgToRemote(
+              localPath,
+              onSuccess: onUploadSuccess,
+            );
           },
         );
       },
@@ -782,7 +798,13 @@ class AiDynamicVideoController extends GetxController {
             contentsRisk(
               url: infoBean.objectUrl,
               onSuccess: () {
-                onSuccess?.call(infoBean.objectUrl);
+                /// 仅使用服务端返回的 object_url 作为提交地址，且必须为网络地址
+                final networkUrl = infoBean.objectUrl;
+                if (ByCommonUtils.isNetworkUrl(networkUrl)) {
+                  onSuccess?.call(networkUrl);
+                } else {
+                  BotToast.showText(text: "上传返回地址异常，请重试");
+                }
               },
             );
           },

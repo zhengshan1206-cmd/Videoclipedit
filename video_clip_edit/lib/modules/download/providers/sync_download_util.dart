@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_clip_edit/utils/comon/by_common_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_download_util.dart';
+import 'package:video_clip_edit/utils/comon/by_package_utils.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 
 class DownloadManager {
@@ -91,6 +92,10 @@ class DownloadManager {
           if (progress >= 1) {
             byDebugPrint(filePath, tag: "下载路径:");
             final file = File(filePath);
+            if (ByPackageUtils.isOhos) {
+              ByDownloadUtil.saveVideo2Album(file.path, isToast: false);
+              return;
+            }
             PhotoManager.editor.saveImageWithPath(file.path);
           }
         },

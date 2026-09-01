@@ -1,0 +1,28 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "模块描述"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "妙笔工坊"
+    },
+    {
+      "name": "read_pasteboard_permission",
+      "value": "用于粘贴文本内容"
+    },
+    {
+      "name": "microphone_permission",
+      "value": "用于获取音频录制信息"
+    },
+    {
+      "name": "app_tracking_consent",
+      "value": "获取开放匿名设备标识符，用于防止欺诈"
+    }
+  ]
+}

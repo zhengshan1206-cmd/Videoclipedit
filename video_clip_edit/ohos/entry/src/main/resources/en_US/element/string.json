@@ -1,0 +1,28 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "description"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "SubtlePen"
+    },
+    {
+      "name": "read_pasteboard_permission",
+      "value": "Used for pasting text content"
+    },
+    {
+      "name": "microphone_permission",
+      "value": "Used for obtaining audio recording information"
+    },
+    {
+      "name": "app_tracking_consent",
+      "value": "Obtain the open anonymous device identifier to prevent fraud"
+    }
+  ]
+}

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +10,7 @@ import 'package:video_clip_edit/utils/channel/channel_operate.dart';
 import 'package:video_clip_edit/utils/comon/by_nav_router_utils.dart';
 import 'package:video_clip_edit/utils/consts/const_keys.dart';
 import 'package:video_clip_edit/utils/http/http_utils.dart';
+import 'package:video_clip_edit/utils/comon/by_package_utils.dart';
 import 'package:flutter_bugly/flutter_bugly.dart';
 import 'package:wechat_kit/wechat_kit.dart';
 import 'package:video_clip_edit/modules/login/wx_login_config.dart';
@@ -45,8 +45,8 @@ class PermissionConfirmPage extends StatelessWidget {
       iOSAppId: "",
     );
 
-    // 4. 初始化微信SDK（Android平台）
-    if (Platform.isAndroid) {
+    // 4. 初始化微信SDK（Android / 鸿蒙平台）
+    if (ByPackageUtils.isAndroid || ByPackageUtils.isOhos) {
       await WechatKitPlatform.instance.registerApp(
         appId: WxLoginConfig.kWechatAppID,
         universalLink: WxLoginConfig.kWechatUniversalLink,
@@ -127,7 +127,9 @@ class PermissionConfirmPage extends StatelessWidget {
                                     ByNavRouterUtils.jumpWebViewPage(
                                         context,
                                         "",
-                                        "https://inchat.beiyinapp.com/api/common3/privacy");
+                                        ByPackageUtils.isOhos
+                                            ? "https://inchat.beiyinapp.com/api/common3/privacyHarmony"
+                                            : "https://inchat.beiyinapp.com/api/common3/privacy");
                                   },
                               ),
                               const TextSpan(
@@ -292,7 +294,9 @@ class ExistConfirmPage extends StatelessWidget {
                                       ByNavRouterUtils.jumpWebViewPage(
                                           context,
                                           "",
-                                          "https://inchat.beiyinapp.com/api/common2/privacy");
+                                          ByPackageUtils.isOhos
+                                              ? "https://inchat.beiyinapp.com/api/common3/privacyHarmony"
+                                              : "https://inchat.beiyinapp.com/api/common2/privacy");
                                     },
                                 ),
                                 const TextSpan(
@@ -319,7 +323,8 @@ class ExistConfirmPage extends StatelessWidget {
                                           ByColorUtil.TabTextColorSelected,
                                       fontSize: 16.sp,
                                       onClick: () async {
-                                        if (Platform.isAndroid) {
+                                        // 鸿蒙与 iOS 走原生退出，Android 走 SystemNavigator
+                                        if (ByPackageUtils.isAndroid) {
                                           SystemNavigator.pop();
                                         } else {
                                           await ChannelOperate.exitApp();

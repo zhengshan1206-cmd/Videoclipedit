@@ -6,6 +6,7 @@ import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:video_clip_edit/modules/profile/beans/mine_videos_select_all_notification.dart';
 import 'package:video_clip_edit/utils/comon/by_colors.dart';
+import 'package:video_clip_edit/utils/comon/by_screen_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_widgets_util.dart';
 import 'package:video_clip_edit/utils/comon/by_permission_utils.dart';
 import 'package:video_clip_edit/modules/common/widget/common_dialog.dart';
@@ -157,243 +158,263 @@ class _SingleGrideViewState extends State<SingleGrideView>
     final categoryId = vmProvider.mineVideos[widget.index].id;
     final MineVideoType type = MineVideoType.fromRawValue(categoryId);
 
-    return Stack(
+    final showEditBottomBar = context
+        .select<MineVideosManagementProvider, bool>(
+      (p) => p.videosEditing && p.selectedCategory == widget.index,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        EasyRefresh(
-          triggerAxis: Axis.vertical,
-          controller: _easyRefreshController,
-          canLoadAfterNoMore: false,
-          canRefreshAfterNoMore: true,
-          onLoad: () => _loadMore(context: context),
-          onRefresh: () => _refresh(context: context),
-          child: MineVideosManagementGrideView(
-            index: widget.index,
-            type: type,
+        Expanded(
+          child: EasyRefresh(
+            triggerAxis: Axis.vertical,
+            controller: _easyRefreshController,
+            canLoadAfterNoMore: false,
+            canRefreshAfterNoMore: true,
+            onLoad: () => _loadMore(context: context),
+            onRefresh: () => _refresh(context: context),
+            child: MineVideosManagementGrideView(
+              index: widget.index,
+              type: type,
+            ),
           ),
         ),
-        _buildBottmBar(context),
+        if (showEditBottomBar) _buildBottmBar(context),
       ],
     );
   }
 
-  _buildBottmBar(BuildContext context) {
+  Widget _buildBottmBar(BuildContext context) {
     final provider = context.read<MineVideosSinglePageProvider>();
     final providerM = context.read<MineVideosManagementProvider>();
-    final editing = context
-        .select<MineVideosManagementProvider, bool>((p) => p.videosEditing);
-
-    final selectedCategoryIdx =
-        context.read<MineVideosManagementProvider>().selectedCategory;
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: 0,
-      child: Offstage(
-        offstage: !(selectedCategoryIdx == widget.index && editing),
-        child: PhysicalModel(
-          color: Colors.black,
-          elevation: 10,
-          child: Container(
-            height: 66.h,
-            width: double.infinity,
+    final rowH = ByScreenUtils.managementBottomActionRowHeight(44.h);
+    final barH = ByScreenUtils.managementBottomBarSurfaceHeight(
+      scaledBarH: 66.h,
+      actionRowHeight: rowH,
+    );
+    final bottomInset = ByScreenUtils.bottomInsetForScrollable(context);
+    return ColoredBox(
+      color: ByColorUtil.WhiteColor,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Material(
             color: ByColorUtil.WhiteColor,
-            alignment: Alignment.center,
+            elevation: 0,
+            shadowColor: Colors.transparent,
             child: SizedBox(
-              height: 44.h,
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 12.w,
-                  ),
-                  Expanded(
-                    child: ByWidgetsUtil.commonBtn(
-                      title: "取消",
-                      fontSize: 16.sp,
-                      borderRadius: 12.w,
-                      fontWeight: FontWeight.w600,
-                      bgColor: ByColorUtil.CommonTextColor.withOpacity(0.2),
-                      textColor: ByColorUtil.WhiteColor,
-                      onClick: () {
-                        if (providerM.videosEditing) {
-                          providerM.updateWorksEditingState(false);
-                          provider.updateSelectAllStatus(false);
-                        }
-                      },
+              width: double.infinity,
+              height: barH,
+              child: Center(
+                child: SizedBox(
+                  height: rowH,
+                  child: Row(
+                  children: [
+                    SizedBox(
+                      width: 12.w,
                     ),
-                  ),
-                  SizedBox(
-                    width: 12.w,
-                  ),
-                  Expanded(
-                    child: ByWidgetsUtil.commonBtn(
-                      title: "删除",
-                      fontSize: 16.sp,
-                      borderRadius: 12.w,
-                      fontWeight: FontWeight.w600,
-                      bgColor: const Color(0xFFFF5373),
-                      textColor: ByColorUtil.WhiteColor,
-                      onClick: () {
-                        final ids = provider.selectedVideoIdxs;
-                        if (ids.isEmpty) {
-                          BotToast.showText(text: "请选择要删除的视频");
-                          return;
-                        }
-                        final categoryId =
-                            providerM.mineVideos[widget.index].id;
-                        final MineVideoType type =
-                            MineVideoType.fromRawValue(categoryId);
-                        List<int> idsDetete = [];
-                        switch (type) {
-                          case MineVideoType.aiClip:
-                          case MineVideoType.aiTweets:
-                          case MineVideoType.playPromote:
-                          case MineVideoType.novelPromote:
-                            idsDetete = provider.selectedVideoIdxs
-                                .map((idx) => provider.videoRecordBeans[idx].id)
-                                .toList();
-                            break;
-                          case MineVideoType.oral:
-                            idsDetete = provider.selectedVideoIdxs
-                                .map((idx) =>
-                                    provider.oralVideoRecordBeans[idx].id)
-                                .toList();
-                            break;
-                          case MineVideoType.textToVideo:
-                          case MineVideoType.imgToVideo:
-                          case MineVideoType.embraceVideo:
-                            idsDetete = provider.selectedVideoIdxs
-                                .map((idx) =>
-                                    provider.dynamicRecordBeans[idx].id)
-                                .toList();
-                            break;
-                          case MineVideoType.hot:
-                            idsDetete = provider.selectedVideoIdxs
-                                .map((idx) => provider.hotRecordBeans[idx].id)
-                                .toList();
-                            break;
-                          // case MineVideoType.playPromote:
-                          //   idsDetete = provider.selectedVideoIdxs
-                          //       .map(
-                          //           (idx) => provider.videoExtractBeans[idx].id)
-                          //       .toList();
-                          //   break;
-                          default:
-                            break;
-                        }
-                        showDialog(
-                          context: context,
-                          builder: (ctx) {
-                            return CommonDialog(
-                              reverse: false,
-                              maxLine: 10,
-                              contents: "请确认是否删除，删除后将不可回恢复，请谨慎操作",
-                              confirmBtnTitle: "删除",
-                              confirmCallback: () {
-                                final vmProvider = context
-                                    .read<MineVideosManagementProvider>();
-                                final categoryId =
-                                    vmProvider.mineVideos[widget.index].id;
-                                final MineVideoType type =
-                                    MineVideoType.fromRawValue(categoryId);
-                                provider.deleteVideos(
-                                  idsDetete,
-                                  type: type,
-                                  onSuccess: () {
-                                    provider.updateSelectAllStatus(false);
-                                    // _easyRefreshController.callRefresh();
-                                    _refresh(context: context);
-                                  },
-                                );
-                              },
-                            );
-                          },
-                        );
-                      },
+                    Expanded(
+                      child: ByWidgetsUtil.commonBtn(
+                        title: "取消",
+                        fontSize: 16.sp,
+                        borderRadius: 12.w,
+                        fontWeight: FontWeight.w600,
+                        bgColor: ByColorUtil.CommonTextColor.withOpacity(0.2),
+                        textColor: ByColorUtil.WhiteColor,
+                        onClick: () {
+                          if (providerM.videosEditing) {
+                            providerM.updateWorksEditingState(false);
+                            provider.updateSelectAllStatus(false);
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                  SizedBox(
-                    width: 12.w,
-                  ),
-                  Expanded(
-                    child: ByWidgetsUtil.commonBtn(
-                      title: " 下载",
-                      fontSize: 16.sp,
-                      borderRadius: 12.w,
-                      fontWeight: FontWeight.w600,
-                      textColor: ByColorUtil.WhiteColor,
-                      bgColor: ByColorUtil.LoginBtnBgColor,
-                      onClick: () async {
-                        if (await ByPermissionUtils.storage() == false) return;
-                        final categoryId =
-                            providerM.mineVideos[widget.index].id;
-                        final MineVideoType type =
-                            MineVideoType.fromRawValue(categoryId);
-                        List<String> urls = [];
-                        switch (type) {
-                          case MineVideoType.aiClip:
-                          case MineVideoType.aiTweets:
-                          case MineVideoType.playPromote:
-                          case MineVideoType.novelPromote:
-                            urls = provider.selectedVideoIdxs
-                                .map((idx) =>
-                                    provider.videoRecordBeans[idx].videoUrl)
-                                .toList();
-                            break;
-                          case MineVideoType.hot:
-                            urls = provider.selectedVideoIdxs
-                                .map((idx) =>
-                                    provider.hotRecordBeans[idx].videoUrl)
-                                .toList();
-                            break;
-                          case MineVideoType.oral:
-                            urls = provider.selectedVideoIdxs
-                                .map((idx) =>
-                                    provider.oralVideoRecordBeans[idx].videoUrl)
-                                .toList();
-                            break;
-                          case MineVideoType.textToVideo:
-                          case MineVideoType.imgToVideo:
-                          case MineVideoType.embraceVideo:
-                            urls = provider.selectedVideoIdxs
-                                .map((idx) =>
-                                    provider.dynamicRecordBeans[idx].videoUrl ??
-                                    "")
-                                .toList();
-                            break;
-                          // case MineVideoType.playPromote:
-                          //   urls = provider.selectedVideoIdxs
-                          //       .map((idx) =>
-                          //           provider.videoExtractBeans[idx].shareUrl)
-                          //       .toList();
-                          //   break;
-                          default:
-                            break;
-                        }
-                        showDialog(
-                          // ignore: use_build_context_synchronously
-                          context: context,
-                          builder: (c) {
-                            return AiVideosDownoadDialog(
-                              contents: "",
-                              maxLine: 10,
-                              cancelBtnTitle: "取消",
-                              confirmBtnTitle: "确定",
-                              confirmCallback: () {},
-                              videoUrls: urls,
-                            );
-                          },
-                        );
-                      },
+                    SizedBox(
+                      width: 12.w,
                     ),
-                  ),
-                  SizedBox(
-                    width: 12.w,
-                  ),
-                ],
+                    Expanded(
+                      child: ByWidgetsUtil.commonBtn(
+                        title: "删除",
+                        fontSize: 16.sp,
+                        borderRadius: 12.w,
+                        fontWeight: FontWeight.w600,
+                        bgColor: const Color(0xFFFF5373),
+                        textColor: ByColorUtil.WhiteColor,
+                        onClick: () {
+                          final ids = provider.selectedVideoIdxs;
+                          if (ids.isEmpty) {
+                            BotToast.showText(text: "请选择要删除的视频");
+                            return;
+                          }
+                          final categoryId =
+                              providerM.mineVideos[widget.index].id;
+                          final MineVideoType type =
+                              MineVideoType.fromRawValue(categoryId);
+                          List<int> idsDetete = [];
+                          switch (type) {
+                            case MineVideoType.aiClip:
+                            case MineVideoType.aiTweets:
+                            case MineVideoType.playPromote:
+                            case MineVideoType.novelPromote:
+                              idsDetete = provider.selectedVideoIdxs
+                                  .map((idx) =>
+                                      provider.videoRecordBeans[idx].id)
+                                  .toList();
+                              break;
+                            case MineVideoType.oral:
+                              idsDetete = provider.selectedVideoIdxs
+                                  .map((idx) =>
+                                      provider.oralVideoRecordBeans[idx].id)
+                                  .toList();
+                              break;
+                            case MineVideoType.textToVideo:
+                            case MineVideoType.imgToVideo:
+                            case MineVideoType.embraceVideo:
+                              idsDetete = provider.selectedVideoIdxs
+                                  .map((idx) =>
+                                      provider.dynamicRecordBeans[idx].id)
+                                  .toList();
+                              break;
+                            case MineVideoType.hot:
+                              idsDetete = provider.selectedVideoIdxs
+                                  .map((idx) => provider.hotRecordBeans[idx].id)
+                                  .toList();
+                              break;
+                            // case MineVideoType.playPromote:
+                            //   idsDetete = provider.selectedVideoIdxs
+                            //       .map(
+                            //           (idx) => provider.videoExtractBeans[idx].id)
+                            //       .toList();
+                            //   break;
+                            default:
+                              break;
+                          }
+                          showDialog(
+                            context: context,
+                            builder: (ctx) {
+                              return CommonDialog(
+                                reverse: false,
+                                maxLine: 10,
+                                contents: "请确认是否删除，删除后将不可回恢复，请谨慎操作",
+                                confirmBtnTitle: "删除",
+                                confirmCallback: () {
+                                  final vmProvider = context
+                                      .read<MineVideosManagementProvider>();
+                                  final categoryId =
+                                      vmProvider.mineVideos[widget.index].id;
+                                  final MineVideoType type =
+                                      MineVideoType.fromRawValue(categoryId);
+                                  provider.deleteVideos(
+                                    idsDetete,
+                                    type: type,
+                                    onSuccess: () {
+                                      provider.updateSelectAllStatus(false);
+                                      // _easyRefreshController.callRefresh();
+                                      _refresh(context: context);
+                                    },
+                                  );
+                                },
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                    SizedBox(
+                      width: 12.w,
+                    ),
+                    Expanded(
+                      child: ByWidgetsUtil.commonBtn(
+                        title: " 下载",
+                        fontSize: 16.sp,
+                        borderRadius: 12.w,
+                        fontWeight: FontWeight.w600,
+                        textColor: ByColorUtil.WhiteColor,
+                        bgColor: ByColorUtil.LoginBtnBgColor,
+                        onClick: () async {
+                          if (await ByPermissionUtils.storage() == false)
+                            return;
+                          final categoryId =
+                              providerM.mineVideos[widget.index].id;
+                          final MineVideoType type =
+                              MineVideoType.fromRawValue(categoryId);
+                          List<String> urls = [];
+                          switch (type) {
+                            case MineVideoType.aiClip:
+                            case MineVideoType.aiTweets:
+                            case MineVideoType.playPromote:
+                            case MineVideoType.novelPromote:
+                              urls = provider.selectedVideoIdxs
+                                  .map((idx) =>
+                                      provider.videoRecordBeans[idx].videoUrl)
+                                  .toList();
+                              break;
+                            case MineVideoType.hot:
+                              urls = provider.selectedVideoIdxs
+                                  .map((idx) =>
+                                      provider.hotRecordBeans[idx].videoUrl)
+                                  .toList();
+                              break;
+                            case MineVideoType.oral:
+                              urls = provider.selectedVideoIdxs
+                                  .map((idx) => provider
+                                      .oralVideoRecordBeans[idx].videoUrl)
+                                  .toList();
+                              break;
+                            case MineVideoType.textToVideo:
+                            case MineVideoType.imgToVideo:
+                            case MineVideoType.embraceVideo:
+                              urls = provider.selectedVideoIdxs
+                                  .map((idx) =>
+                                      provider
+                                          .dynamicRecordBeans[idx].videoUrl ??
+                                      "")
+                                  .toList();
+                              break;
+                            // case MineVideoType.playPromote:
+                            //   urls = provider.selectedVideoIdxs
+                            //       .map((idx) =>
+                            //           provider.videoExtractBeans[idx].shareUrl)
+                            //       .toList();
+                            //   break;
+                            default:
+                              break;
+                          }
+                          showDialog(
+                            // ignore: use_build_context_synchronously
+                            context: context,
+                            builder: (c) {
+                              return AiVideosDownoadDialog(
+                                contents: "",
+                                maxLine: 10,
+                                cancelBtnTitle: "取消",
+                                confirmBtnTitle: "确定",
+                                confirmCallback: () {},
+                                videoUrls: urls,
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                    SizedBox(
+                      width: 12.w,
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
+          ),
+          ColoredBox(
+            color: ByColorUtil.WhiteColor,
+            child: SizedBox(
+              width: double.infinity,
+              height: bottomInset,
+            ),
+          ),
+        ],
       ),
     );
   }

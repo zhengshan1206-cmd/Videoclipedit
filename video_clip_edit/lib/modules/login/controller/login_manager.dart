@@ -7,18 +7,15 @@
  * @Description: 
  */
 
+// ignore_for_file: undefined_named_parameter
 import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_keyboard_visibility/flutter_keyboard_visibility.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:get/get_connect/http/src/utils/utils.dart';
-import 'package:video_clip_edit/flavors/build_config.dart';
-import 'package:video_clip_edit/utils/comon/by_navigator_util.dart';
+import 'package:video_clip_edit/utils/comon/by_package_utils.dart';
 import '../../../providers/login_provider.dart';
-import '../../../utils/channel/channel_config.dart';
 import '../login_page.dart';
 import '../login_page_ex.dart';
 import 'shanyan_login.dart';
@@ -34,15 +31,18 @@ class LoginManager {
     bool? useSafeArea = false,
     VoidCallback? cancelLogin,
     VoidCallback? successLogin,
+    /// 是否强制使用手机验证码登录（如华为登录页点击“其他登录方式”后切回）
+    bool forcePhoneLogin = false,
   }) async {
-    if (Platform.isIOS) {
+    if (Platform.isIOS || forcePhoneLogin) {
       _showLoginNormalPage(
           onlyPhone: onlyPhone,
           isScrollControlled: isScrollControlled,
           useSafeArea: useSafeArea,
           cancelLogin: cancelLogin,
           successLogin: successLogin,
-          type: LoginType.phone);
+          type: LoginType.phone,
+          privacy: ShanyanLogin.getDefaultAgreementChecked());
       return;
     }
     bool privacy = ShanyanLogin.getDefaultAgreementChecked();
@@ -90,7 +90,7 @@ class LoginManager {
               ),
             ),
             child: Center(
-              child: Platform.isAndroid
+              child: (ByPackageUtils.isAndroid || ByPackageUtils.isOhos)
                   ? LoginPage(
                       type: LoginPageType.entire,
                       showClose: true,

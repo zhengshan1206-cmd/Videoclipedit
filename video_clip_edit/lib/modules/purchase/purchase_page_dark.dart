@@ -1,4 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
+import 'dart:math' as math;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -320,7 +321,10 @@ class _PurchasePageDarkState extends State<PurchasePageDark> {
     final vipTypeBeans = context.select<PurchaseProvider, List<VipTypeBean>>(
       (provider) => provider.vipTypeBeans,
     );
-    final itemH = 130.h;
+    final shortest = MediaQuery.sizeOf(context).shortestSide;
+    final itemH = math.max(118.h, shortest * 0.30);
+    // 横滑卡：在避免底栏裁切的前提下收紧单元高度，减少卡片内上下留白
+    final gridH = math.max(itemH * 1.14, 150.h);
     final marginHor = 10.w;
     final contentW = context.byScreenWidth - marginHor * 2;
     const itemCount = 3;
@@ -328,7 +332,7 @@ class _PurchasePageDarkState extends State<PurchasePageDark> {
     return vipTypeBeans.isEmpty
         ? Container()
         : Container(
-            height: itemH * 1.1,
+            height: gridH,
             margin: EdgeInsets.symmetric(horizontal: marginHor),
             alignment: Alignment.center,
             child: GridView.builder(
@@ -342,7 +346,7 @@ class _PurchasePageDarkState extends State<PurchasePageDark> {
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 1,
                 mainAxisSpacing: marginHor,
-                childAspectRatio: itemH * 1.1 / itemW,
+                childAspectRatio: gridH / itemW,
               ),
               itemBuilder: (context, index) {
                 return VipTypeViewDark(

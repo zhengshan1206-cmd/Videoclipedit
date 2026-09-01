@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import 'package:video_clip_edit/providers/purchase_provider.dart';
 import 'package:video_clip_edit/utils/comon/by_colors.dart';
 import 'package:video_clip_edit/utils/comon/by_navigator_util.dart';
 import 'package:video_clip_edit/utils/comon/by_widgets_util.dart';
+import 'package:video_clip_edit/utils/comon/by_screen_utils.dart';
 import 'package:video_clip_edit/v2/aiCreate/widgets/input/normal_input_view.dart';
 import 'package:video_clip_edit/v2/aiSquare/cartoon/ai_cartoon_page.dart';
 import 'package:video_clip_edit/v2/aiSquare/cartoon/provider/ai_cartoon_provider.dart';
@@ -30,16 +32,28 @@ class SlicingHomePage extends StatefulWidget {
   State<SlicingHomePage> createState() => _SlicingHomePageState();
 }
 
-class _SlicingHomePageState extends State<SlicingHomePage> {
+class _SlicingHomePageState extends State<SlicingHomePage>
+    with WidgetsBindingObserver {
   final RxInt _currentIndex = 0.obs;
   final SlicingHomeController homeController = Get.put(SlicingHomeController());
   final OneClickSlicingController slicingController =
       Get.find<OneClickSlicingController>();
   RxInt wordsCount = 0.obs;
+  final ScrollController _promptScrollController = ScrollController();
+
+  /// 上次布局尺寸；仅横竖屏/折叠尺寸变化时重建，忽略键盘引起的 metrics 变化
+  Size? _lastLayoutSize;
+
+  /// 跨旋转/重建保持焦点，避免首次点击无法拉起键盘
+  final FocusNode _promptFocusNode = FocusNode();
+
+  /// 用户主动展开编辑时才自动拉起键盘，避免重建输入框反复 requestFocus
+  bool _editAutoFocus = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // 添加键盘可见性监听
     KeyboardVisibilityController().onChange.listen((bool visible) {
       homeController.keyboardVisible.value = visible;
@@ -47,7 +61,11 @@ class _SlicingHomePageState extends State<SlicingHomePage> {
         // 延迟一帧获取键盘高度，确保viewInsets已更新
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            homeController.keyboardHeight.value = 500;
+            final inset = MediaQuery.viewInsetsOf(context).bottom;
+            // 只用真实 inset，避免假高度把编辑面板挤扁
+            if (inset > 0) {
+              homeController.keyboardHeight.value = inset;
+            }
           }
         });
       } else {
@@ -56,8 +74,73 @@ class _SlicingHomePageState extends State<SlicingHomePage> {
     });
   }
 
+  /// 收起编辑态并关闭键盘
+  void _collapseEditing(BuildContext context) {
+    _editAutoFocus = false;
+    FocusManager.instance.primaryFocus?.unfocus();
+    FocusScope.of(context).unfocus();
+    slicingController.showAppBar.value = homeController.manualEditing.value;
+    homeController.manualEditing.value = false;
+  }
+
+  /// 仅收起键盘，不退出编辑态
+  void _dismissKeyboard() {
+    _editAutoFocus = false;
+    _promptFocusNode.unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
+  }
+
+  /// 展开编辑态（仅用户点击时自动聚焦）
+  void _expandEditing() {
+    _editAutoFocus = true;
+    slicingController.showAppBar.value = homeController.manualEditing.value;
+    homeController.manualEditing.value = true;
+    wordsCount.value = homeController.currentPrompt.value.length;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && homeController.manualEditing.value) {
+        _promptFocusNode.requestFocus();
+      }
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _lastLayoutSize ??= MediaQuery.sizeOf(context);
+  }
+
+  @override
+  void didChangeMetrics() {
+    // 键盘显隐也会触发 metrics；横屏下若每次都重建输入框会反复 requestFocus 关不掉键盘
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final size = MediaQuery.sizeOf(context);
+      if (_lastLayoutSize == size) {
+        return;
+      }
+      _lastLayoutSize = size;
+      if (_promptScrollController.hasClients) {
+        _promptScrollController.jumpTo(0);
+      }
+      // 旋转后若仍在编辑态，延迟恢复焦点（鸿蒙横竖屏切换需等待布局稳定）
+      if (homeController.manualEditing.value) {
+        Future.delayed(const Duration(milliseconds: 120), () {
+          if (!mounted || !homeController.manualEditing.value) return;
+          if (!_promptFocusNode.hasFocus && _editAutoFocus) {
+            _promptFocusNode.requestFocus();
+          }
+        });
+      }
+      setState(() {});
+    });
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _promptScrollController.dispose();
+    _promptFocusNode.dispose();
     // homeController.dispose();
     // Get.delete<SlicingHomeController>();
     super.dispose();
@@ -115,7 +198,13 @@ class _SlicingHomePageState extends State<SlicingHomePage> {
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 onTap: () {
-                  FocusScope.of(context).unfocus();
+                  // 键盘可见时仅收起键盘，避免误退出编辑态
+                  if (homeController.keyboardVisible.value ||
+                      (_promptFocusNode.hasFocus)) {
+                    _dismissKeyboard();
+                    return;
+                  }
+                  _collapseEditing(context);
                 },
                 child: Container(
                   color: const Color(0xff000000).withOpacity(0.5),
@@ -133,92 +222,138 @@ class _SlicingHomePageState extends State<SlicingHomePage> {
           //     ),
           //   ),
           Obx(() {
+            final mq = MediaQuery.of(context);
+            final viewSize = mq.size;
+            // 订阅键盘 Rx，保证可见性变化时重建
+            final keyboardVisible = homeController.keyboardVisible.value;
+            final keyboardFromMq = mq.viewInsets.bottom;
+            final rawKeyboard = keyboardFromMq > 0
+                ? keyboardFromMq
+                : (keyboardVisible ? homeController.keyboardHeight.value : 0.0);
+            // 顶部安全距：多源取大；横屏鸿蒙状态栏常回报 0，用更高兜底
+            final isLandscape = mq.orientation == Orientation.landscape;
+            final topSafe = math.max(
+              math.max(mq.viewPadding.top, mq.padding.top),
+              math.max(
+                ByScreenUtils.topSafeHeight,
+                isLandscape ? 48.0 : 32.0,
+              ),
+            );
+            final isEditing = homeController.manualEditing.value;
+            final titleH = math.max(40.h, 40.0);
+            const minInputH = 120.0;
+            // 限制键盘 inset，避免面板高度被挤成只剩标题
+            final maxKeyboard = math.max(
+              0.0,
+              viewSize.height - topSafe - titleH - 16 - minInputH,
+            );
+            final keyboardInset = math.min(rawKeyboard, maxKeyboard);
+
+            if (isEditing) {
+              // 从屏幕顶铺到键盘上方：顶部 SizedBox 预留状态栏，下方 Expanded 给输入框
+              return Positioned(
+                key: ValueKey('edit_panel_${viewSize.width.round()}'),
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: keyboardInset,
+                child: Material(
+                  color: Colors.white,
+                  child: Column(
+                    children: [
+                      SizedBox(height: topSafe),
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(12.w, 12, 12.w, 8),
+                        child: SizedBox(
+                          height: titleH,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              ByWidgetsUtil.commonText(
+                                text: "剧本内容：",
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.w600,
+                                textColor: ByColorUtil.color0B1843,
+                              ),
+                              const Spacer(),
+                              GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () => _collapseEditing(context),
+                                child: Container(
+                                  width: 40.w,
+                                  height: titleH,
+                                  alignment: Alignment.center,
+                                  child: Image.asset(
+                                    "assets/v2/slicing/icon_fold.png",
+                                    width: 12.w,
+                                    height: 12.w,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 10),
+                          child: _buildInputView(context,
+                              slicingController: slicingController),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+
+            final panelH = homeController.bottomPanelHeight(context);
             return AnimatedPositioned(
+              key: ValueKey('panel_${viewSize.width.round()}'),
               duration: const Duration(milliseconds: 200),
               bottom: 0,
               left: 0,
               right: 0,
-              height: homeController.manualEditing.value
-                  ? 400
-                  : homeController.bottomViewHeight,
+              height: panelH,
               child: ByWidgetsUtil.physicalModel(
                 color: Colors.white,
                 child: Column(
                   children: [
-                    // if (homeController.manualEditing.value)
-                    //   SizedBox(height: 15.h),
-                    if (homeController.manualEditing.value)
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12.w),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            ByWidgetsUtil.commonText(
-                              text: "剧本内容：",
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w600,
-                              textColor: ByColorUtil.color0B1843,
-                            ),
-                            const Spacer(),
-                            GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onTap: () {
-                                FocusScope.of(context).unfocus();
-                                slicingController.showAppBar.value =
-                                    homeController.manualEditing.value;
-                                homeController.manualEditing.value =
-                                    !homeController.manualEditing.value;
-                              },
-                              child: Container(
-                                width: 40.w,
-                                height: 40.h,
-                                alignment: Alignment.bottomRight,
-                                child: Image.asset(
-                                  "assets/v2/slicing/icon_fold.png",
-                                  width: 12.w,
-                                  height: 12.w,
-                                  fit: BoxFit.contain,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                     SizedBox(height: 12.h),
                     Expanded(
-                        child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12.w),
-                      child: _buildInputView(context,
-                          slicingController: slicingController),
-                    )),
-                    if (!homeController.manualEditing.value)
-                      SizedBox(height: 10.h),
-                    if (!homeController.manualEditing.value)
-                      Container(
-                        height: 44.h,
+                      child: Container(
                         padding: EdgeInsets.symmetric(horizontal: 12.w),
-                        child: ByWidgetsUtil.commonBtn(
-                          title: "继续",
-                          fontSize: 14.sp,
-                          borderRadius: 12.w,
-                          padding: EdgeInsets.zero,
-                          textColor: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          bgColor: ByColorUtil.LoginBtnBgColor,
-                          onClick: () {
-                            goOnEvent();
-                          },
-                        ),
+                        child: _buildInputView(context,
+                            slicingController: slicingController),
                       ),
-                    if (!homeController.manualEditing.value)
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: 5.h),
-                        child: ByWidgetsUtil.commonText(
-                          text: "禁止利用功能从事任何违法活动",
-                          fontSize: 10.sp,
-                          textColor: ByColorUtil.color0B1843.withOpacity(0.3),
-                        ),
+                    ),
+                    SizedBox(height: 10.h),
+                    Container(
+                      height: 44.h,
+                      padding: EdgeInsets.symmetric(horizontal: 12.w),
+                      child: ByWidgetsUtil.commonBtn(
+                        title: "继续",
+                        fontSize: 14.sp,
+                        borderRadius: 12.w,
+                        padding: EdgeInsets.zero,
+                        textColor: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        bgColor: ByColorUtil.LoginBtnBgColor,
+                        onClick: () {
+                          goOnEvent();
+                        },
                       ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 5.h),
+                      child: ByWidgetsUtil.commonText(
+                        text: "禁止利用功能从事任何违法活动",
+                        fontSize: 10.sp,
+                        textColor: ByColorUtil.color0B1843.withOpacity(0.3),
+                      ),
+                    ),
+                    SizedBox(height: 10.h),
                   ],
                 ),
               ),
@@ -312,148 +447,158 @@ class _SlicingHomePageState extends State<SlicingHomePage> {
         width: 1.w,
       ),
       child: homeController.manualEditing.value
-          ? NormalInputView(
-              maxWords: 2000,
-              placeholder: "您可点击上面的推荐灵感或自行输入故事概要也可以\n在此直接输入完整的故事、剧本、小说",
-              initialValue: homeController.currentPrompt.value,
-              onChanged: (val) {
-                wordsCount.value = val.length;
+          ? GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () {
+                if (!_promptFocusNode.hasFocus) {
+                  _editAutoFocus = true;
+                  _promptFocusNode.requestFocus();
+                }
               },
-              onFinished: (val) {
-                homeController.currentPrompt.value = val;
-              },
-              scrollToBottom: true,
-              key: ValueKey(homeController.currentPrompt.value),
-              toolBarBuilder: (context) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Obx(() {
-                      return homeController.isGenerating.value
-                          ? Padding(
-                              padding: EdgeInsets.only(top: 4.h, bottom: 4.h),
-                              child: Row(
-                                children: [
-                                  SizedBox(width: 12.w),
-                                  ByWidgetsUtil.generatingBtn(),
-                                  const Spacer(),
-                                ],
-                              ),
-                            )
-                          : Container();
-                    }),
-                    Row(
-                      children: [
-                        SizedBox(width: 12.w),
-                        Obx(() {
-                          return ByWidgetsUtil.commonText(
-                            text: "${wordsCount.value}/2000",
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.normal,
-                            textColor: ByColorUtil.color0B1843.withOpacity(0.5),
-                          );
-                        }),
-                        Obx(() {
-                          return Offstage(
-                            offstage:
-                                homeController.currentPrompt.value.isEmpty,
-                            child: GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onTap: () {
-                                homeController.currentPrompt.value = '';
+              child: NormalInputView(
+                maxWords: 2000,
+                placeholder: "您可点击上面的推荐灵感或自行输入故事概要也可以\n在此直接输入完整的故事、剧本、小说",
+                initialValue: homeController.currentPrompt.value,
+                externalFocusNode: _promptFocusNode,
+                focusNode: _editAutoFocus,
+                onChanged: (val) {
+                  wordsCount.value = val.length;
+                  homeController.currentPrompt.value = val;
+                },
+                onFinished: (val) {
+                  homeController.currentPrompt.value = val;
+                },
+                scrollToBottom: true,
+                toolBarBuilder: (context) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Obx(() {
+                        return homeController.isGenerating.value
+                            ? Padding(
+                                padding: EdgeInsets.only(top: 4.h, bottom: 4.h),
+                                child: Row(
+                                  children: [
+                                    SizedBox(width: 12.w),
+                                    ByWidgetsUtil.generatingBtn(),
+                                    const Spacer(),
+                                  ],
+                                ),
+                              )
+                            : Container();
+                      }),
+                      Row(
+                        children: [
+                          SizedBox(width: 12.w),
+                          Obx(() {
+                            return ByWidgetsUtil.commonText(
+                              text: "${wordsCount.value}/2000",
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.normal,
+                              textColor:
+                                  ByColorUtil.color0B1843.withOpacity(0.5),
+                            );
+                          }),
+                          Obx(() {
+                            return Offstage(
+                              offstage:
+                                  homeController.currentPrompt.value.isEmpty,
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () {
+                                  homeController.currentPrompt.value = '';
 
-                                wordsCount.value =
-                                    homeController.currentPrompt.value.length;
-                              },
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 5.w),
-                                child: ByWidgetsUtil.commonText(
-                                  text: "清空",
-                                  fontSize: 12.sp,
-                                  fontWeight: FontWeight.normal,
-                                  textColor:
-                                      ByColorUtil.color0B1843.withOpacity(0.5),
+                                  wordsCount.value =
+                                      homeController.currentPrompt.value.length;
+                                },
+                                child: Padding(
+                                  padding:
+                                      EdgeInsets.symmetric(horizontal: 5.w),
+                                  child: ByWidgetsUtil.commonText(
+                                    text: "清空",
+                                    fontSize: 12.sp,
+                                    fontWeight: FontWeight.normal,
+                                    textColor: ByColorUtil.color0B1843
+                                        .withOpacity(0.5),
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        }),
-                        const Spacer(),
-                        Image.asset(
-                          "assets/v2/slicing/icon_random.png",
-                          width: 12.w,
-                          height: 12.w,
-                          fit: BoxFit.contain,
-                        ),
-                        SizedBox(width: 5.w),
-                        GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () {
-                            homeController.fetchRandomPromptStreamData();
-                          },
-                          child: ByWidgetsUtil.commonText(
-                            text: "随机热门灵感",
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.normal,
-                            textColor: const Color(0xFF5B4BF7),
+                            );
+                          }),
+                          const Spacer(),
+                          Image.asset(
+                            "assets/v2/slicing/icon_random.png",
+                            width: 12.w,
+                            height: 12.w,
+                            fit: BoxFit.contain,
                           ),
-                        ),
-                        SizedBox(width: 12.w),
-                      ],
-                    ),
-                  ],
-                );
-              },
+                          SizedBox(width: 5.w),
+                          GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              homeController.fetchRandomPromptStreamData();
+                            },
+                            child: ByWidgetsUtil.commonText(
+                              text: "随机热门灵感",
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.normal,
+                              textColor: const Color(0xFF5B4BF7),
+                            ),
+                          ),
+                          SizedBox(width: 12.w),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
             )
           : Obx(() {
               final hasPrompt = homeController.currentPrompt.value.isNotEmpty;
+              final promptText = hasPrompt
+                  ? homeController.currentPrompt.value
+                  : homeController.isGenerating.value
+                      ? ""
+                      : "您可点击上面的推荐灵感或自行输入故事概要也可以在此直接输入完整的故事、剧本、小说";
               return Column(
                 children: [
                   SizedBox(height: 10.h),
                   Expanded(
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
-                      onTap: () {
-                        slicingController.showAppBar.value =
-                            homeController.manualEditing.value;
-                        homeController.manualEditing.value =
-                            !homeController.manualEditing.value;
-                        wordsCount.value =
-                            homeController.currentPrompt.value.length;
-                      },
-                      child: Builder(builder: (context) {
-                        final ScrollController scrollController =
-                            ScrollController();
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          if (hasPrompt && scrollController.hasClients) {
-                            scrollController.animateTo(
-                              scrollController.position.maxScrollExtent,
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeOut,
-                            );
+                      onTap: _expandEditing,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          // 不要强制撑破父约束；用顶对齐 + 可滚动文本避免旋转后字被压扁
+                          final h = constraints.maxHeight;
+                          if (!h.isFinite || h <= 0) {
+                            return const SizedBox.shrink();
                           }
-                        });
-
-                        return ListView(
-                          controller: scrollController,
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: EdgeInsets.zero,
-                          children: [
-                            ByWidgetsUtil.commonText(
-                              text: hasPrompt
-                                  ? homeController.currentPrompt.value
-                                  : homeController.isGenerating.value
-                                      ? ""
-                                      : "您可点击上面的推荐灵感或自行输入故事概要也可以在此直接输入完整的故事、剧本、小说",
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.normal,
-                              maxLines: 10000000,
-                              textColor: ByColorUtil.color0B1843
-                                  .withOpacity(hasPrompt ? 1 : 0.5),
-                            )
-                          ],
-                        );
-                      }),
+                          return SizedBox(
+                            height: h,
+                            width: constraints.maxWidth,
+                            child: Align(
+                              alignment: Alignment.topLeft,
+                              child: SingleChildScrollView(
+                                controller: _promptScrollController,
+                                physics: const ClampingScrollPhysics(),
+                                padding: EdgeInsets.zero,
+                                child: Text(
+                                  promptText,
+                                  softWrap: true,
+                                  style: TextStyle(
+                                    fontSize: 14.sp,
+                                    height: 1.4,
+                                    fontWeight: FontWeight.normal,
+                                    color: ByColorUtil.color0B1843
+                                        .withOpacity(hasPrompt ? 1 : 0.5),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
                   Obx(() {
@@ -515,12 +660,15 @@ class _SlicingHomePageState extends State<SlicingHomePage> {
                       GestureDetector(
                         behavior: HitTestBehavior.opaque,
                         onTap: () {
-                          num appChannel = BuildConfig.instance.channelType.code;
-                          if(appChannel==414){
+                          num appChannel =
+                              BuildConfig.instance.channelType.code;
+                          if (appChannel == 414) {
                             Get.log("===当前的渠道===$appChannel");
-                            ByNavigatorUtil.checkLogin(context: context, nextStepEvent: (){
-                              homeController.fetchRandomPromptStreamData();
-                            });
+                            ByNavigatorUtil.checkLogin(
+                                context: context,
+                                nextStepEvent: () {
+                                  homeController.fetchRandomPromptStreamData();
+                                });
                             return;
                           }
                           homeController.fetchRandomPromptStreamData();

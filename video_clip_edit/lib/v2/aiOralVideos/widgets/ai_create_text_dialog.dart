@@ -93,6 +93,8 @@ class _AiCreateTextDialogState extends State<AiCreateTextDialog>
 
   ///AI创作文案
   Widget _aiCreateTextDialog() {
+    /// 底部系统安全区画在白色面板内，避免底部仅靠 margin 透出遮罩（视觉上「镂空」）。
+    final bottomSafe = MediaQuery.viewPaddingOf(context).bottom;
     return SizedBox(
       height: 0.7.sh,
       child: Container(
@@ -106,6 +108,7 @@ class _AiCreateTextDialogState extends State<AiCreateTextDialog>
         padding: EdgeInsets.only(
           left: 13.w,
           right: 13.w,
+          bottom: bottomSafe,
         ),
         child: _bodyView(),
       ),
@@ -127,7 +130,7 @@ class _AiCreateTextDialogState extends State<AiCreateTextDialog>
             color: const Color(0XFF5B4BF7),
             borderRadius: BorderRadius.circular(12.w),
           ),
-          margin: EdgeInsets.only(bottom: 36.h),
+          margin: EdgeInsets.only(bottom: 12.h),
           padding: EdgeInsets.only(
             top: 17.5.w,
             bottom: 17.5.w,
@@ -703,7 +706,7 @@ class _AiCreateTextDialogState extends State<AiCreateTextDialog>
                 color: const Color(0XFF5B4BF7),
                 borderRadius: BorderRadius.circular(12.w),
               ),
-              margin: EdgeInsets.only(bottom: 36.h),
+              margin: EdgeInsets.only(bottom: 12.h),
               padding: EdgeInsets.only(
                 top: 17.5.w,
                 bottom: 17.5.w,

@@ -16,22 +16,14 @@ class VoiceVolumeControlWidget extends StatefulWidget {
 
 class _VoiceVolumeControlWidgetState extends State<VoiceVolumeControlWidget> {
   double volume = 0;
+  final VolumeController _volumeController = VolumeController();
 
   @override
   void initState() {
     super.initState();
-    // Listen to system volume change
-    VolumeController.instance.addListener((val) {
-      setState(() => volume = val);
+    _volumeController.getVolume().then((val) {
+      if (mounted) setState(() => volume = val);
     });
-
-    VolumeController.instance.getVolume().then((val) => volume = val);
-  }
-
-  @override
-  void dispose() {
-    VolumeController.instance.removeListener();
-    super.dispose();
   }
 
   @override
@@ -72,7 +64,7 @@ class _VoiceVolumeControlWidgetState extends State<VoiceVolumeControlWidget> {
               label: volumeValue.round().toString(),
               onChanged: (double value) {
                 final vol = value / 100;
-                VolumeController.instance.setVolume(vol);
+                _volumeController.setVolume(vol);
                 setState(() {
                   volume = vol;
                 });

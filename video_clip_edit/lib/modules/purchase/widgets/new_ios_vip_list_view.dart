@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -19,10 +21,13 @@ class NewIosVipListView extends StatelessWidget {
     final vipTypeBeans = context.select<IosPurchaseProvider, List<VipTypeBean>>(
       (provider) => provider.vipTypeBeans,
     );
-    final itemH = 120.h;
+    final shortest = MediaQuery.sizeOf(context).shortestSide;
+    final itemH = math.max(120.h, shortest * 0.34);
+    final minCellH = 158.h;
+    final cellH = math.max(itemH * 1.22, minCellH);
     final marginHor = 12.w;
     const itemCount = 3;
-    final contentW = context.byScreenWidth - marginHor * (itemCount - 1);
+    final contentW = context.byScreenWidth - marginHor * 2;
     final itemW = (contentW - marginHor * (itemCount - 1)) / itemCount;
     return vipTypeBeans.isEmpty
         ? Container()
@@ -39,7 +44,7 @@ class NewIosVipListView extends StatelessWidget {
               crossAxisCount: 3,
               mainAxisSpacing: marginHor,
               crossAxisSpacing: marginHor,
-              childAspectRatio: itemW / (itemH * 1.05),
+              childAspectRatio: itemW / cellH,
             ),
             itemBuilder: (context, index) {
               return IosVipTypeViewNew(

@@ -174,32 +174,7 @@ class VideoErasePage extends StatelessWidget {
                   maxCount: 1,
                   onSelectedCallback: (assets) async {
                     // if (assets.isEmpty) return;
-                    // // ByNavRouterUtils.goBack(context);
-                    // // ByNavRouterUtils.push(
-                    // //   context,
-                    // //   ChangeNotifierProvider.value(
-                    // //     value: context.read<VideoEraseProvider>(),
-                    // //     child: PictureErasePage(assets: assets),
-                    // //   ),
-                    // // );
-                    // final file = await assets[0].file;
-                    // if (file != null) {
-                    //   await ChannelOperate.toCleanWatermark(file.path)
-                    //       .then((data) {
-                    //     if (data != null) {
-                    //       // BotToast.showText(text: "作品已保存到相册中!");
-                    //       try {
-                    //         ByNavRouterUtils.push(
-                    //           context,
-                    //           VideoClipHyberPrevicew(
-                    //               data[ChannelApi.editResult]),
-                    //         );
-                    //       } catch (e) {
-                    //         byDebugPrint(e);
-                    //       }
-                    //     }
-                    //   });
-                    // }
+                    // final file = await assets[0].file; ...
                   },
                 );
                 break;

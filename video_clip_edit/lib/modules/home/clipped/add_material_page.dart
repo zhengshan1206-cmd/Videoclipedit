@@ -194,7 +194,6 @@ class _AddMaterialPageState<T extends MaterialBaseProvider>
     final provider = context.watch<T>();
     final materials = provider.selectedMaterials;
     return ReorderableBuilder<dynamic>.builder(
-      itemCount: materials.length + 1,
       onReorder: (reorder) {
         _handleReorder(reorder, provider);
       },

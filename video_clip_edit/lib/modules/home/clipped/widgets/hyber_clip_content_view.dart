@@ -145,7 +145,7 @@ class _HyberClipContentViewState<T extends MaterialBaseProvider>
 
             /// 安全距离
             SliverToBoxAdapter(
-              child: SizedBox(height: ByScreenUtils.bottomSafeHeight + 60.h),
+              child: SizedBox(height: ByScreenUtils.bottomInsetForOverlayBar + 60.h),
             ),
           ],
         ),
@@ -158,7 +158,7 @@ class _HyberClipContentViewState<T extends MaterialBaseProvider>
               left: 12.w,
               right: 12.w,
               top: 8.h,
-              bottom: 8.h + ByScreenUtils.bottomSafeHeight,
+              bottom: 8.h + ByScreenUtils.bottomInsetForOverlayBar,
             ),
             child: ByWidgetsUtil.commonBtn(
               title: "确定",
@@ -1073,10 +1073,17 @@ class _HyberClipContentViewState<T extends MaterialBaseProvider>
     ByCommonUtils.pickAssetsWithAudio(
       context,
       maxCount: 1,
-      onSelectedCallback: (asstes) async {
-        final file = await asstes[0].file;
-        if (file != null) {
-          priv.updateSelectedBgm(file.path, 2);
+      onSelectedCallback: (asstes, {List<String>? urls}) async {
+        String? path;
+        if (urls != null && urls.isNotEmpty) {
+          final f = File(urls.first);
+          if (f.existsSync()) path = f.path;
+        } else if (asstes.isNotEmpty) {
+          final file = await asstes[0].file;
+          path = file?.path;
+        }
+        if (path != null) {
+          priv.updateSelectedBgm(path, 2);
         }
       },
     );

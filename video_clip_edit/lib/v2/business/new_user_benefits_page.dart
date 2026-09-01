@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
@@ -6,8 +8,6 @@ import 'package:video_clip_edit/controller/user_controller.dart';
 import 'package:video_clip_edit/modules/main/controllers/new_user_benefits_controller.dart';
 import 'package:video_clip_edit/modules/profile/beans/user_info_bean.dart';
 import 'package:video_clip_edit/providers/launch_provider.dart';
-import 'package:video_clip_edit/providers/purchase_provider.dart';
-import 'package:video_clip_edit/routes/app_pages.dart';
 import 'package:video_clip_edit/utils/comon/by_navigator_util.dart';
 import 'package:video_clip_edit/v2/business/get_red_envelope_dialog.dart';
 import 'package:video_clip_edit/v2/business/widget/countdown_timer_widget.dart';
@@ -26,49 +26,89 @@ class NewUserBenefitsWidgetState extends State<NewUserBenefitsWidget> {
   Widget build(BuildContext context) {
     return GestureDetector(
       child: _BenefitsBgWidget(
+        barHeight: 80.h,
+        giftSize: 50.h,
         child: Stack(
-          alignment: AlignmentDirectional.center,
+          clipBehavior: Clip.none,
           children: [
-            Column(
-              children: [
-                Container(
-                  padding: EdgeInsetsDirectional.only(start: 12.w, end: 12.w),
-                  decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(16.w),
-                          bottomRight: Radius.circular(16.w))),
-                  child: CountdownTimerWidget(
-                    duration: Duration(
-                      milliseconds: Get.find<NewUserBenefitsController>()
-                          .countdownForMill(),
-                    ),
-                    onFinished: () {
-                      ///倒计时完成
-                      Get.find<NewUserBenefitsController>().hideBottom();
-                    },
-                  ),
+            // 不用 FittedBox+固定 351.w：窄屏上缩放后易与左侧礼物、右侧「抢」叠层错位；
+            // 在父级宽度内用 LayoutBuilder 铺满可用宽度（阔屏 cap 较小设计宽并居中，整体更紧凑）。
+            Positioned.fill(
+              child: Padding(
+                padding: EdgeInsetsDirectional.only(
+                  start: 30.w,
+                  end: 36.w,
                 ),
-                const Expanded(child: SizedBox()),
-                Image.asset(
-                  "assets/v2/business/img_new_user_benefits.png",
-                  width: 172.w,
-                  fit: BoxFit.fitWidth,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final maxW = constraints.maxWidth;
+                    final contentW = math.min(304.w, maxW);
+                    return Align(
+                      alignment: Alignment.topCenter,
+                      child: SizedBox(
+                        width: contentW,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Container(
+                              padding: EdgeInsetsDirectional.only(
+                                  start: 10.w, end: 10.w),
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.only(
+                                      bottomLeft: Radius.circular(12.w),
+                                      bottomRight: Radius.circular(12.w))),
+                              child: CountdownTimerWidget(
+                                duration: Duration(
+                                  milliseconds:
+                                      Get.find<NewUserBenefitsController>()
+                                          .countdownForMill(),
+                                ),
+                                onFinished: () {
+                                  Get.find<NewUserBenefitsController>()
+                                      .hideBottom();
+                                },
+                                textStyle: TextStyle(
+                                  fontSize: 12.sp,
+                                  color: const Color(0xFFFC5F19),
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'monospace',
+                                ),
+                              ),
+                            ),
+                            ConstrainedBox(
+                              constraints: BoxConstraints(maxHeight: 40.h),
+                              child: Image.asset(
+                                "assets/v2/business/img_new_user_benefits.png",
+                                width: contentW,
+                                fit: BoxFit.contain,
+                                alignment: Alignment.topCenter,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
-              ],
+              ),
             ),
-            Positioned(
-              right: 0,
-              child: Container(
-                height: 52.h,
-                padding: EdgeInsetsDirectional.only(start: 20.w, end: 20.w),
-                color: Colors.transparent,
-                child: BtnBreathingAnimationWidget(
-                    child: Image.asset(
-                  "assets/v2/business/img_rush_icon.png",
-                  width: 36.w,
-                  height: 36.w,
-                )),
+            PositionedDirectional(
+              end: 4.w,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: Container(
+                  padding: EdgeInsetsDirectional.only(start: 12.w, end: 8.w),
+                  color: Colors.transparent,
+                  child: BtnBreathingAnimationWidget(
+                      child: Image.asset(
+                    "assets/v2/business/img_rush_icon.png",
+                    width: 30.w,
+                    height: 30.w,
+                  )),
+                ),
               ),
             )
           ],
@@ -84,20 +124,10 @@ class NewUserBenefitsWidgetState extends State<NewUserBenefitsWidget> {
                 withOutGotoBind: false,
                 context: Get.context!,
                 nextStepEvent: () {
-                  Get.toNamed(
-                    Routes.benefitsForCreatorPage,
-                  )?.then((value) {
-                    if (Get.find<NewUserBenefitsController>().agreed.value ==
-                        true) {
-                      Get.find<NewUserBenefitsController>().switchAgree();
-                      context
-                          .read<PurchaseProvider>()
-                          .agreementCheckedStatusChanged(
-                              Get.find<NewUserBenefitsController>()
-                                  .agreed
-                                  .value);
-                    }
-                  });
+                  final ctx = Get.context ?? context;
+                  if (ctx.mounted) {
+                    ctx.read<LaunchProvider>().gotoPay(ctx, closePay: true);
+                  }
                 });
           } else {
             Get.find<NewUserBenefitsController>().hideBottom();
@@ -121,31 +151,34 @@ class BenefitsForCreatorWidgetState extends State<BenefitsForCreatorWidget> {
   Widget build(BuildContext context) {
     return GestureDetector(
       child: _BenefitsBgWidget(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              children: [
-                SizedBox(
-                  width: 36.w,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final maxW = constraints.maxWidth;
+            final rowW = math.min(330.w, maxW);
+            return Align(
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: rowW,
+                child: Row(
+                  children: [
+                    SizedBox(width: 36.w),
+                    Expanded(
+                      child: Image.asset(
+                        "assets/v2/business/img_benefits_for_creator.png",
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                    Image.asset(
+                      "assets/v2/business/img_go_to_receive.png",
+                      width: 66.w,
+                      fit: BoxFit.fitWidth,
+                    ),
+                    SizedBox(width: 16.w),
+                  ],
                 ),
-                Image.asset(
-                  "assets/v2/business/img_benefits_for_creator.png",
-                  width: 214.w,
-                  fit: BoxFit.fitWidth,
-                ),
-                const Expanded(child: SizedBox()),
-                Image.asset(
-                  "assets/v2/business/img_go_to_receive.png",
-                  width: 66.w,
-                  fit: BoxFit.fitWidth,
-                ),
-                SizedBox(
-                  width: 16.w,
-                )
-              ],
-            )
-          ],
+              ),
+            );
+          },
         ),
         onClose: () {
           Get.find<NewUserBenefitsController>().hideBottom();
@@ -175,104 +208,132 @@ class BenefitsForCreatorWidgetState extends State<BenefitsForCreatorWidget> {
 
 ///福利相关UI通用背景
 class _BenefitsBgWidget extends StatefulWidget {
+  const _BenefitsBgWidget({
+    required this.child,
+    this.onClose,
+    this.barHeight,
+    this.giftSize,
+  });
+
   final Widget child;
   final VoidCallback? onClose;
-
-  const _BenefitsBgWidget({required this.child, this.onClose});
+  /// 为 null 时使用默认高度（兼容创作者福利等）。
+  final double? barHeight;
+  /// 左侧礼物尺寸，为 null 时使用默认。
+  final double? giftSize;
 
   @override
   State<StatefulWidget> createState() => _BenefitsBgWidgetState();
 }
 
 class _BenefitsBgWidgetState extends State<_BenefitsBgWidget> {
+  /// 底部福利条总高度（默认）；新用户条可传入更小 [barHeight]。
+  static double _defaultBarOuterHeight() => 90.h;
+
+  static double _defaultGiftSize() => 60.h;
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: MediaQuery.of(context).size.width,
-      height: 70.h,
-      child: Stack(
-        children: [
-          Column(
-            children: [
-              SizedBox(
-                height: 10.h,
-              ),
-              Expanded(
+    final barH = widget.barHeight ?? _defaultBarOuterHeight();
+    final giftS = widget.giftSize ?? _defaultGiftSize();
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 12.w),
+      child: SizedBox(
+        width: double.infinity,
+        height: barH,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(height: widget.barHeight != null ? 4.h : 6.h),
+                Expanded(
                   child: Stack(
-                alignment: AlignmentDirectional.center,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [Color(0xFFFEFFAE), Color(0xFFFEDAAA)]),
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(24.w),
-                            topRight: Radius.circular(24.w),
-                            bottomLeft: Radius.circular(12.w),
-                            bottomRight: Radius.circular(12.w)),
-                        boxShadow: [
-                          BoxShadow(
-                              color: const Color(0xFFF38315).withOpacity(.8),
-                              // color: Colors.black,
-                              offset: Offset(0, 2.w),
-                              blurRadius: 15,
-                              spreadRadius: 1)
-                        ]),
-                    margin: EdgeInsetsDirectional.only(start: 16.w, end: 8.w),
+                    clipBehavior: Clip.none,
+                    alignment: AlignmentDirectional.center,
+                    children: [
+                      Container(
+                        width: double.infinity,
+                        margin: EdgeInsets.symmetric(horizontal: 4.w),
+                        decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Color(0xFFFEFFAE),
+                                  Color(0xFFFEDAAA)
+                                ]),
+                            borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(24.w),
+                                topRight: Radius.circular(24.w),
+                                bottomLeft: Radius.circular(12.w),
+                                bottomRight: Radius.circular(12.w)),
+                            boxShadow: [
+                              BoxShadow(
+                                  color:
+                                      const Color(0xFFF38315).withOpacity(.8),
+                                  offset: Offset(0, 2.w),
+                                  blurRadius: 15,
+                                  spreadRadius: 1)
+                            ]),
+                        padding: EdgeInsets.all(4.w),
+                        child: Container(
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Color(0xFFFC5713),
+                                    Color(0xFFFFA142)
+                                  ]),
+                              borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(20.w),
+                                  topRight: Radius.circular(20.w),
+                                  bottomLeft: Radius.circular(10.w),
+                                  bottomRight: Radius.circular(10.w))),
+                          child: widget.child,
+                        ),
+                      ),
+                      PositionedDirectional(
+                        start: 0,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: ShakePauseGiftWidget(
+                              child: Image.asset(
+                            "assets/v2/business/img_gift_icon.png",
+                            width: giftS,
+                            height: giftS,
+                          )),
+                        ),
+                      ),
+                    ],
                   ),
-                  Container(
-                    width: double.infinity,
-                    margin: EdgeInsetsDirectional.only(
-                        start: 4.w + 16.w,
-                        end: 4.w + 8.w,
-                        top: 4.w,
-                        bottom: 4.w),
-                    decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [Color(0xFFFC5713), Color(0xFFFFA142)]),
-                        borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(24.w),
-                            topRight: Radius.circular(24.w),
-                            bottomLeft: Radius.circular(12.w),
-                            bottomRight: Radius.circular(12.w))),
-                    child: widget.child,
-                  ),
-                  Positioned(
-                    left: 0,
-                    child: ShakePauseGiftWidget(
-                        child: Image.asset(
-                      "assets/v2/business/img_gift_icon.png",
-                      width: 60.h,
-                      height: 60.h,
-                    )),
-                  ),
-                ],
-              ))
-            ],
-          ),
-          Positioned(
-            right: 0.w,
-            top: 0,
-            child: GestureDetector(
-              child: Container(
-                color: Colors.transparent,
-                padding: EdgeInsetsDirectional.only(end: 8.w),
-                child: Image.asset(
-                  "assets/v2/business/img_close_icon.png",
-                  width: 20.w,
-                  height: 20.w,
                 ),
-              ),
-              onTap: () {
-                widget.onClose?.call();
-              },
+              ],
             ),
-          ),
-        ],
+            PositionedDirectional(
+              end: 0,
+              top: 0,
+              child: GestureDetector(
+                child: Container(
+                  color: Colors.transparent,
+                  padding: EdgeInsetsDirectional.only(end: 2.w),
+                  child: Image.asset(
+                    "assets/v2/business/img_close_icon.png",
+                    width: 20.w,
+                    height: 20.w,
+                  ),
+                ),
+                onTap: () {
+                  widget.onClose?.call();
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

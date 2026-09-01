@@ -6,6 +6,7 @@ import 'package:easy_refresh/easy_refresh.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:video_clip_edit/modules/profile/widgets/mine_video_materals_management_list_view.dart';
 import 'package:video_clip_edit/utils/comon/by_colors.dart';
+import 'package:video_clip_edit/utils/comon/by_screen_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_widgets_util.dart';
 import 'package:video_clip_edit/utils/comon/by_permission_utils.dart';
 import 'package:video_clip_edit/modules/common/widget/common_dialog.dart';
@@ -184,50 +185,59 @@ class _SingleGrideViewState extends State<SingleGrideView>
     final MineVideoMaterialsPageType type =
         MineVideoMaterialsPageType.fromRawValue(categoryId);
 
-    return Stack(
+    final showEditBottomBar = context.select<
+        MineVideoMaterialsManagementProvider,
+        bool>(
+      (p) => p.videosEditing && p.selectedCategory == widget.index,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        EasyRefresh(
-          triggerAxis: Axis.vertical,
-          controller: _easyRefreshController,
-          canLoadAfterNoMore: false,
-          canRefreshAfterNoMore: true,
-          onLoad: () => _loadMore(context: context),
-          onRefresh: () => _refresh(context: context),
-          child: MineVideoMateralsManagementListView(
-            index: widget.index,
-            type: type,
+        Expanded(
+          child: EasyRefresh(
+            triggerAxis: Axis.vertical,
+            controller: _easyRefreshController,
+            canLoadAfterNoMore: false,
+            canRefreshAfterNoMore: true,
+            onLoad: () => _loadMore(context: context),
+            onRefresh: () => _refresh(context: context),
+            child: MineVideoMateralsManagementListView(
+              index: widget.index,
+              type: type,
+            ),
           ),
         ),
-        _buildBottmBar(context),
+        if (showEditBottomBar) _buildBottmBar(context),
       ],
     );
   }
 
-  _buildBottmBar(BuildContext context) {
+  Widget _buildBottmBar(BuildContext context) {
     final provider = context.read<MineVideoMaterialsSinglePageProvider>();
     final providerM = context.read<MineVideoMaterialsManagementProvider>();
-    final editing = context.select<MineVideoMaterialsManagementProvider, bool>(
-        (p) => p.videosEditing);
-
-    final selectedCategoryIdx =
-        context.read<MineVideoMaterialsManagementProvider>().selectedCategory;
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: 0,
-      child: Offstage(
-        offstage: !(selectedCategoryIdx == widget.index && editing),
-        child: PhysicalModel(
-          color: Colors.black,
-          elevation: 0,
-          child: Container(
-            height: 66.h,
-            width: double.infinity,
+    final rowH = ByScreenUtils.managementBottomActionRowHeight(44.h);
+    final barH = ByScreenUtils.managementBottomBarSurfaceHeight(
+      scaledBarH: 66.h,
+      actionRowHeight: rowH,
+    );
+    final bottomInset = ByScreenUtils.bottomInsetForScrollable(context);
+    return ColoredBox(
+      color: ByColorUtil.WhiteColor,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Material(
             color: ByColorUtil.WhiteColor,
-            alignment: Alignment.center,
+            elevation: 0,
+            shadowColor: Colors.transparent,
             child: SizedBox(
-              height: 44.h,
-              child: Row(
+              width: double.infinity,
+              height: barH,
+              child: Center(
+                child: SizedBox(
+                  height: rowH,
+                  child: Row(
                 children: [
                   SizedBox(
                     width: 12.w,
@@ -345,10 +355,19 @@ class _SingleGrideViewState extends State<SingleGrideView>
                     width: 12.w,
                   ),
                 ],
+                ),
               ),
             ),
           ),
-        ),
+          ),
+          ColoredBox(
+            color: ByColorUtil.WhiteColor,
+            child: SizedBox(
+              width: double.infinity,
+              height: bottomInset,
+            ),
+          ),
+        ],
       ),
     );
   }

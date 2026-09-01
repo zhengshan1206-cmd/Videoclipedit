@@ -1,5 +1,5 @@
+// ignore_for_file: undefined_named_parameter
 import 'dart:convert';
-import 'dart:io';
 
 // import 'package:bda_signal/bda_signal.dart';
 import 'package:bot_toast/bot_toast.dart';
@@ -68,15 +68,21 @@ class LaunchProvider extends BaseProvider {
     Map params = {};
     try {
       final imei = await ByDeviceInfoUtils.deviceInfo();
-      final String system = ByPackageUtils.isAndroid
-          ? Consts.kSystemAndroid
-          : Consts.kSystemIOS;
+      String system = Consts.kSystemAndroid;
+      if (ByPackageUtils.isAndroid) {
+        system = Consts.kSystemAndroid;
+      } else if (ByPackageUtils.isIOS) {
+        system = Consts.kSystemIOS;
+      } else if (ByPackageUtils.isOhos) {
+        system = 'harmony';
+      }
       params = {
         "uuid": imei.item2,
         "app_version":
             ByStorageUtils.getString(ConstKeys.kAppVersion) ?? "5.0.0",
         "sys": system,
       };
+      byDebugPrint(params, tag: "launch params");
       progress?.call(15);
     } catch (e) {
       uploadLaunchError(200, 'success', isFirstIn!, params, 10);
@@ -274,9 +280,8 @@ class LaunchProvider extends BaseProvider {
         debugPrint("获取付费半弹窗顶部图片:$bannerData");
         byDebugPrint(bannerData, tag: "获取付费半弹窗顶部图片:");
         if (bannerData.isNotEmpty) {
-          List<SubFunction> beans = bannerData
-              .map((e) => SubFunction.fromJson(e))
-              .toList();
+          List<SubFunction> beans =
+              bannerData.map((e) => SubFunction.fromJson(e)).toList();
           modulesPayTopList = beans;
         } else {
           modulesPayTopList = [];
@@ -322,13 +327,12 @@ class LaunchProvider extends BaseProvider {
     }
 
     final launchProvider = Provider.of<LaunchProvider>(context, listen: false);
-    bool isBlue =
-        launchProvider.launchInfo?.verConfig.halfScreenPage ==
+    bool isBlue = launchProvider.launchInfo?.verConfig.halfScreenPage ==
             "/halfScreen-blue"
         ? true
         : false;
 
-    if (Platform.isAndroid) {
+    if (ByPackageUtils.isAndroid || ByPackageUtils.isOhos) {
       ByNavigatorUtil.checkLogin(
         context: Get.context!,
         nextStepEvent: () {
@@ -432,6 +436,7 @@ class DeviceInfoUpload {
       );
     }
     final params = await ByDeviceInfoUtils.getUserDiviceInfo();
+    byDebugPrint(params, tag: "上报设备信息params===>");
     if (pushToken != null) {
       params["um_device_tokens"] = pushToken;
     }

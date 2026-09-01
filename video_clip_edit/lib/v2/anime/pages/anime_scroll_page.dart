@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:video_clip_edit/utils/comon/by_widgets_util.dart';
+// import 'package:chewie/chewie.dart'; // HarmonyOS 不支持 chewie
 import 'package:video_player/video_player.dart';
-import 'package:chewie/chewie.dart';
 import '../../../utils/comon/by_colors.dart';
 import '../../../utils/comon/by_navigator_util.dart';
-import '../../../utils/comon/by_screen_utils.dart';
 import '../beans/anime_bean.dart';
 import 'anime_detail_setting_page.dart';
 
@@ -27,16 +26,13 @@ class _AnimeScrollPageState extends State<AnimeScrollPage> {
   late final PageController _pageController;
   int _currentPage = 0;
 
-  // 存储视频控制器，避免重复创建
   final Map<int, VideoPlayerController> _videoControllers = {};
-  final Map<int, ChewieController> _chewieControllers = {};
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: widget.index);
     _currentPage = widget.index;
-    // 预加载初始页面及相邻页面的控制器
     _initController(_currentPage);
     _initController(_currentPage + 1);
     _initController(_currentPage - 1);
@@ -49,85 +45,40 @@ class _AnimeScrollPageState extends State<AnimeScrollPage> {
 
   @override
   void dispose() {
-    // 释放所有控制器资源
-    _videoControllers.forEach((_, controller) => controller.dispose());
-    _chewieControllers.forEach((_, controller) => controller.dispose());
+    for (final c in _videoControllers.values) {
+      c.dispose();
+    }
+    _videoControllers.clear();
     _pageController.dispose();
     super.dispose();
   }
 
-  // 初始化视频控制器
   Future<void> _initController(int pageIndex) async {
     if (_videoControllers.containsKey(pageIndex) || pageIndex < 0) return;
 
     final int realIndex = pageIndex % widget.dataList.length;
     final AnimeBean video = widget.dataList[realIndex];
 
-    // 创建视频控制器
     final VideoPlayerController videoController =
         VideoPlayerController.networkUrl(Uri.parse(video.videoUrl!));
 
     await videoController.initialize();
-
-    // 创建Chewie控制器（封装播放UI）
-    final ChewieController chewieController = ChewieController(
-      videoPlayerController: videoController,
-      autoPlay: false,
-      looping: true, // 视频循环播放
-      showControls: true, // 隐藏默认控制栏
-      allowFullScreen: false,
-      subtitle: Subtitles([
-        Subtitle(
-          index: 0,
-          start: Duration.zero,
-          end: const Duration(seconds: 300),
-          text: video.title ?? '',
-        ),
-      ]),
-      subtitleBuilder: (context, subtitle) {
-        return Container(
-          height: 35.w,
-          alignment: Alignment.centerLeft,
-          padding: const EdgeInsets.only(left: 20, bottom: 10),
-          child: ByWidgetsUtil.commonText(
-            text: video.title ?? '',
-            fontSize: 20.sp,
-            textColor: ByColorUtil.WhiteColor,
-            fontWeight: FontWeight.bold,
-          ),
-        );
-      },
-      // customControls: Container(),
-      optionsTranslation: OptionsTranslation(
-        playbackSpeedButtonText: '倍速',
-        cancelButtonText: '取消',
-      ),
-      materialProgressColors: ChewieProgressColors(playedColor: Colors.white),
-      cupertinoProgressColors: ChewieProgressColors(playedColor: Colors.white),
-      showControlsOnInitialize: false,
-    );
+    await videoController.setLooping(true);
 
     setState(() {
       _videoControllers[pageIndex] = videoController;
-      _chewieControllers[pageIndex] = chewieController;
     });
   }
 
-  // 释放指定页面的控制器
   void _disposeController(int pageIndex) {
     _videoControllers[pageIndex]?.dispose();
-    _chewieControllers[pageIndex]?.dispose();
     _videoControllers.remove(pageIndex);
-    _chewieControllers.remove(pageIndex);
   }
 
-  // 播放当前页面视频，暂停其他视频
   void _playCurrentVideo() {
-    // 播放当前视频
-    _chewieControllers[_currentPage]?.play();
+    _videoControllers[_currentPage]?.play();
 
-    // 暂停其他页面视频
-    _chewieControllers.forEach((index, controller) {
+    _videoControllers.forEach((index, controller) {
       if (index != _currentPage) controller.pause();
     });
   }
@@ -135,12 +86,11 @@ class _AnimeScrollPageState extends State<AnimeScrollPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // 检查当前页面是否在最前面，如果不是则暂停
     final route = ModalRoute.of(context);
     if (route != null && !route.isCurrent) {
-      if (_chewieControllers[_currentPage] != null &&
-          _chewieControllers[_currentPage]!.isPlaying) {
-        _chewieControllers[_currentPage]!.pause();
+      final c = _videoControllers[_currentPage];
+      if (c != null && c.value.isPlaying) {
+        c.pause();
       }
     }
   }
@@ -159,22 +109,21 @@ class _AnimeScrollPageState extends State<AnimeScrollPage> {
           children: [
             Padding(
               padding: EdgeInsets.only(
-                bottom: ByScreenUtils.bottomSafeHeight + 60,
+                /// [SafeArea] 已预留底部系统区域，此处只需为「做同款」按钮留出视觉间距。
+                bottom: 60.h,
               ),
               child: PageView.builder(
                 controller: _pageController,
-                scrollDirection: Axis.vertical, // 垂直滑动
-                itemCount: 1000, // 大数模拟无限循环
+                scrollDirection: Axis.vertical,
+                itemCount: 1000,
                 onPageChanged: (int page) {
                   setState(() => _currentPage = page);
 
-                  // 预加载相邻页面，释放过远页面
                   _initController(page + 1);
                   _initController(page - 1);
                   _disposeController(page + 3);
                   _disposeController(page - 3);
 
-                  // 播放当前视频
                   _playCurrentVideo();
                 },
                 itemBuilder: (context, index) {
@@ -186,11 +135,10 @@ class _AnimeScrollPageState extends State<AnimeScrollPage> {
               ),
             ),
 
-            ///做同款
             Positioned(
               left: 12,
               right: 12,
-              bottom: ByScreenUtils.bottomSafeHeight + 10,
+              bottom: 10.h,
               child: SizedBox(
                 height: 50,
                 child: ByWidgetsUtil.commonBtn(
@@ -204,10 +152,18 @@ class _AnimeScrollPageState extends State<AnimeScrollPage> {
                         final int realIndex =
                             _currentPage % widget.dataList.length;
                         final AnimeBean video = widget.dataList[realIndex];
-                        showModalBottomSheet(
+                        showModalBottomSheet<void>(
                           context: context,
-                          builder: (context) {
-                            return AnimeDetailSettingPage(bean: video);
+                          isScrollControlled: true,
+                          useSafeArea: false,
+                          backgroundColor: Colors.transparent,
+                          builder: (ctx) {
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                bottom: MediaQuery.viewInsetsOf(ctx).bottom,
+                              ),
+                              child: AnimeDetailSettingPage(bean: video),
+                            );
                           },
                         );
                       },
@@ -216,23 +172,6 @@ class _AnimeScrollPageState extends State<AnimeScrollPage> {
                 ),
               ),
             ),
-            // ///关闭遮罩
-            // Positioned(
-            //   left: 0,
-            //   right: 0,
-            //   top: 0,
-            //   child: Container(
-            //     height: 80,
-            //     decoration: BoxDecoration(
-            //       gradient: LinearGradient(
-            //         begin: Alignment.topCenter,
-            //         end: Alignment.bottomCenter,
-            //         colors: [const Color(0xFF000000), const Color(0xFF000000).withOpacity(0)])
-            //     ),
-            //   )
-            // ),
-
-            ///关闭
             Positioned(
               left: 5,
               top: 10,
@@ -260,25 +199,60 @@ class _AnimeScrollPageState extends State<AnimeScrollPage> {
     );
   }
 
-  // 构建单个视频卡片
   Widget _buildVideoCard(AnimeBean video, int pageIndex) {
+    final controller = _videoControllers[pageIndex];
     return GestureDetector(
       onTap: () {
-        // 点击切换播放/暂停
-        final controller = _chewieControllers[pageIndex];
-        if (controller != null) {
-          controller.isPlaying ? controller.pause() : controller.play();
-        }
+        if (controller == null) return;
+        controller.value.isPlaying ? controller.pause() : controller.play();
+        setState(() {});
       },
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // 视频播放器或封面图
-          _chewieControllers[pageIndex] != null
-              ? Chewie(controller: _chewieControllers[pageIndex]!)
-              : const Center(
-                  child: CircularProgressIndicator(color: Colors.white),
-                ),
+          if (controller != null && controller.value.isInitialized)
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final w = constraints.maxWidth;
+                final h = constraints.maxHeight;
+                final ratio = controller.value.aspectRatio;
+                if (ratio <= 0) {
+                  return Center(child: VideoPlayer(controller));
+                }
+                double width;
+                double height;
+                if (ratio > w / h) {
+                  width = w;
+                  height = w / ratio;
+                } else {
+                  height = h;
+                  width = h * ratio;
+                }
+                return Center(
+                  child: SizedBox(
+                    width: width,
+                    height: height,
+                    child: VideoPlayer(controller),
+                  ),
+                );
+              },
+            )
+          else
+            const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
+          // 标题叠在底部
+          Positioned(
+            left: 20,
+            right: 20,
+            bottom: 10,
+            child: ByWidgetsUtil.commonText(
+              text: video.title ?? '',
+              fontSize: 20.sp,
+              textColor: ByColorUtil.WhiteColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );

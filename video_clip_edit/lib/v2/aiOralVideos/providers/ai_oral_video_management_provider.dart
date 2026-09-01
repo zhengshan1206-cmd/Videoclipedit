@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bot_toast/bot_toast.dart';
+import 'package:video_clip_edit/utils/comon/by_common_utils.dart';
 import 'package:video_clip_edit/utils/http/apis.dart';
 import 'package:video_clip_edit/providers/base_provider.dart';
 import 'package:video_clip_edit/utils/comon/by_list_ext.dart';
@@ -78,20 +79,23 @@ class AiOralVideoManagementProvider extends BaseProvider {
   /// 视频列表
   loadVideoList({ManagementRecord type = ManagementRecord.aiOral}) {
     Map<String, dynamic> params = {
-        "page": page,
-        "pageSize": size,
-      };
-    if(type == ManagementRecord.aiAnime) {
+      "page": page,
+      "pageSize": size,
+    };
+    if (type == ManagementRecord.aiAnime) {
       params['type'] = 1;
     }
     HttpUtils.get(
-      type == ManagementRecord.aiOral ? APIs.getDigitalHumanList : APIs.animeRecord,
+      type == ManagementRecord.aiOral
+          ? APIs.getDigitalHumanList
+          : APIs.animeRecord,
       params,
       success: (data) {
+        byDebugPrint(data, tag: "getDigitalHumanList===>");
         final List items = data["data"]["data"] ?? [];
         List<AiOralVideotemBean> beans = List<AiOralVideotemBean>.from(
           items.map((e) {
-            if(type == ManagementRecord.aiAnime) {
+            if (type == ManagementRecord.aiAnime) {
               return AiOralVideotemBean.animeFromJson(e);
             }
             return AiOralVideotemBean.fromJson(e);
@@ -127,7 +131,9 @@ class AiOralVideoManagementProvider extends BaseProvider {
   }) {
     //DigitalHuman/deleteDigitalHuman
     HttpUtils.post(
-      type == ManagementRecord.aiOral ? APIs.deleteDigitalHuman : APIs.animeDelete,
+      type == ManagementRecord.aiOral
+          ? APIs.deleteDigitalHuman
+          : APIs.animeDelete,
       {type == ManagementRecord.aiOral ? "id" : "ids": ids.join(",")},
       showLoading: true,
       success: (data) {

@@ -9,7 +9,7 @@ class APIs {
   static const String apiPrefix = "https://inchat.beiyinapp.com/api/"; // 线上环境
   static const String channel = "2ce49c9cee03d75a";
 
-  //   static const String apiPrefix = "https://chatest.beiyinapp.com/api/"; // 测试环境
+  // static const String apiPrefix = "https://chatest.beiyinapp.com/api/"; // 测试环境
 
   // static const String channel = "3219edbe8ffb3112"; // 测试环境
 
@@ -45,6 +45,9 @@ class APIs {
 
   /// 一键登录
   static const String oneclickv2 = 'login/oneclickv2';
+
+  /// 华为一键登录（鸿蒙）
+  static const String huaweiOneclickv2 = 'login/huawei';
 
   /// 获取登陆验证码
   static const String sendVCode = "login/sendCode";
@@ -626,26 +629,4 @@ class APIs {
 
   ///根据id获取拦截弹窗配置
   static const String getPopUpConfigById = 'BlockPopUp/getPopUpConfigById';
-
-  /*********未成年人模式 *********/
-
-  ///首次开启未成年人模式
-  static const String enableMinorMode = 'user/enableMinorMode';
-
-  /// 关闭未成年人模式
-  static const String setMinorModeStatus = 'user/setMinorModeStatus';
-
-  ///编辑使用时段
-  static const String updateMinorModeTimeLimit =
-      'user/updateMinorModeTimeLimit';
-
-  ///获取配置详情
-  static const String minorModeInfo = 'user/minorModeInfo';
-
-  ///忘记密码
-  static const String forgotMinorModePassword = 'user/forgotMinorModePassword';
-
-  ///未成年人使用协议
-  static const String minorAgreementUrl =
-      'https://inchat.beiyinapp.com/api/common3/minorAgreement';
 }

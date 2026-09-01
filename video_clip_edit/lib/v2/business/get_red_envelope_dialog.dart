@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -263,18 +264,21 @@ class NewUserWidgetState extends State<NewUserWidget> {
             //     ),
             //   ],
             // ),
-            GestureDetector(
-              onTap: () {
-                Navigator.pop(context);
-                widget.onTapForClaim?.call();
-              },
-              child: userController.newUserBenefitsImage.isNotEmpty
-                  ? Image.network(
-                      userController.newUserBenefitsImage,
-                      width: 1.sw,
-                      fit: BoxFit.fitWidth,
-                    )
-                  : Image.asset("assets/v2/business/img_first_time_bg.png"),
+            Padding(
+              padding: EdgeInsets.only(left: 32.w, right: 32.w),
+              // padding: EdgeInsets.zero,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.pop(context);
+                  widget.onTapForClaim?.call();
+                },
+                child: userController.newUserBenefitsImage.isNotEmpty
+                    ? Image.network(
+                        userController.newUserBenefitsImage,
+                        fit: BoxFit.fitWidth,
+                      )
+                    : Image.asset("assets/v2/business/img_first_time_bg.png"),
+              ),
             ),
             SizedBox(height: 24.h),
             GestureDetector(
@@ -406,83 +410,113 @@ class LimitBuyWidget extends StatefulWidget {
 class LimitBuyWidgetState extends State<LimitBuyWidget> {
   @override
   Widget build(BuildContext context) {
+    final screenW = MediaQuery.sizeOf(context).width;
+    // 阔折/横屏下禁止按「整屏宽度」排子组件，否则白卡内 Row 远超底图宽度导致重叠错位
+    final dialogW = math.min(screenW - 40.0, 420.0);
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Stack(
-              alignment: AlignmentDirectional.center,
-              children: [
-                Padding(
-                  padding: EdgeInsetsDirectional.only(start: 36.w, end: 36.w),
-                  child: Image.asset("assets/v2/business/img_limit_buy_bg.png"),
-                ),
-                Positioned(
-                  top: 62.h,
-                  left: 150.w,
-                  child: NumberScrollAnimation(
-                    prefixText: "当前",
-                    prefixTextStyle: TextStyle(
-                      color: Color(0xFF5B1D08),
-                      fontSize: 16.sp,
-                      fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: "AlibabaPuHuiTi_3_115_Black",
-                    ),
-                    endNum: 1347,
-                    textStyle: TextStyle(
-                      color: Color(0xFF5B1D08),
-                      fontSize: 16.sp,
-                      fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: "AlibabaPuHuiTi_3_115_Black",
-                    ),
-                    showSymbol: false,
-                    suffixText: "位\n   创作者正在使用",
-                    suffixTextStyle: TextStyle(
-                      color: Color(0xFF5B1D08),
-                      fontSize: 16.sp,
-                      fontStyle: FontStyle.italic,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: "AlibabaPuHuiTi_3_115_Black",
+            SizedBox(
+              width: dialogW,
+              child: Stack(
+                alignment: AlignmentDirectional.center,
+                clipBehavior: Clip.none,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8.w),
+                    child: Image.asset(
+                      "assets/v2/business/img_limit_buy_bg.png",
+                      width: dialogW - 16.w,
+                      fit: BoxFit.fitWidth,
                     ),
                   ),
-                ),
-                Positioned(
-                  child: Stack(
-                    children: [
-                      Image.asset(
-                        "assets/v2/business/img_benefits_bg.png",
-                        height: 170.h,
-                        fit: BoxFit.fitHeight,
+                  Positioned(
+                    top: 62.h,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 6.w),
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.center,
+                          child: NumberScrollAnimation(
+                            prefixText: "当前",
+                            prefixTextStyle: TextStyle(
+                              color: Color(0xFF5B1D08),
+                              fontSize: 16.sp,
+                              fontStyle: FontStyle.italic,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: "AlibabaPuHuiTi_3_115_Black",
+                            ),
+                            endNum: 1347,
+                            textStyle: TextStyle(
+                              color: Color(0xFF5B1D08),
+                              fontSize: 16.sp,
+                              fontStyle: FontStyle.italic,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: "AlibabaPuHuiTi_3_115_Black",
+                            ),
+                            showSymbol: false,
+                            suffixText: "位\n   创作者正在使用",
+                            suffixTextStyle: TextStyle(
+                              color: Color(0xFF5B1D08),
+                              fontSize: 16.sp,
+                              fontStyle: FontStyle.italic,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: "AlibabaPuHuiTi_3_115_Black",
+                            ),
+                          ),
+                        ),
                       ),
-                      Positioned(
-                        bottom: 15.h,
-                        left: 32.w,
-                        child: Container(
-                          width: MediaQuery.of(context).size.width - 76.w * 2,
-                          // color: Colors.black,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Stack(
-                                alignment: AlignmentDirectional.topCenter,
+                    ),
+                  ),
+                  Positioned(
+                    left: 10.w,
+                    right: 10.w,
+                    top: 108.h,
+                    bottom: 128.h,
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.bottomCenter,
+                      children: [
+                        Image.asset(
+                          "assets/v2/business/img_benefits_bg.png",
+                          height: 170.h,
+                          fit: BoxFit.contain,
+                        ),
+                        Positioned(
+                          bottom: 15.h,
+                          left: 0,
+                          right: 0,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 6.w),
+                            child: Center(
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Image.asset(
-                                    "assets/v2/business/img_limit_red_envelope_bg.png",
-                                    height: 90.w,
-                                    fit: BoxFit.contain,
-                                  ),
-                                  Positioned(
-                                    top: 12.h,
-                                    child: GetBuilder<NewUserBenefitsController>(
-                                      id: "updatePriceInfo",
-                                      builder:
-                                          (
+                                  Stack(
+                                    alignment: AlignmentDirectional.topCenter,
+                                    children: [
+                                      Image.asset(
+                                        "assets/v2/business/img_limit_red_envelope_bg.png",
+                                        height: 90.w,
+                                        fit: BoxFit.contain,
+                                      ),
+                                      Positioned(
+                                        top: 12.h,
+                                        child: GetBuilder<
+                                            NewUserBenefitsController>(
+                                          id: "updatePriceInfo",
+                                          builder: (
                                             NewUserBenefitsController
-                                            controller,
+                                                controller,
                                           ) {
                                             return RichText(
                                               text: TextSpan(
@@ -501,7 +535,7 @@ class LimitBuyWidgetState extends State<LimitBuyWidget> {
                                                         "${(int.tryParse(controller.getVipHappy()?.crossedMoney ?? "0") ?? 0) - (int.tryParse(controller.getVipHappy()?.money ?? "0") ?? 0)}",
                                                     style: TextStyle(
                                                       color: Color(0xFFFF5752),
-                                                      fontSize: 30.sp,
+                                                      fontSize: 28.sp,
                                                       fontWeight:
                                                           FontWeight.bold,
                                                     ),
@@ -510,87 +544,91 @@ class LimitBuyWidgetState extends State<LimitBuyWidget> {
                                               ),
                                             );
                                           },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const Expanded(child: SizedBox()),
-                              Image.asset(
-                                "assets/v2/business/img_vertical_line.png",
-                                width: 1.w,
-                                height: 80.h,
-                              ),
-                              const Expanded(child: SizedBox()),
-                              Column(
-                                children: [
-                                  Container(
-                                    decoration: BoxDecoration(
-                                      color: Color(0xFFFC6958),
-                                      borderRadius: BorderRadius.circular(6.w),
-                                    ),
-                                    alignment: AlignmentDirectional.center,
-                                    width: 90.w,
-                                    height: 24.h,
-                                    child: Text(
-                                      "每天仅需",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16.sp,
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(height: 6.h),
-                                  GetBuilder<NewUserBenefitsController>(
-                                    id: "updatePriceInfo",
-                                    builder: (controller) {
-                                      return RichText(
-                                        text: TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text:
-                                                  controller
-                                                      .getVipHappy()
-                                                      ?.dayMoney ??
-                                                  "",
-                                              style: TextStyle(
-                                                color: Color(0xFFFC6958),
-                                                fontSize: 36.sp,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            TextSpan(
-                                              text: "元",
-                                              style: TextStyle(
-                                                color: Color(0xFFFC6958),
-                                                fontSize: 14.sp,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ],
                                         ),
-                                      );
-                                    },
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(width: 18.w),
+                                  Image.asset(
+                                    "assets/v2/business/img_vertical_line.png",
+                                    width: 1.w,
+                                    height: 80.h,
+                                  ),
+                                  SizedBox(width: 18.w),
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: Color(0xFFFC6958),
+                                          borderRadius:
+                                              BorderRadius.circular(6.w),
+                                        ),
+                                        alignment: AlignmentDirectional.center,
+                                        width: 90.w,
+                                        height: 24.h,
+                                        child: Text(
+                                          "每天仅需",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 16.sp,
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(height: 6.h),
+                                      GetBuilder<NewUserBenefitsController>(
+                                        id: "updatePriceInfo",
+                                        builder: (controller) {
+                                          return RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                TextSpan(
+                                                  text: controller
+                                                          .getVipHappy()
+                                                          ?.dayMoney ??
+                                                      "",
+                                                  style: TextStyle(
+                                                    color: Color(0xFFFC6958),
+                                                    fontSize: 36.sp,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                TextSpan(
+                                                  text: "元",
+                                                  style: TextStyle(
+                                                    color: Color(0xFFFC6958),
+                                                    fontSize: 14.sp,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                Positioned(
-                  bottom: 82.h,
-                  child: Padding(
-                    padding: EdgeInsetsDirectional.only(start: 36.w, end: 36.w),
+                  Positioned(
+                    bottom: 82.h,
+                    left: 10.w,
+                    right: 10.w,
                     child: GestureDetector(
                       child: Obx(() {
                         bool agreed =
                             Get.find<NewUserBenefitsController>().agreed.value;
                         return Container(
                           color: Colors.transparent,
-                          width: MediaQuery.of(context).size.width - 36.w * 2,
+                          width: double.infinity,
                           alignment: AlignmentDirectional.center,
                           child: Wrap(
                             alignment: WrapAlignment.center,
@@ -620,21 +658,13 @@ class LimitBuyWidgetState extends State<LimitBuyWidget> {
                                   ),
                                 ),
                                 onTap: () {
-                                  if (widget
-                                          .purchaseProvider
-                                          ?.vipPageBean
-                                          ?.user
-                                          .protocolUrl
-                                          .isEmpty ==
-                                      true)
-                                    return;
+                                  if (widget.purchaseProvider?.vipPageBean?.user
+                                          .protocolUrl.isEmpty ==
+                                      true) return;
                                   ByNavRouterUtils.jumpWebViewPage(
                                     context,
                                     "",
-                                    widget
-                                        .purchaseProvider!
-                                        .vipPageBean!
-                                        .user
+                                    widget.purchaseProvider!.vipPageBean!.user
                                         .protocolUrl,
                                   );
                                 },
@@ -666,16 +696,12 @@ class LimitBuyWidgetState extends State<LimitBuyWidget> {
                                             ?.user
                                             .subScribeProtocolUrl
                                             .isEmpty ==
-                                        true)
-                                      return;
+                                        true) return;
                                     ByNavRouterUtils.jumpWebViewPage(
                                       context,
                                       "",
-                                      widget
-                                              .iosPurchaseProvider
-                                              ?.vipPageBean
-                                              ?.user
-                                              .subScribeProtocolUrl ??
+                                      widget.iosPurchaseProvider?.vipPageBean
+                                              ?.user.subScribeProtocolUrl ??
                                           "",
                                     );
                                   },
@@ -700,44 +726,29 @@ class LimitBuyWidgetState extends State<LimitBuyWidget> {
                                     debugPrint(
                                       "open Url:${widget.iosPurchaseProvider?.vipPageBean?.user.integralRule}",
                                     );
-                                    if (widget
-                                            .iosPurchaseProvider
-                                            ?.vipPageBean!
-                                            .user
-                                            .integralRule
-                                            .isNotEmpty !=
-                                        true)
-                                      return;
+                                    if (widget.iosPurchaseProvider?.vipPageBean!
+                                            .user.integralRule.isNotEmpty !=
+                                        true) return;
                                     ByNavRouterUtils.jumpWebViewPage(
                                       context,
                                       "",
-                                      widget
-                                              .iosPurchaseProvider!
-                                              .vipPageBean
-                                              ?.user
-                                              .integralRule ??
+                                      widget.iosPurchaseProvider!.vipPageBean
+                                              ?.user.integralRule ??
                                           "",
                                     );
                                   } else {
                                     debugPrint(
                                       "open Url:${widget.purchaseProvider?.vipPageBean?.user.integralRule}",
                                     );
-                                    if (widget
-                                            .purchaseProvider
-                                            ?.vipPageBean!
-                                            .user
-                                            .integralRule
-                                            .isNotEmpty !=
+                                    if (widget.purchaseProvider?.vipPageBean!
+                                            .user.integralRule.isNotEmpty !=
                                         true) {
                                       return;
                                     }
                                     ByNavRouterUtils.jumpWebViewPage(
                                       context,
                                       "",
-                                      widget
-                                              .purchaseProvider!
-                                              .vipPageBean
-                                              ?.user
+                                      widget.purchaseProvider!.vipPageBean?.user
                                               .integralRule ??
                                           "",
                                     );
@@ -760,22 +771,26 @@ class LimitBuyWidgetState extends State<LimitBuyWidget> {
                       },
                     ),
                   ),
-                ),
-                Positioned(
-                  bottom: 6.h,
-                  child: GestureDetector(
-                    child: BtnBreathingAnimationWidget(
-                      child: Image.asset(
-                        "assets/v2/business/img_limit_buy_btn.png",
-                        width: 200.w,
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 6.h,
+                    child: Center(
+                      child: GestureDetector(
+                        child: BtnBreathingAnimationWidget(
+                          child: Image.asset(
+                            "assets/v2/business/img_limit_buy_btn.png",
+                            width: 200.w,
+                          ),
+                        ),
+                        onTap: () {
+                          widget.onTapForClaim?.call();
+                        },
                       ),
                     ),
-                    onTap: () {
-                      widget.onTapForClaim?.call();
-                    },
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             SizedBox(height: 24.h),
             GestureDetector(
@@ -876,8 +891,7 @@ class _NumberScrollAnimationState extends State<NumberScrollAnimation>
               if (widget.prefixText?.isNotEmpty == true)
                 TextSpan(
                   text: widget.prefixText,
-                  style:
-                      widget.prefixTextStyle ??
+                  style: widget.prefixTextStyle ??
                       TextStyle(
                         color: Color(0xFFFE3B00),
                         fontWeight: FontWeight.bold,
@@ -888,8 +902,7 @@ class _NumberScrollAnimationState extends State<NumberScrollAnimation>
               // 滚动数字部分
               TextSpan(
                 text: numberStr,
-                style:
-                    widget.textStyle ??
+                style: widget.textStyle ??
                     TextStyle(
                       color: Color(0xFFFE3B00),
                       fontWeight: FontWeight.bold,
@@ -901,8 +914,7 @@ class _NumberScrollAnimationState extends State<NumberScrollAnimation>
                 // 固定的 "元" 部分
                 TextSpan(
                   text: " 元",
-                  style:
-                      widget.textStyle ??
+                  style: widget.textStyle ??
                       TextStyle(
                         color: const Color(0xFFFE3B00),
                         fontWeight: FontWeight.bold,
@@ -913,8 +925,7 @@ class _NumberScrollAnimationState extends State<NumberScrollAnimation>
               if (widget.suffixText?.isNotEmpty == true)
                 TextSpan(
                   text: widget.suffixText,
-                  style:
-                      widget.suffixTextStyle ??
+                  style: widget.suffixTextStyle ??
                       TextStyle(
                         color: Color(0xFFFE3B00),
                         fontWeight: FontWeight.bold,
@@ -1291,10 +1302,8 @@ class VipAgreementRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (Platform.isIOS) {
-      return Selector<
-        IosPurchaseProvider,
-        ({bool agreementChecked, bool hasVipPageBean})
-      >(
+      return Selector<IosPurchaseProvider,
+          ({bool agreementChecked, bool hasVipPageBean})>(
         selector: (_, provider) => (
           agreementChecked: provider.agreementChecked,
           hasVipPageBean: provider.vipPageBean != null,
@@ -1304,10 +1313,8 @@ class VipAgreementRow extends StatelessWidget {
         },
       );
     } else {
-      return Selector<
-        PurchaseProvider,
-        ({bool isAgreementChecked, bool hasVipPageBean})
-      >(
+      return Selector<PurchaseProvider,
+          ({bool isAgreementChecked, bool hasVipPageBean})>(
         selector: (_, provider) => (
           isAgreementChecked: provider.isAgreementChecked,
           hasVipPageBean: provider.vipPageBean != null,
@@ -1387,9 +1394,7 @@ class VipAgreementRow extends StatelessWidget {
                             recognizer: TapGestureRecognizer()
                               ..onTap = () {
                                 final url = currentProvider
-                                    .vipPageBean
-                                    ?.user
-                                    .integralRule;
+                                    .vipPageBean?.user.integralRule;
                                 if (url == null || url.isEmpty) return;
                                 ByNavRouterUtils.jumpWebViewPage(
                                   context,
@@ -1474,9 +1479,7 @@ class VipAgreementRow extends StatelessWidget {
                           recognizer: TapGestureRecognizer()
                             ..onTap = () {
                               final url = currentProvider
-                                  .vipPageBean
-                                  ?.user
-                                  .subScribeProtocolUrl;
+                                  .vipPageBean?.user.subScribeProtocolUrl;
                               if (url == null || url.isEmpty) return;
                               ByNavRouterUtils.jumpWebViewPage(
                                 context,
@@ -1498,9 +1501,7 @@ class VipAgreementRow extends StatelessWidget {
                                 recognizer: TapGestureRecognizer()
                                   ..onTap = () {
                                     final url = currentProvider
-                                        .vipPageBean
-                                        ?.user
-                                        .integralRule;
+                                        .vipPageBean?.user.integralRule;
                                     if (url == null || url.isEmpty) return;
                                     ByNavRouterUtils.jumpWebViewPage(
                                       context,
@@ -1701,7 +1702,6 @@ class _PayPageBottomInterceptDialogState
                   ),
                 ),
               ),
-
               Positioned(
                 bottom: 0.h,
                 right: 0.w,

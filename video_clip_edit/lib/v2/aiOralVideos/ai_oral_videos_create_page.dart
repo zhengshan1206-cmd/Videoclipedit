@@ -29,7 +29,11 @@ import 'package:video_clip_edit/v2/aiOralVideos/providers/ai_oral_dubbing_anchor
 import 'package:video_clip_edit/v2/aiOralVideos/providers/ai_oral_dubbing_provider.dart';
 import 'package:video_clip_edit/v2/aiOralVideos/providers/ai_oral_video_management_provider.dart';
 import 'package:video_clip_edit/v2/aiOralVideos/providers/ai_oral_videos_provider.dart';
+import 'package:video_clip_edit/modules/home/words/beans/upload_info_bean.dart';
+import 'package:video_clip_edit/modules/home/providers/words_extract_provider.dart';
+import 'package:video_clip_edit/utils/comon/by_ffmpeg_util.dart';
 import 'package:video_clip_edit/v2/aiOralVideos/widgets/ai_oral_copy_notice_dialog.dart';
+import 'package:video_clip_edit/v2/aiOralVideos/widgets/ai_oral_dubbing_list_view.dart';
 import 'package:video_clip_edit/v2/aiOralVideos/widgets/ai_oral_video_list_view.dart';
 import 'package:video_clip_edit/v2/aiSquare/cartoon/provider/ai_cartoon_audio_status_provider.dart';
 import 'package:video_clip_edit/v2/aiSquare/song/beans/rights_by_type.dart';
@@ -72,7 +76,7 @@ class _AiOralVideosCreatePageState extends State<AiOralVideosCreatePage> {
   ///默认5秒查询一次
   ///订阅查询上传历史
   StreamSubscription<RequestMyAIOralVideoDataEvent>?
-  _myVideoHistorySubscription;
+      _myVideoHistorySubscription;
 
   ///选择的AI主播配音id
   int selectAiMusicId = -1;
@@ -114,35 +118,33 @@ class _AiOralVideosCreatePageState extends State<AiOralVideosCreatePage> {
 
   ///初始化订阅监听
   initStreamSubscription() {
-    _myVideoHistorySubscription = eventBus
-        .on<RequestMyAIOralVideoDataEvent>()
-        .listen((e) {
-          needSearchHistoryData = e.needRequestData;
-          if (needSearchHistoryData) {
-            loadMyVideoList();
-          }
-        });
+    _myVideoHistorySubscription =
+        eventBus.on<RequestMyAIOralVideoDataEvent>().listen((e) {
+      needSearchHistoryData = e.needRequestData;
+      if (needSearchHistoryData) {
+        loadMyVideoList();
+      }
+    });
 
     eventBus.fire(const RequestMyAIOralVideoDataEvent(needRequestData: true));
 
-    _insertStreamSubscription = eventBus
-        .on<InsertCloneMusicModelEvent>()
-        .listen((e) {
-          selectAiMusicId = -1;
-          selectMineAiMusicId = e.model.id;
-          selectMusicName = e.model.name;
-          selectDemoUrl = e.model.demoUrl;
-          refContent = e.model.refContent;
+    _insertStreamSubscription =
+        eventBus.on<InsertCloneMusicModelEvent>().listen((e) {
+      selectAiMusicId = -1;
+      selectMineAiMusicId = e.model.id;
+      selectMusicName = e.model.name;
+      selectDemoUrl = e.model.demoUrl;
+      refContent = e.model.refContent;
 
-          isCurrentPage = false;
-          final provider = context.read<AiOralVideosProvider>();
-          provider.selectedMusicModel = e.model;
-          provider.insertCloneMusicModel = false;
-          Get.log("事件监听到了====>${provider}");
-          if (mounted) {
-            setState(() {});
-          }
-        });
+      isCurrentPage = false;
+      final provider = context.read<AiOralVideosProvider>();
+      provider.selectedMusicModel = e.model;
+      provider.insertCloneMusicModel = false;
+      Get.log("事件监听到了====>${provider}");
+      if (mounted) {
+        setState(() {});
+      }
+    });
 
     focusNode.addListener(() {
       if (focusNode.hasFocus) {
@@ -294,8 +296,8 @@ class _AiOralVideosCreatePageState extends State<AiOralVideosCreatePage> {
 
   ///加载AI角色配音列表数据
   void loadDubbingList() {
-    AiOralDubbingAnchorProvider provider = context
-        .read<AiOralDubbingAnchorProvider>();
+    AiOralDubbingAnchorProvider provider =
+        context.read<AiOralDubbingAnchorProvider>();
     provider.loadDubbingList();
   }
 
@@ -461,53 +463,52 @@ class _AiOralVideosCreatePageState extends State<AiOralVideosCreatePage> {
           _aiOralTextView(),
           _voiceConfigView(),
           _voiceContentView(),
-          // AiOralDubbingListView(
-          //   onSelect: (filePah) async {
-          //     EasyLoading.show();
-          //     final provider = context.read<AiOralVideosProvider>();
-          //     ByFfmpegUtil.loadUploadInfo(
-          //       showLoading: false,
-          //       type: MediaType.audio,
-          //       onSuccess: (UploadInfoBean infoBean) {
-          //         /// 上传
-          //         ByFfmpegUtil.uploadFile(
-          //           infoBean: infoBean,
-          //           filePath: filePah,
-          //           showLoading: false,
-          //           onSuccess: (resp) {
-          //             byDebugPrint(resp);
-          //             provider.createUserAudioTTS(
-          //               ttsType: 3,
-          //               referenceAudioUrl: infoBean.objectUrl,
-          //               onSuccess: (tid) {
-          //                 _tidAudio = tid;
-          //
-          //                 EasyLoading.show();
-          //                 provider.getUserDubbingAudioTTS(
-          //                   id: _tidAudio,
-          //                   isShowLoading: false,
-          //                   cancelToken: _cancelTokenAudio,
-          //                   onSuccess: (AiOralDubbingCloneDetailBean bean) {
-          //                     EasyLoading.dismiss();
-          //                     _resetTimerAudio();
-          //                     // detailBean = bean;
-          //                     provider.updateDubbingCloneDetailBean(bean);
-          //                   },
-          //                   onFaild: () {
-          //                     _startTimerAudio();
-          //                   },
-          //                 );
-          //               },
-          //             );
-          //           },
-          //         );
-          //       },
-          //     );
-          //   },
-          // ),
-          // const AiOralSelectedDubbingView(),
+          AiOralDubbingListView(
+            onSelect: (filePah) {
+              EasyLoading.show();
+              final provider = context.read<AiOralVideosProvider>();
+              ByFfmpegUtil.loadUploadInfo(
+                showLoading: false,
+                type: MediaType.audio,
+                onSuccess: (UploadInfoBean infoBean) {
+                  /// 上传
+                  ByFfmpegUtil.uploadFile(
+                    infoBean: infoBean,
+                    filePath: filePah,
+                    showLoading: false,
+                    onSuccess: (resp) {
+                      byDebugPrint(resp);
+                      provider.createUserAudioTTS(
+                        ttsType: 3,
+                        referenceAudioUrl: infoBean.objectUrl,
+                        onSuccess: (tid) {
+                          _tidAudio = tid;
+
+                          EasyLoading.show();
+                          provider.getUserDubbingAudioTTS(
+                            id: _tidAudio,
+                            isShowLoading: false,
+                            cancelToken: _cancelTokenAudio,
+                            onSuccess: (AiOralDubbingCloneDetailBean bean) {
+                              EasyLoading.dismiss();
+                              _resetTimerAudio();
+                              provider.updateDubbingCloneDetailBean(bean);
+                            },
+                            onFaild: () {
+                              _startTimerAudio();
+                            },
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          ),
           SliverToBoxAdapter(
-            child: SizedBox(height: 120.h + ByScreenUtils.bottomSafeHeight),
+            child: SizedBox(
+                height: 120.h + ByScreenUtils.bottomInsetForOverlayBar),
           ),
         ],
       ),
@@ -570,8 +571,8 @@ class _AiOralVideosCreatePageState extends State<AiOralVideosCreatePage> {
                   audioPlayer.pause();
                 }
 
-                final aiOralVideosProvider = context
-                    .read<AiOralVideosProvider>();
+                final aiOralVideosProvider =
+                    context.read<AiOralVideosProvider>();
                 // aiOralVideosProvider.updateSelectMyCloneMusicIndex();
                 Get.log(
                   "selectAiMusicId===>$selectAiMusicId  selectMineAiMusicId===>$selectMineAiMusicId",
@@ -681,10 +682,10 @@ class _AiOralVideosCreatePageState extends State<AiOralVideosCreatePage> {
   ///配音内容的数据页面
   Widget _voiceContentView() {
     List<AiCartoonDubbingBean> showAiCartoonDubbingBeanList = [];
-    List<AiCartoonDubbingBean> dubbingBeans = context
-        .select<AiOralDubbingAnchorProvider, List<AiCartoonDubbingBean>>(
-          (value) => value.dubbingBeans,
-        );
+    List<AiCartoonDubbingBean> dubbingBeans =
+        context.select<AiOralDubbingAnchorProvider, List<AiCartoonDubbingBean>>(
+      (value) => value.dubbingBeans,
+    );
     if (dubbingBeans.length >= 3 && isFirstLoadAiMusic) {
       showAiCartoonDubbingBeanList = dubbingBeans.sublist(0, 3);
     }
@@ -949,13 +950,12 @@ class _AiOralVideosCreatePageState extends State<AiOralVideosCreatePage> {
     }
 
     /// 播放状态
-    final status = context
-        .select<AiCartoonAudioStatusProvider, AiCartoonAudioStatus>(
-          (val) => val.currentStatus,
-        );
+    final status =
+        context.select<AiCartoonAudioStatusProvider, AiCartoonAudioStatus>(
+      (val) => val.currentStatus,
+    );
 
-    isPlaying =
-        status == AiCartoonAudioStatus.playing ||
+    isPlaying = status == AiCartoonAudioStatus.playing ||
         status == AiCartoonAudioStatus.resume;
 
     if (name.length > 6) {
@@ -1100,8 +1100,8 @@ class BannerViewWidget extends StatelessWidget {
                   child: BannerView(
                     onError: () {
                       context.read<AiOralVideosProvider>().updateShowBanner(
-                        false,
-                      );
+                            false,
+                          );
                     },
                     urls: bannerBeans.map((e) => e.imgUrl).toList(),
                     fit: BoxFit.cover,
@@ -1121,8 +1121,8 @@ class BannerViewWidget extends StatelessWidget {
                   behavior: HitTestBehavior.opaque,
                   onTap: () {
                     context.read<AiOralVideosProvider>().updateShowBanner(
-                      false,
-                    );
+                          false,
+                        );
                   },
                   child: Container(
                     decoration: BoxDecoration(
@@ -1286,8 +1286,7 @@ class BottomBar extends StatelessWidget {
         color: Colors.white,
         padding: EdgeInsets.only(
           top: 12.h,
-          // bottom: 8.h + ByScreenUtils.bottomSafeHeight,
-          bottom: 16.h,
+          bottom: 16.h + ByScreenUtils.bottomInsetForOverlayBar,
           left: 12.w,
           right: 12.w,
         ),
@@ -1339,8 +1338,8 @@ class BottomBar extends StatelessWidget {
                           if (ByAudioPlayer.sharedInstance.isPlaying) {
                             ByAudioPlayer.sharedInstance.pause();
                           }
-                          final purchaseProvider = context
-                              .read<PurchaseProvider>();
+                          final purchaseProvider =
+                              context.read<PurchaseProvider>();
                           if (purchaseProvider.preLoginCheck(context) ==
                               false) {
                             return;
@@ -1366,9 +1365,8 @@ class BottomBar extends StatelessWidget {
 
                           ///todo 先创建音频
                           ByAudioPlayer.sharedInstance.stop();
-                          final desc = context
-                              .read<AiOralDubbingProvider>()
-                              .inputValue;
+                          final desc =
+                              context.read<AiOralDubbingProvider>().inputValue;
                           if (desc.isEmpty) {
                             BotToast.showText(text: "请输入文案");
                             return;
@@ -1391,12 +1389,11 @@ class BottomBar extends StatelessWidget {
                                   context: context,
                                   useSafeArea: false,
                                   barrierDismissible: true,
-                                  builder: (ctx) => ChangeNotifierProvider.value(
+                                  builder: (ctx) =>
+                                      ChangeNotifierProvider.value(
                                     value: cartoonProvider,
-                                    child:
-                                        const AiCartoonProhibitedWordsDailog<
-                                          AiCartoonProvider
-                                        >(),
+                                    child: const AiCartoonProhibitedWordsDailog<
+                                        AiCartoonProvider>(),
                                   ),
                                 ).then((value) {
                                   Get.log("修改后value===> ${value}");
@@ -1479,17 +1476,17 @@ class AiOralSelectedDubbingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectedCloneDetailBean = context
-        .select<AiOralVideosProvider, AiOralDubbingCloneDetailBean?>(
-          (value) => value.dubbingCloneDetailBean,
-        );
+    final selectedCloneDetailBean =
+        context.select<AiOralVideosProvider, AiOralDubbingCloneDetailBean?>(
+      (value) => value.dubbingCloneDetailBean,
+    );
     if (selectedCloneDetailBean == null) {
       return SliverToBoxAdapter(child: Container());
     }
-    final currentStatus = context
-        .select<AiCartoonAudioStatusProvider, AiCartoonAudioStatus>(
-          (value) => value.currentStatus,
-        );
+    final currentStatus =
+        context.select<AiCartoonAudioStatusProvider, AiCartoonAudioStatus>(
+      (value) => value.currentStatus,
+    );
     final playing = [
       AiCartoonAudioStatus.playing,
       AiCartoonAudioStatus.resume,

@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
-import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:video_clip_edit/utils/comon/by_common_utils.dart';
@@ -48,7 +48,7 @@ class ByPhotoManagerUtils {
         );
         byDebugPrint("开始保存");
 
-        ImageGallerySaverPlus.saveFile(thumbPath)
+        ImageGallerySaver.saveFile(thumbPath)
             .then((value) {
               byDebugPrint("保存成功");
             })

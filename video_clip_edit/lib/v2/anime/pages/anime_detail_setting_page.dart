@@ -1,11 +1,8 @@
-
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:video_clip_edit/utils/comon/by_colors.dart';
-import 'package:video_clip_edit/utils/comon/by_screen_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_widgets_util.dart';
 import 'package:video_clip_edit/v2/anime/pages/anime_no_intergral_dialog.dart';
 import '../../../modules/ai/ai_video/image_edit_controller.dart';
@@ -49,16 +46,35 @@ class _AnimeDetailSettingPageState extends State<AnimeDetailSettingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 449.w + ByScreenUtils.bottomSafeHeight,
-      padding: EdgeInsets.fromLTRB(12.w, 0 ,12.w, 12.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18)
-      ),
+    final maxSheetH = MediaQuery.sizeOf(context).height * 0.92;
+    final mq = MediaQuery.of(context);
+    final bottomGesture = mq.viewPadding.bottom > mq.padding.bottom
+        ? mq.viewPadding.bottom
+        : mq.padding.bottom;
+
+    return SafeArea(
+      top: false,
+      bottom: false,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.max,
         children: [
+          ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: maxSheetH,
+            maxWidth: double.infinity,
+          ),
+          child: Material(
+          color: Colors.white,
+          borderRadius:
+              const BorderRadius.vertical(top: Radius.circular(18)),
+          clipBehavior: Clip.antiAlias,
+          child: ListView(
+            shrinkWrap: true,
+            physics: const ClampingScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 12.w + bottomGesture),
+            children: [
           SizedBox(
             height: 44.w,
             child: Stack(
@@ -229,7 +245,7 @@ class _AnimeDetailSettingPageState extends State<AnimeDetailSettingPage> {
               ],
             ),
           ),
-          const Spacer(),
+          SizedBox(height: 12.w),
           ByWidgetsUtil.commonTipsBar("内容由AI生成仅供参考，禁止利用功能从事违法活动。"),
           SizedBox(height: 10.w,),
           _buildIntegralVipView(),
@@ -328,7 +344,10 @@ class _AnimeDetailSettingPageState extends State<AnimeDetailSettingPage> {
               ],
             ),
           ),
-          SizedBox(height: ByScreenUtils.bottomSafeHeight)
+        ],
+          ),
+        ),
+      ),
         ],
       ),
     );

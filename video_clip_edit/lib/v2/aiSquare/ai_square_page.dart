@@ -30,8 +30,6 @@ import 'package:video_clip_edit/v2/aiSquare/ai_monetization_creation_page.dart';
 import 'package:video_clip_edit/modules/home/providers/show_recreate_provider.dart';
 import 'package:video_clip_edit/modules/home/recreate/short_show_recreate_page.dart';
 import 'package:video_clip_edit/v2/aiSquare/widgets/home_page_sliver_type_list_view.dart';
-import 'package:video_clip_edit/v2/minorMode/controllers/minor_mode_controller.dart';
-import 'package:video_clip_edit/v2/minorMode/widgets/minor_mode_home_header.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 import 'package:video_clip_edit/modules/main/controllers/main_controller.dart';
 
@@ -55,6 +53,10 @@ class _AiSquarePageState extends State<AiSquarePage> {
   late StreamSubscription _buySuccessStreamSubscription;
   double _lastVisibleFraction = 0.0; // 记录上次的可见度，用于判断是否从不可见变为可见
   bool _hasRequestedPermission = false; // 标记是否已经请求过权限，避免重复请求
+
+  /// 滚动监听若在 layout/build 阶段同步触发 [ValueListenableBuilder]，会导致 markNeedsBuild during build。
+  /// 合并为每帧末更新一次，避免与 NestedScrollView / 切 Tab(Offstage) 时的布局相位打架（进出页面交替红屏）。
+  bool _scrollOffsetPostFrameScheduled = false;
 
   @override
   void initState() {
@@ -201,55 +203,44 @@ class _AiSquarePageState extends State<AiSquarePage> {
   /// ******************************** UI ********************************
 
   _buildContents(BuildContext context) {
-    return Obx(() {
-      final isMinorMode = MinorModeController.to.isMinorModeEnabled;
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      top: 0,
+      child: NestedScrollView(
+        controller: _customerController,
 
-      return Positioned(
-        left: 0,
-        right: 0,
-        bottom: 0,
-        top: 0,
-        child: NestedScrollView(
-          controller: _customerController,
-
-          /// 限制 NestedScrollView 的滚动行为
-          physics: const ClampingScrollPhysics(),
-          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) =>
-              [
-            if (isMinorMode)
-              const MinorModeHomeSliverHeader()
-            else
-              HomePageSliverTypeListView(
-                categoryScrollController: _categoryScrollController,
-                pageController: _pageController,
-                onSize: (Size size, int index) => _itemWidths[index] = size.width,
-              ),
-          ],
-          body: NotificationListener<ScrollNotification>(
-            onNotification: (ScrollNotification notification) {
-              if (isMinorMode) return false;
-              if (notification is ScrollEndNotification) {
-                final metrics = notification.metrics;
-                if (metrics is PageMetrics) {
-                  int currentPage = metrics.page!.round();
-                  context
-                      .read<AiSquareProvider>()
-                      .updateSelectedIndex(currentPage);
-                }
-              }
-              return false;
-            },
-            child: HomePageView(
-              pageController: _pageController,
-              onPageChanged: (int index) => _onPageChanged(index, context),
-            ),
+        /// 限制 NestedScrollView 的滚动行为
+        physics: const ClampingScrollPhysics(),
+        headerSliverBuilder:
+            (BuildContext context, bool innerBoxIsScrolled) => [
+          HomePageSliverTypeListView(
+            categoryScrollController: _categoryScrollController,
+            pageController: _pageController,
+            onSize: (Size size, int index) => _itemWidths[index] = size.width,
           ),
+        ],
+        body: HomePageView(
+          pageController: _pageController,
+          onPageChanged: (int index) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              final p = context.read<AiSquareProvider>();
+              if (p.selectedIndex != index) {
+                p.updateSelectedIndex(index);
+              }
+              _syncCategoryTabScroll(index);
+            });
+          },
+          // child: Container(width: 100,height: 100,color: Colors.red,),
         ),
-      );
-    });
+      ),
+    );
   }
 
-  void _onPageChanged(int index, BuildContext context) {
+  void _syncCategoryTabScroll(int index) {
+    if (!_categoryScrollController.hasClients) return;
     double offset = 0;
     for (var i = 0; i < index; i++) {
       offset += _itemWidths[i] ?? 0;
@@ -559,19 +550,28 @@ class _AiSquarePageState extends State<AiSquarePage> {
             behavior: HitTestBehavior.opaque,
             onTap: () async {
               if (showTutor) {
-                const wechatUrl = 'weixin://';
-                if (await canLaunchUrl(Uri.parse(wechatUrl))) {
-                  final url = context
-                      .read<AiSquareProvider>()
-                      .configBean!
-                      .list
-                      .homeRightFloatIcon!
-                      .url
-                      .valText;
-                  ByNavRouterUtils.jumpWebViewPage(context, "", url);
-                } else {
-                  EasyLoading.showToast("由于您未安装微信，无法直接跳转客服。");
-                }
+                //  const wechatUrl = 'weixin://';
+                // if (await canLaunchUrl(Uri.parse(wechatUrl))) {
+                //   final url = context
+                //       .read<AiSquareProvider>()
+                //       .configBean!
+                //       .list
+                //       .homeRightFloatIcon!
+                //       .url
+                //       .valText;
+                //   ByNavRouterUtils.jumpWebViewPage(context, "", url);
+                // } else {
+                //   EasyLoading.showToast("由于您未安装微信，无法直接跳转客服。");
+                // }
+                final url = context
+                    .read<AiSquareProvider>()
+                    .configBean!
+                    .list
+                    .homeRightFloatIcon!
+                    .url
+                    .valText;
+                await ByNavRouterUtils.launchWechatCustomerService(
+                    context, "", url);
               }
             },
             child: Stack(
@@ -625,6 +625,13 @@ class _AiSquarePageState extends State<AiSquarePage> {
   /// ******************************** UI ********************************
 
   void _onScrolled() {
-    context.read<AiSquareProvider>().updateOffset(_customerController.offset);
+    if (_scrollOffsetPostFrameScheduled) return;
+    _scrollOffsetPostFrameScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollOffsetPostFrameScheduled = false;
+      if (!mounted) return;
+      if (!_customerController.hasClients) return;
+      context.read<AiSquareProvider>().updateOffset(_customerController.offset);
+    });
   }
 }

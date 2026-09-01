@@ -36,6 +36,7 @@ class AuthInterceptor extends Interceptor {
   final RouteHistoryManager _routeManager = RouteHistoryManager.instance;
 
   String _getSign(int timestamp) {
+    // 与 Header 中 token 一致：明文读取，避免 JWT 走 AES 解密报错
     final token = getToken();
     final sign = ByEncryptUtils.md5String("$timestamp$token");
     return sign;
@@ -54,7 +55,7 @@ class AuthInterceptor extends Interceptor {
     byDebugPrint("routeHistory: ${_routeManager.getRouteHistory()}",
         tag: "OnRequest:");
 
-    if (_shouldAttachAuth(options.path, options.extra)) {
+    if (options.path != APIs.launch) {
       final String token = getToken();
       if (token.isNotEmpty) {
         byDebugPrint("update token: $token", tag: "OnRequest:");
@@ -64,14 +65,11 @@ class AuthInterceptor extends Interceptor {
         options.headers[ConstKeys.kTimeStamp] = timestamp;
         options.headers[ConstKeys.kSign] = _getSign(timestamp);
       }
+      super.onRequest(options, handler);
+    } else {
+      // 对于launch接口，也需要调用handler.next继续请求流程
+      super.onRequest(options, handler);
     }
-    super.onRequest(options, handler);
-  }
-
-  bool _shouldAttachAuth(String path, Map<String, dynamic> extra) {
-    if (extra['skipAuth'] == true) return false;
-    if (path == APIs.launch || path == APIs.sendVCode) return false;
-    return true;
   }
 }
 

@@ -132,7 +132,7 @@ class VipTypeViewNew extends StatelessWidget {
                         ? ByColorUtil.WhiteColor.withOpacity(0.6)
                         : const Color(0xFF67441E).withOpacity(0.6),
                   ),
-                  const Spacer(),
+                  SizedBox(height: 8.h),
                   ClipRRect(
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(16.w),
@@ -145,7 +145,7 @@ class VipTypeViewNew extends StatelessWidget {
                       borerRadius: 0,
                       child: Container(
                         width: double.infinity,
-                        height: 30.h,
+                        height: 34.h,
                         alignment: Alignment.center,
                         child: ByWidgetsUtil.commonText(
                           fontSize: 14.sp,

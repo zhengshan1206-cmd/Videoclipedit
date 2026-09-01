@@ -1,6 +1,0 @@
-framework module VESocketCenter {
-  umbrella header "VESocketCenter-umbrella.h"
-
-  export *
-  module * { export * }
-}

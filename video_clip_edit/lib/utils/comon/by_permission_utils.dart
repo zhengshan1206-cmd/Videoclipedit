@@ -4,6 +4,7 @@ library;
 import 'dart:developer';
 import 'dart:io';
 
+import '../channel/channel_operate.dart';
 import 'by_package_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:video_clip_edit/main.dart';
@@ -37,40 +38,35 @@ extension PermissionExt on Permission {
         return [
           PermissionUsageBean.fromJson({
             "permissionName": "录制音频",
-            "usage":
-                "为了给您提供便捷的服务，我们将获取录制音频权限，用于上传文件生成内容。是否同意？",
+            "usage": "为了给您提供便捷的服务，我们将获取录制音频权限，用于上传文件生成内容。是否同意？",
           })
         ];
       case Permission.storage:
         return [
           PermissionUsageBean.fromJson({
             "permissionName": "存储权限(访问设备照片、媒体内容和文件)",
-            "usage":
-                "为了给您提供便捷的服务，方便您上传原生文件以生成内容，以及下载生成后的文件，我们需要获取您的存储权限。是否同意？",
+            "usage": "为了给您提供便捷的服务，方便您上传原生文件以生成内容，以及下载生成后的文件，我们需要获取您的存储权限。是否同意？",
           })
         ];
       case Permission.videos:
         return [
           PermissionUsageBean.fromJson({
             "permissionName": "媒体权限(访问设备照片、媒体内容和文件)",
-            "usage":
-                "为了给您提供便捷的服务，方便您上传原生文件以生成内容，以及下载生成后的文件，我们需要获取您的媒体权限。是否同意？",
+            "usage": "为了给您提供便捷的服务，方便您上传原生文件以生成内容，以及下载生成后的文件，我们需要获取您的媒体权限。是否同意？",
           })
         ];
       case Permission.photos:
         return [
           PermissionUsageBean.fromJson({
             "permissionName": "媒体权限(访问设备照片、媒体内容和文件)",
-            "usage":
-                "为了给您提供便捷的服务，方便您上传原生文件以生成内容，以及下载生成后的文件，我们需要获取您的媒体权限。是否同意？",
+            "usage": "为了给您提供便捷的服务，方便您上传原生文件以生成内容，以及下载生成后的文件，我们需要获取您的媒体权限。是否同意？",
           })
         ];
       case Permission.camera:
         return [
           PermissionUsageBean.fromJson({
             "permissionName": "相机权限(访问设备相机功能)",
-            "usage":
-                "为了给您提供便捷的服务，我们将获取拍摄照片和录制视频权限，用于上传文件生成内容。是否同意？",
+            "usage": "为了给您提供便捷的服务，我们将获取拍摄照片和录制视频权限，用于上传文件生成内容。是否同意？",
           }),
           Permission.microphone.permissionUsageBean.first,
         ];
@@ -96,33 +92,45 @@ class ByPermissionUtils {
   /// 请求权限
   static Future<bool> _requestPermission(
     Permission permission,
-    String message,
-  { bool needMicroPhone = false,  }
-  ) async {
+    String message, {
+    bool needMicroPhone = false,
+  }) async {
+    if (ByPackageUtils.isOhos) {
+      //对需要被用户授权的权限做特殊处理
+      if (permission == Permission.microphone) {
+        bool microphonePermission =
+            await ChannelOperate.getPermission("MICROPHONE");
+        return microphonePermission;
+      }
+      return true;
+    }
     log("当前权限的状态=======${permission.toString()}");
+
     /// 2、弹出系统的权限授权弹窗
     var status = await permission.status;
     if (status.isGranted || status.isLimited) {
-      if(Platform.isIOS){
-        if(permission==Permission.camera){
+      if (Platform.isIOS) {
+        if (permission == Permission.camera) {
           PermissionStatus permissionStatus = await Permission.photos.request();
-          PermissionStatus permissionStatus2 = await Permission.microphone.request();
+          PermissionStatus permissionStatus2 =
+              await Permission.microphone.request();
           if (permissionStatus.isPermanentlyDenied) {
             _showDialog("暂无相册权限，请前往设置开启权限");
             return false;
           }
-         if(needMicroPhone){
-           if (permissionStatus2.isPermanentlyDenied) {
-             _showDialog("暂无麦克风权限，请前往设置开启权限");
-             return false;
-           }
-         }
+          if (needMicroPhone) {
+            if (permissionStatus2.isPermanentlyDenied) {
+              _showDialog("暂无麦克风权限，请前往设置开启权限");
+              return false;
+            }
+          }
         }
       }
       return true;
     }
+
     /// 3、权限被拒绝
-    if(Platform.isAndroid){
+    if (Platform.isAndroid) {
       ///安卓情况
       if (status.isDenied) {
         /// 1、先弹出权限详细用途询问弹窗
@@ -145,19 +153,19 @@ class ByPermissionUtils {
         return false;
       }
     } else if (Platform.isIOS) {
-      /// iOS 情况：请求权限并处理 isLimited（部分照片访问）
+      ///如果是相机 iOS还必须查询录音权限状态
+      if (status.isGranted) {}
+
+      ///ios情况
       if (status.isDenied) {
-        final permissionStatus = await permission.request();
+        PermissionStatus permissionStatus = await permission.request();
         log("当前ios权限的状态=======${permissionStatus.isDenied}");
-        if (permissionStatus.isGranted || permissionStatus.isLimited) {
+        if (permissionStatus.isGranted) {
           return true;
-        }
-        if (permissionStatus.isPermanentlyDenied) {
-          _showDialog(message);
-          return false;
         }
       }
     }
+
     /// 4、权限被永久拒绝
     if (status.isPermanentlyDenied) {
       _showDialog(message);
@@ -226,8 +234,12 @@ class ByPermissionUtils {
   }
 
   /// 相机 权限检查和请求
-  static Future<bool> camera({String message = '暂无相机权限，请前往设置开启权限',bool needMicroPhone = false,}) async {
-    bool isGranted = await _requestPermission(Permission.camera, message,needMicroPhone: needMicroPhone);
+  static Future<bool> camera({
+    String message = '暂无相机权限，请前往设置开启权限',
+    bool needMicroPhone = false,
+  }) async {
+    bool isGranted = await _requestPermission(Permission.camera, message,
+        needMicroPhone: needMicroPhone);
     return isGranted;
   }
 
@@ -263,7 +275,8 @@ class ByPermissionUtils {
           ? await _requestPermission(Permission.videos, message)
           : await _requestPermission(Permission.storage, message);
     } else {
-      return await _requestPermission(Permission.photos, "暂无手机相册视频权限，请前往设置开启权限");
+      return await _requestPermission(
+          Permission.photos, "暂无手机相册视频权限，请前往设置开启权限");
     }
   }
 

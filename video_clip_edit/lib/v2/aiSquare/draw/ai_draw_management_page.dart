@@ -16,6 +16,7 @@ import 'package:video_clip_edit/v2/aiSquare/draw/beans/ai_draw_img_details_bean.
 import 'package:video_clip_edit/v2/aiSquare/draw/providers/ai_draw_work_management_provider.dart';
 import 'package:video_clip_edit/v2/aiSquare/draw/widgets/ai_draw_management_list_view.dart';
 import 'package:video_clip_edit/v2/aiSquare/draw/widgets/ai_imgs_downoad_dialog.dart';
+import 'package:video_clip_edit/widgets/common/works_management_bottom_bar_shell.dart';
 
 class AiDrawManagementPage extends StatefulWidget {
   const AiDrawManagementPage({super.key});
@@ -49,26 +50,30 @@ class _AiDrawManagementPageState extends State<AiDrawManagementPage> {
     final isRefreshing = context.select<AiDrawWorkManagementProvider, bool>(
       (p) => p.isRefreshing,
     );
+    final editing = context
+        .select<AiDrawWorkManagementProvider, bool>((p) => p.worksEditing);
     return Scaffold(
         appBar: _buildAppBar(context),
         backgroundColor: ByColorUtil.CommonPageBgColor,
         body: Stack(
           children: [
-            EasyRefresh(
-              refreshOnStart: true,
-              onRefresh: () {
-                _loadImages(reset: true);
-              },
-              onLoad: _loadImages,
-              canRefreshAfterNoMore: true,
-              canLoadAfterNoMore: false,
-              child: AiDrawManagmentView(tips: tips),
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: _buildBottmBar(context),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: EasyRefresh(
+                    refreshOnStart: true,
+                    onRefresh: () {
+                      _loadImages(reset: true);
+                    },
+                    onLoad: _loadImages,
+                    canRefreshAfterNoMore: true,
+                    canLoadAfterNoMore: false,
+                    child: AiDrawManagmentView(tips: tips),
+                  ),
+                ),
+                if (editing) _buildBottmBar(context),
+              ],
             ),
             if (isRefreshing)
               Positioned.fill(
@@ -90,133 +95,126 @@ class _AiDrawManagementPageState extends State<AiDrawManagementPage> {
 
   _buildBottmBar(BuildContext context) {
     final provider = context.read<AiDrawWorkManagementProvider>();
-    return Offstage(
-      offstage: !context
-          .select<AiDrawWorkManagementProvider, bool>((p) => p.worksEditing),
-      child: PhysicalModel(
-        color: Colors.black,
-        elevation: 0,
-        child: Container(
-          height: Platform.isAndroid ? 66.h : 86.h,
-          width: double.infinity,
-          color: ByColorUtil.WhiteColor,
-          alignment: Alignment.center,
-          child: SizedBox(
-            height: 44.h,
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 12.w,
-                ),
-                Expanded(
-                  child: ByWidgetsUtil.commonBtn(
-                    title: "取消",
-                    fontSize: 16.sp,
-                    borderRadius: 12.w,
-                    fontWeight: FontWeight.w600,
-                    bgColor: ByColorUtil.CommonTextColor.withOpacity(0.2),
-                    textColor: ByColorUtil.WhiteColor,
-                    onClick: () {
-                      if (provider.worksEditing) {
-                        provider.updateWorksEditingState(false);
-                        provider.updateSelectAllStatus(false);
-                      }
-                    },
+    final rowH = ByScreenUtils.managementBottomActionRowHeight(44.h);
+    final barH = ByScreenUtils.managementBottomBarSurfaceHeight(
+      scaledBarH: Platform.isAndroid ? 66.h : 86.h,
+      actionRowHeight: rowH,
+    );
+    return WorksManagementBottomBarShell(
+      barSurfaceHeight: barH,
+      actionRowHeight: rowH,
+      actionsRow: Row(
+                children: [
+                  SizedBox(
+                    width: 12.w,
                   ),
-                ),
-                SizedBox(
-                  width: 12.w,
-                ),
-                Expanded(
-                  child: ByWidgetsUtil.commonBtn(
-                    title: "删除",
-                    fontSize: 16.sp,
-                    borderRadius: 12.w,
-                    fontWeight: FontWeight.w600,
-                    bgColor: const Color(0xFFFF5373),
-                    textColor: ByColorUtil.WhiteColor,
-                    onClick: () {
-                      final ids = provider.selectedWorkIdxs;
-                      if (ids.isEmpty) {
-                        BotToast.showText(text: "请选择要删除的视频");
-                        return;
-                      }
-                      showDialog(
-                        context: context,
-                        builder: (ctx) {
-                          return CommonDialog(
-                            reverse: false,
-                            maxLine: 10,
-                            contents: "请确认是否删除，删除后将不可回恢复，请谨慎操作",
-                            confirmBtnTitle: "删除",
-                            confirmCallback: () {
-                              provider.deletePictures(
-                                ids.map((e) {
-                                  return provider.workRecordBeans[e].id;
-                                }).toList(),
-                                onSuccess: () {
-                                  provider.resetPages();
-                                  provider.updateSelectAllStatus(false);
-                                  provider.loadPictureList();
-                                },
-                              );
-                            },
-                          );
-                        },
-                      );
-                    },
+                  Expanded(
+                    child: ByWidgetsUtil.commonBtn(
+                      title: "取消",
+                      fontSize: 16.sp,
+                      borderRadius: 12.w,
+                      fontWeight: FontWeight.w600,
+                      bgColor: ByColorUtil.CommonTextColor.withOpacity(0.2),
+                      textColor: ByColorUtil.WhiteColor,
+                      onClick: () {
+                        if (provider.worksEditing) {
+                          provider.updateWorksEditingState(false);
+                          provider.updateSelectAllStatus(false);
+                        }
+                      },
+                    ),
                   ),
-                ),
-                SizedBox(
-                  width: 12.w,
-                ),
-                Expanded(
-                  child: ByWidgetsUtil.commonBtn(
-                    title: "保存",
-                    fontSize: 16.sp,
-                    borderRadius: 12.w,
-                    fontWeight: FontWeight.w600,
-                    textColor: ByColorUtil.WhiteColor,
-                    bgColor: ByColorUtil.LoginBtnBgColor,
-                    onClick: () async {
-                      final status = await ByPermissionUtils.storage();
-                      if (!status) return;
-                      final ids = provider.selectedWorkIdxs;
-                      showDialog(
-                        // ignore: use_build_context_synchronously
-                        context: context,
-                        builder: (c) {
-                          return AiImgsDownoadDialog(
-                            contents: "",
-                            maxLine: 10,
-                            cancelBtnTitle: "取消",
-                            confirmBtnTitle: "确定",
-                            confirmCallback: () {},
-                            imgUrls: ids
-                                .map((e) => provider.workRecordBeans[e].picUrl)
-                                .toList(),
-                          );
-                        },
-                      );
+                  SizedBox(
+                    width: 12.w,
+                  ),
+                  Expanded(
+                    child: ByWidgetsUtil.commonBtn(
+                      title: "删除",
+                      fontSize: 16.sp,
+                      borderRadius: 12.w,
+                      fontWeight: FontWeight.w600,
+                      bgColor: const Color(0xFFFF5373),
+                      textColor: ByColorUtil.WhiteColor,
+                      onClick: () {
+                        final ids = provider.selectedWorkIdxs;
+                        if (ids.isEmpty) {
+                          BotToast.showText(text: "请选择要删除的视频");
+                          return;
+                        }
+                        showDialog(
+                          context: context,
+                          builder: (ctx) {
+                            return CommonDialog(
+                              reverse: false,
+                              maxLine: 10,
+                              contents: "请确认是否删除，删除后将不可回恢复，请谨慎操作",
+                              confirmBtnTitle: "删除",
+                              confirmCallback: () {
+                                provider.deletePictures(
+                                  ids.map((e) {
+                                    return provider.workRecordBeans[e].id;
+                                  }).toList(),
+                                  onSuccess: () {
+                                    provider.resetPages();
+                                    provider.updateSelectAllStatus(false);
+                                    provider.loadPictureList();
+                                  },
+                                );
+                              },
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  SizedBox(
+                    width: 12.w,
+                  ),
+                  Expanded(
+                    child: ByWidgetsUtil.commonBtn(
+                      title: "保存",
+                      fontSize: 16.sp,
+                      borderRadius: 12.w,
+                      fontWeight: FontWeight.w600,
+                      textColor: ByColorUtil.WhiteColor,
+                      bgColor: ByColorUtil.LoginBtnBgColor,
+                      onClick: () async {
+                        final status = await ByPermissionUtils.storage();
+                        if (!status) return;
+                        final ids = provider.selectedWorkIdxs;
+                        showDialog(
+                          // ignore: use_build_context_synchronously
+                          context: context,
+                          builder: (c) {
+                            return AiImgsDownoadDialog(
+                              contents: "",
+                              maxLine: 10,
+                              cancelBtnTitle: "取消",
+                              confirmBtnTitle: "确定",
+                              confirmCallback: () {},
+                              imgUrls: ids
+                                  .map(
+                                      (e) => provider.workRecordBeans[e].picUrl)
+                                  .toList(),
+                            );
+                          },
+                        );
 
-                      // for (var id in ids) {
-                      //   EasyLoading.show(status: "保存第${ids.indexOf(id) + 1}张");
-                      //   await ByDownloadUtil.saveNetwrokImage(
-                      //       provider.workRecordBeans[id].picUrl,
-                      //       showLoading: false);
-                      //   EasyLoading.dismiss();
-                      // }
-                    },
+                        // for (var id in ids) {
+                        //   EasyLoading.show(status: "保存第${ids.indexOf(id) + 1}张");
+                        //   await ByDownloadUtil.saveNetwrokImage(
+                        //       provider.workRecordBeans[id].picUrl,
+                        //       showLoading: false);
+                        //   EasyLoading.dismiss();
+                        // }
+                      },
+                    ),
                   ),
-                ),
-                SizedBox(
-                  width: 12.w,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+                  SizedBox(
+                    width: 12.w,
+                  ),
+                ],
+              ),
     );
   }
 

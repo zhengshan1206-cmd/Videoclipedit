@@ -468,6 +468,7 @@ class _BeforeAfterState extends State<BeforeAfter>
       case TargetPlatform.iOS:
       case TargetPlatform.linux:
       case TargetPlatform.macOS:
+      case TargetPlatform.ohos:
         break;
       case TargetPlatform.windows:
         handleDidGainAccessibilityFocus = () {

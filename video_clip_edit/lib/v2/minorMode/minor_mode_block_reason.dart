@@ -1,4 +1,0 @@
-enum MinorModeBlockReason {
-  disabledPeriod,
-  usageLimit,
-}

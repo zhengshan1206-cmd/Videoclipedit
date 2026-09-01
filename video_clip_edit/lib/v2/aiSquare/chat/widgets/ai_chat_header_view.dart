@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -753,7 +755,10 @@ class _AiChatListViewState extends State<AiChatListView> {
         itemCount: len,
         controller: widget.controller,
         padding: EdgeInsets.only(
-          bottom: ByScreenUtils.bottomSafeHeight + 150.h,
+          bottom: math.max(
+            ByScreenUtils.bottomSafeHeight + 150.h,
+            MediaQuery.viewPaddingOf(context).bottom + 170.h,
+          ),
         ),
         itemBuilder: (c, index) {
           if (messages.isEmpty) {

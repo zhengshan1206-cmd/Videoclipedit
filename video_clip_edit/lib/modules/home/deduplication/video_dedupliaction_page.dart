@@ -183,18 +183,16 @@ class VideoDedupliactionPage extends StatelessWidget {
               context,
               maxCount: 1,
               type: MediaType.video.uploadFileType,
-              onSelectedCallback: (asstes) async {
-                if (asstes.isEmpty) return;
-                File? file = await asstes.first.file;
+              onSelectedCallback: (asstes, {List<String>? urls}) async {
+                File? file;
+                if (urls != null && urls.isNotEmpty) {
+                  file = File(urls.first);
+                  if (!file.existsSync()) return;
+                } else if (asstes.isNotEmpty) {
+                  file = await asstes.first.file;
+                }
                 if (file == null) return;
-
-                // ByNavRouterUtils.push(
-                //   context,
-                //   ChangeNotifierProvider.value(
-                //     value: context.read<VideoDeduplicationProvider>(),
-                //     child: const VideoEditPage(),
-                //   ),
-                // );
+                // ByNavRouterUtils.push(context, ...);
               },
             );
             },);

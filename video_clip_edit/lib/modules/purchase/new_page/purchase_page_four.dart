@@ -22,6 +22,7 @@ import 'package:video_clip_edit/routes/app_pages.dart';
 import 'package:video_clip_edit/utils/comon/by_colors.dart';
 import 'package:video_clip_edit/utils/comon/by_extension.dart';
 import 'package:video_clip_edit/utils/comon/by_nav_router_utils.dart';
+import 'package:video_clip_edit/utils/comon/by_package_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_screen_utils.dart';
 import 'package:video_clip_edit/utils/comon/by_widgets_util.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
@@ -194,8 +195,8 @@ class _PurchasePageFourState extends State<PurchasePageFour>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // 只有 Android 平台需要监听应用生命周期进行支付确认
-    if (Platform.isAndroid) {
+    // Android / 鸿蒙：监听应用生命周期，从微信/支付宝返回时进行支付确认
+    if (Platform.isAndroid || ByPackageUtils.isOhos) {
       final provider = context.read<PurchaseProvider>();
       if (state == AppLifecycleState.resumed) {
         if (provider.needShowDialog && !(Get.isDialogOpen ?? false)) {
