@@ -1,0 +1,23 @@
+ext {
+    //1.授权相关(请联系我们申请key)
+    AppName = "fastscreen"
+    pkName = "beiyin.subtletypen.com"
+//    pkName="beiyin.subtletypen.com"
+    appKey = "ec71dcccd0846ee0"
+    appSecret = "c63115a5681fd2cc6d3a79f41d08175cCol5f5ENN3u1+hhAfL2civoTx6VwzvQHK6a/HjwxFW7JBopZ5A6aFo11Yc1+YNLfZ0xwmq5dpD2Wi+Rv/wY6xhRPgpl4Ba1OipNMPD5KjCHk1nD15i1Y7lhhWnTGA15S/oBqlfTWgWFMzr0h4XIi8JaoaHoduX72dw3qwRIWANLaIL3VL4yCHMl2ImgCL39HsvPGNbOcWvFRSSVYtV7ORyQfs4dFicxEMaEq422lQP1Nn2dGkW4UjjntG575XN/spBSS1Mq9yOGdWNuHGKIze8LSr9+WtDADCZSIai1IejG1JeXnYun/CWgGB5S6abmb3H6icKLsGG8X0aJK5P2MjYJgMUtiF+nJWgZT/YjNi1KqQtiKSf0yy4s/OqIk6r713p2JUqgRMAHyxVuHyTt+DPXYCLMLolWNIBgcWzZlO+b/6XjlBL4LHP8sJqhtsdI7W670SdVr9kuiiSVvqDZa3fMTJaUSpw58iGCR+oGizymk4CDhIb7ICD8PebjC8lkhlX0RWnCPkOXRdrClNGpK4ZcxRTtvBZnzlNBATmIl96AItOgjTj1X7kiOrnLuRayPLOilxowFDEsQiNibK5yknaLWnDQQkSymuoO0D4SlALNnMINIkDq/BHx/OcdqTo/F5WkvKJFWGL9TtRM4Hxa5gA5uXJHKn8pQkreBcEdi0m39IfjeFaAihb5gSesT9ieOtuTfj4UGhXya93oCkPu4clp1WcKUAqXixtCdrVEmnFW9eqTDISHdnjR29Z9uL6+VKFdk/2TroWZZEXrkWyTvrQYCK0y/LpVetvLPJb3j8qaG9JwXTkTeDvO66k8WMqoN+l7oZqXKbxaIXn0G+oLrHxspz0X/08UESUdqigOS47FRl6RhtHii9UoNh1W+X56YwMIBP1O9oSzgVXh2G0Wh6BLgKd48gCteVEio81MmSq8CkWbYcJOlN7YMqpe8lztd7Ow+rHjDs5tUO17C36uOm3AwwGtDzzgZ6eUsmzwpGWJZ1jtaF4pG1N8pjrhQlLD+O0JHtE2Ppk0bi4Mw2JtsBg=="
+    licenseKey = "" //置空licenseKey("")
+
+
+    //2.素材接口(Demo限流且不定期更换接口,请联系我们部署)
+    ROOT_URL = "http://vesystem.effectlib.com/api/v1/"
+
+    //3.资源接口(AI模型)【Demo限流且不定期更换接口,请联系我们部署】
+    AI_MODEL_ROOT_URL = "https://rdfile.oss-cn-hangzhou.aliyuncs.com/vesystem/ai/model/"
+
+    //4.文件上传(每日使用次数受限且不定期更换接口,请自行部署)
+    OSS_ROOT = "http://api.effectlib.com/"
+
+    //5.ASR语音识别文字接口 (每日使用次数受限且不定期更换接口,请联系我们)
+    PRIVATE_CLOUD_URL = "http://d.56show.com/filemanage2/public/filemanage/task/receiveCmd"
+    PRIVATE_CLOUD_KEY = "34b9ce5d0eec54ea4148e76b7b39c192"
+}

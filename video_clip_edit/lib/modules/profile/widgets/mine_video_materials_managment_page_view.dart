@@ -1,0 +1,355 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:event_bus/event_bus.dart';
+import 'package:bot_toast/bot_toast.dart';
+import 'package:easy_refresh/easy_refresh.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:video_clip_edit/modules/profile/widgets/mine_video_materals_management_list_view.dart';
+import 'package:video_clip_edit/utils/comon/by_colors.dart';
+import 'package:video_clip_edit/utils/comon/by_widgets_util.dart';
+import 'package:video_clip_edit/utils/comon/by_permission_utils.dart';
+import 'package:video_clip_edit/modules/common/widget/common_dialog.dart';
+import 'package:video_clip_edit/v2/aiSquare/draw/widgets/ai_videos_downoad_dialog.dart';
+import 'package:video_clip_edit/modules/profile/providers/mine_videos_management_provider.dart';
+import 'package:video_clip_edit/modules/profile/beans/mine_videos_select_all_notification.dart';
+// import 'package:video_clip_edit/modules/profile/widgets/mine_videos_management_gride_view.dart';
+import 'package:video_clip_edit/modules/profile/providers/mine_video_materials_management_provider.dart';
+import 'package:video_clip_edit/modules/profile/providers/mine_video_materials_single_page_provider.dart';
+
+enum MineVideoMaterialsPageType {
+  /// 我的素材
+  mineMaterials(1),
+
+  /// 口播视频素材
+  oralVideoMaterials(2);
+
+  final int rawValue;
+
+  const MineVideoMaterialsPageType(this.rawValue);
+
+  static MineVideoMaterialsPageType fromRawValue(int rawValue) {
+    for (final element in MineVideoMaterialsPageType.values) {
+      if (element.rawValue == rawValue) {
+        return element;
+      }
+    }
+    return MineVideoMaterialsPageType.mineMaterials;
+  }
+}
+
+/// 工具底部的PageView整体
+class MineVideoMaterialsManagmentPageView extends StatelessWidget {
+  const MineVideoMaterialsManagmentPageView({
+    super.key,
+    required this.pageController,
+    required this.onPageChanged,
+    required this.eventBus,
+  });
+  final EventBus eventBus;
+  final PageController pageController;
+  final void Function(int index) onPageChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final List<MineVideosCategoryBean> categoryBeans = context.select<
+        MineVideoMaterialsManagementProvider, List<MineVideosCategoryBean>>(
+      (val) => val.mineVideos,
+    );
+
+    return PageView.builder(
+      physics: context.select<MineVideoMaterialsManagementProvider, bool>(
+              (val) => val.videosEditing == false)
+          ? const PageScrollPhysics()
+          : const NeverScrollableScrollPhysics(), // 指定滚动物理行为
+      controller: pageController,
+      onPageChanged: onPageChanged,
+      itemCount: categoryBeans.length,
+      itemBuilder: (context, index) {
+        final bean = categoryBeans[index];
+        return ChangeNotifierProvider(
+          create: (BuildContext context) =>
+              MineVideoMaterialsSinglePageProvider(),
+          child: SingleGrideView(
+            bean: bean,
+            index: index,
+            eventBus: eventBus,
+          ),
+        );
+      },
+    );
+  }
+}
+
+/// 单个九宫格列表
+class SingleGrideView extends StatefulWidget {
+  const SingleGrideView({
+    super.key,
+    required this.bean,
+    required this.index,
+    required this.eventBus,
+  });
+
+  final int index;
+  final EventBus eventBus;
+  final MineVideosCategoryBean bean;
+
+  @override
+  State<SingleGrideView> createState() => _SingleGrideViewState();
+}
+
+class _SingleGrideViewState extends State<SingleGrideView>
+    with AutomaticKeepAliveClientMixin {
+  final EasyRefreshController _easyRefreshController = EasyRefreshController(
+    controlFinishRefresh: true,
+    controlFinishLoad: true,
+  );
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    if (mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        _refresh(context: context);
+
+        widget.eventBus.on<MineVideosSelectAllNotification>().listen((event) {
+          context
+              .read<MineVideoMaterialsSinglePageProvider>()
+              .updateSelectAllStatus(event.selectAll);
+        });
+      });
+    }
+    super.initState();
+  }
+
+  // 上拉加载更多
+  void _loadMore({
+    required BuildContext context,
+  }) {
+    final provider = context.read<MineVideoMaterialsSinglePageProvider>();
+    final vmProvider = context.read<MineVideoMaterialsManagementProvider>();
+    final categoryId = vmProvider.mineVideos[widget.index].id;
+    final MineVideoMaterialsPageType type =
+        MineVideoMaterialsPageType.fromRawValue(categoryId);
+    provider.loadVideoList(
+      type: type,
+      isRefresh: false,
+      onSuccess: (hasMore) {
+        _easyRefreshController.finishLoad(
+          hasMore ? IndicatorResult.success : IndicatorResult.noMore,
+          true,
+        );
+      },
+      onFailed: () {
+        _easyRefreshController.finishLoad(
+          IndicatorResult.fail,
+          false,
+        );
+      },
+    );
+  }
+
+  // 下拉刷新
+  void _refresh({
+    required BuildContext context,
+  }) {
+    final provider = context.read<MineVideoMaterialsSinglePageProvider>();
+    final vmProvider = context.read<MineVideoMaterialsManagementProvider>();
+    final categoryId = vmProvider.mineVideos[widget.index].id;
+    final MineVideoMaterialsPageType type =
+        MineVideoMaterialsPageType.fromRawValue(categoryId);
+
+    provider.loadVideoList(
+      type: type,
+      isRefresh: true,
+      onSuccess: (hasMore) {
+        _easyRefreshController.finishRefresh(IndicatorResult.success, true);
+        _easyRefreshController.resetFooter();
+      },
+      onFailed: () {
+        _easyRefreshController.finishRefresh(
+          IndicatorResult.fail,
+          false,
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    final vmProvider = context.read<MineVideoMaterialsManagementProvider>();
+    final categoryId = vmProvider.mineVideos[widget.index].id;
+    final MineVideoMaterialsPageType type =
+        MineVideoMaterialsPageType.fromRawValue(categoryId);
+
+    return Stack(
+      children: [
+        EasyRefresh(
+          triggerAxis: Axis.vertical,
+          controller: _easyRefreshController,
+          canLoadAfterNoMore: false,
+          canRefreshAfterNoMore: true,
+          onLoad: () => _loadMore(context: context),
+          onRefresh: () => _refresh(context: context),
+          child: MineVideoMateralsManagementListView(
+            index: widget.index,
+            type: type,
+          ),
+        ),
+        _buildBottmBar(context),
+      ],
+    );
+  }
+
+  _buildBottmBar(BuildContext context) {
+    final provider = context.read<MineVideoMaterialsSinglePageProvider>();
+    final providerM = context.read<MineVideoMaterialsManagementProvider>();
+    final editing = context.select<MineVideoMaterialsManagementProvider, bool>(
+        (p) => p.videosEditing);
+
+    final selectedCategoryIdx =
+        context.read<MineVideoMaterialsManagementProvider>().selectedCategory;
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: Offstage(
+        offstage: !(selectedCategoryIdx == widget.index && editing),
+        child: PhysicalModel(
+          color: Colors.black,
+          elevation: 0,
+          child: Container(
+            height: 66.h,
+            width: double.infinity,
+            color: ByColorUtil.WhiteColor,
+            alignment: Alignment.center,
+            child: SizedBox(
+              height: 44.h,
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 12.w,
+                  ),
+                  Expanded(
+                    child: ByWidgetsUtil.commonBtn(
+                      title: "取消",
+                      fontSize: 16.sp,
+                      borderRadius: 12.w,
+                      fontWeight: FontWeight.w600,
+                      bgColor: ByColorUtil.CommonTextColor.withOpacity(0.2),
+                      textColor: ByColorUtil.WhiteColor,
+                      onClick: () {
+                        if (providerM.videosEditing) {
+                          providerM.updateWorksEditingState(false);
+                          providerM.updateSelectAllStatus(false);
+                          provider.updateSelectAllStatus(false);
+                        }
+                      },
+                    ),
+                  ),
+                  SizedBox(
+                    width: 12.w,
+                  ),
+                  Expanded(
+                    child: ByWidgetsUtil.commonBtn(
+                      title: "删除",
+                      fontSize: 16.sp,
+                      borderRadius: 12.w,
+                      fontWeight: FontWeight.w600,
+                      bgColor: const Color(0xFFFF5373),
+                      textColor: ByColorUtil.WhiteColor,
+                      onClick: () {
+                        final ids = provider.selectedVideoIdxs;
+                        if (ids.isEmpty) {
+                          BotToast.showText(text: "请选择要删除的视频");
+                          return;
+                        }
+                        List<int> idsDetete = provider.selectedVideoIdxs
+                            .map((idx) => provider.videoRecordBeans[idx].id)
+                            .toList();
+                        showDialog(
+                          context: context,
+                          builder: (ctx) {
+                            return CommonDialog(
+                              reverse: false,
+                              maxLine: 10,
+                              contents: "请确认是否删除，删除后将不可回恢复，请谨慎操作",
+                              confirmBtnTitle: "删除",
+                              confirmCallback: () {
+                                provider.deleteVideos(
+                                  idsDetete,
+                                  onSuccess: () {
+                                    if (providerM.videosEditing) {
+                                      providerM.updateWorksEditingState(false);
+                                      providerM.updateSelectAllStatus(false);
+                                      provider.updateSelectAllStatus(false);
+                                    }
+                                    _refresh(context: context);
+                                  },
+                                );
+                              },
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  SizedBox(
+                    width: 12.w,
+                  ),
+                  Expanded(
+                    child: ByWidgetsUtil.commonBtn(
+                      title: " 下载",
+                      fontSize: 16.sp,
+                      borderRadius: 12.w,
+                      fontWeight: FontWeight.w600,
+                      textColor: ByColorUtil.WhiteColor,
+                      bgColor: ByColorUtil.LoginBtnBgColor,
+                      onClick: () async {
+                        if (await ByPermissionUtils.storage() == false) return;
+
+                        // 检查选中的视频是否都有有效的链接
+                        final selectedVideos = provider.selectedVideoIdxs
+                            .map((idx) => provider.videoRecordBeans[idx])
+                            .where((video) =>
+                                video.url != null && video.url!.isNotEmpty)
+                            .toList();
+
+                        if (selectedVideos.isEmpty) {
+                          BotToast.showText(text: "请选择正常的视频进行下载！");
+                          return;
+                        }
+
+                        showDialog(
+                          // ignore: use_build_context_synchronously
+                          context: context,
+                          builder: (c) {
+                            return AiVideosDownoadDialog(
+                              contents: "",
+                              maxLine: 10,
+                              cancelBtnTitle: "取消",
+                              confirmBtnTitle: "确定",
+                              confirmCallback: () {},
+                              videoUrls: selectedVideos
+                                  .map((video) => video.url)
+                                  .toList(),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  SizedBox(
+                    width: 12.w,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

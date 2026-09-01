@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<resources>
+
+
+    <!--功能菜单-->
+
+    <!--草稿箱界面-->
+    <string name="exporting">正在导出&#8230;</string>
+
+    <string name="loading">正在加载中&#8230;</string>
+
+
+    <string name="save">保存</string>
+
+
+    <!--草稿箱提示-->
+
+
+    <string name="sr_record_success">录制完成</string>
+    <string name="sr_shot_success">截屏成功</string>
+
+    <string name="sr_delete_alert_video">是否删除此视频?</string>
+    <string name="sr_delete_alert_shot">是否删除此截屏?</string>
+    <string name="sr_delete_yes">删除</string>
+    <string name="sr_delete_no">取消</string>
+
+
+    <string name="export_with_watermark">是否保留水印?</string>
+    <string name="export_alert">确认导出?</string>
+    <string name="dialog_yes">是</string>
+    <string name="dialog_no">否</string>
+
+
+</resources>
